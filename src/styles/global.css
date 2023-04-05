@@ -1,9 +1,9 @@
 html {
-    color:white;
     background-image: url('../images/background.jpg');
     background-position: center;
     background-repeat: no-repeat;
     background-size: auto;
+    background-color: #0d101f;
 }
 body::before {
     content: "";
