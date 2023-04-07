@@ -1,11 +1,11 @@
 import * as React from 'react'
-import Layout from "../componments/layout"
 import { Link } from "gatsby"
+import Header from "../componments/header"
 
 const main = () => (
-  <div style={{ color: 'white', margin: `3rem auto`, maxWidth: 600}}>
+  <div>
     <title>NovicNet</title>
-    <Layout />
+    <Header />
     <p>Welcome to NovicNet !</p>
     <p>HAVEN'T DONE</p>
     <Link to="/page2/">Go On</Link>
