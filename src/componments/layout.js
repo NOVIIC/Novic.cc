@@ -6,17 +6,18 @@ const ListLink = props => (
   </li>
 )
 
-const main = () => (
-    <div style={{ margin: `3rem auto`, maxWidth: 650, padding: `0 1rem` }}>
+const main = ({ children }) => (
+    <div style={{ margin: `3rem auto`, padding: `0 1rem` }}>
     <header style={{ marginBottom: `1.5rem` }}>
       <Link to="/" style={{ textShadow: `none`, backgroundImage: `none` }}>
         <h3 style={{ display: `inline` }}>NovicNet</h3>
       </Link>
       <ul style={{ listStyle: `none`, float: `right` }}>
         <ListLink to="/">Home</ListLink>
-        <ListLink to="/page2/">Test</ListLink>
+        <ListLink to="/blog/">Blog</ListLink>
       </ul>
     </header>
+    { children }
   </div>
 )
 export default main
