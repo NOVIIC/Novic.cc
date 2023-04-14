@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { Link } from "gatsby"
 import Layout from "../componments/layout"
 
 const main = () => (
@@ -8,7 +7,6 @@ const main = () => (
     <Layout>
       <p>Welcome to NovicNet !</p>
       <p>HAVEN'T DONE</p>
-      <Link to="/blog/">Go On</Link>
     </Layout>
   </div>
 )

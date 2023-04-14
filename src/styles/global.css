@@ -15,20 +15,14 @@ body::before {
     height: 100%;
     background-color: black;
     z-index: -1;
-    opacity: 0.3;
+    opacity: 0.4;
 }
 a {
-    text-decoration: none;
-}
-a:link {
-    color: #ffffff;
-}
-a:visited {
-    color: #ffffff;
+    color:white;
 }
 a:hover {
-    color: #ff0080;
+    color:blueviolet;
 }
 a:active {
-    color: #b52424;
+    color:purple;
 }
