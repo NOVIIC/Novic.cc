@@ -1,9 +1,9 @@
 html {
     color:white;
-    background-image: url('../images/background.jpg');
+    background-image: url('../resources/background.jpg');
     background-position: center;
     background-repeat: no-repeat;
-    background-size:cover;
+    background-size: 100%;
     background-color: #0d101f;
 }
 body::before {
@@ -15,7 +15,7 @@ body::before {
     height: 100%;
     background-color: black;
     z-index: -1;
-    opacity: 0.4;
+    opacity: 0.6;
 }
 a {
     color:white;
