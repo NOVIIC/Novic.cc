@@ -6,6 +6,7 @@ const main = () => (
     <title>Test</title>
     <Layout>
       <p>test</p>
+      <a href='https://bing.novic.cc'>Bing Chat</a>
     </Layout>
   </div>
 )
