@@ -4,7 +4,7 @@ import { Link } from "gatsby"
 
 const main = () => (
   <div style={{ color: `purple` }}>
-    <title>HAVEN'T DONE</title>
+    <title>NovicNet - articles</title>
     <Layout>
       <p>Test Page</p>
       <Link to='/'>Home</Link>

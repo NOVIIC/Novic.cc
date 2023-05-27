@@ -3,10 +3,10 @@ import Layout from "../componments/layout"
 
 const main = () => (
   <div>
-    <title>Test</title>
+    <title>NovicNet - toys</title>
     <Layout>
       <p>test</p>
-      <a href='https://bing.novic.cc'>Bing Chat</a>
+      <a href='https://bing.novic.cc'>BingAI</a>
     </Layout>
   </div>
 )

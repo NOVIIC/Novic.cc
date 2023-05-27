@@ -15,8 +15,8 @@ const main = ({ children }) => (
         <h3 style={{ display: `inline` }}>NovicNet</h3>
       </Link>
       <ul style={{ listStyle: `none`, float: `right` }}>
-        <ListLink to="/articles/">文</ListLink>
-        <ListLink to="/test/">test</ListLink>
+        <ListLink to="/articles/">articles</ListLink>
+        <ListLink to="/toys/">toys</ListLink>
       </ul>
     </header>
     { children }
