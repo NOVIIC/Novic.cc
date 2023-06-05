@@ -6,7 +6,7 @@ const main = () => (
     <title>NovicNet - toys</title>
     <Layout>
       <p>test</p>
-      <a href='https://bing.novic.cc'>BingAI</a>
+      <a target="_blank" rel="noreferrer" href='https://bing.novic.cc'>BingAI</a>
     </Layout>
   </div>
 )
