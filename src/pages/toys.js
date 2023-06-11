@@ -7,7 +7,8 @@ const main = () => (
     <Layout>
       <p>test</p>
       <p><a target="_blank" rel="noreferrer" href='https://bing.novic.cc'>BingAI</a></p>
-      <p><a target="_blank" rel="noreferrer" href='https://hack.chat/?novicnet'>NovicNet HackChat Room</a></p>
+      <p><a target="_blank" rel="noreferrer" href='https://unlockmusic.novic.cc/'>UnlockMusic</a></p>
+      <p><a target="_blank" rel="noreferrer" href='https://hack.chat/?novicnet'>NovicNet HackChat Room (External Link)</a></p>
     </Layout>
   </div>
 )
