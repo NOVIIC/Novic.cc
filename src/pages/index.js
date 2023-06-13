@@ -8,7 +8,7 @@ const main = () => (
       <p>Welcome to NovicNet !</p>
       <p>HAVEN'T DONE</p>
       <p>
-        Email:<a href='novic@novic.cc'>novic@novic.cc</a>
+        Email:<a href='mailto:novic@novic.cc'>novic@novic.cc</a>
       </p>
     </Layout>
   </div>
