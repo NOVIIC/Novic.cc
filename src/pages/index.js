@@ -7,6 +7,9 @@ const main = () => (
     <Layout>
       <p>Welcome to NovicNet !</p>
       <p>HAVEN'T DONE</p>
+      <p>
+        Email:<a href='novic@novic.cc'>novic@novic.cc</a>
+      </p>
     </Layout>
   </div>
 )
