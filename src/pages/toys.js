@@ -11,10 +11,7 @@ const main = () => (
   <div>
     <title>NovicNet - toys</title>
     <Layout>
-      <Links href='https://bing.novic.cc'>BingAI</Links>
       <Links href='https://unlockmusic.novic.cc/'>UnlockMusic</Links>
-      <p>External Links</p>
-      <Links href='https://hack.chat/?novicnet'>NovicNet HackChat Room</Links>
     </Layout>
   </div>
 )
