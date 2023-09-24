@@ -11,7 +11,7 @@ const main = () => (
   <div>
     <title>NovicNet - toys</title>
     <Layout>
-      <Links href="rss.novic.cc">novic's rssHub</Links>
+      <Links href="https://rss.novic.cc">novic's rssHub</Links>
     </Layout>
   </div>
 )
