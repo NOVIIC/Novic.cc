@@ -17,7 +17,7 @@ const main = ({ children }) => (
         </Link>
         <ul style={{ listStyle: `none`, float: `right` }}>
           <ListLink to="/articles/">articles</ListLink>
-          <ListLink to="/toys/">toys</ListLink>
+          <ListLink to="/links/">links</ListLink>
         </ul>
       </header>
       { children }
