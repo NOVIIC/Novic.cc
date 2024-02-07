@@ -9,9 +9,10 @@ const Links = props => (
 
 const main = () => (
   <div>
-    <title>NovicNet - toys</title>
+    <title>NovicNet - links</title>
     <Layout>
       <Links href="https://rss.novic.cc">novic's rssHub</Links>
+      <Links href="https://pan.yukaidi.com/s/E5B8Cd">Cloud Shares</Links>
     </Layout>
   </div>
 )
