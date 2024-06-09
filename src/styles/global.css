@@ -34,7 +34,7 @@ body {
 	margin: 0;
 	padding: 0;
 	text-align: left;
-	background: url('background.jpg'),#0d101f;
+	background: url('background.jpg'),#060912;
 	background-position: top center;
     background-repeat: no-repeat;
 	background-size: 100%,auto;
@@ -44,6 +44,14 @@ body {
 	font-size: 20px;
 	line-height: 1.7;
 }
+
+/* 针对窄屏的样式 */
+@media (max-width: 1500px) and (max-aspect-ratio: 16/9) {
+	body {
+		background-size: auto auto;
+	}
+}
+
 main {
 	width: 720px;
 	max-width: calc(100% - 2em);
