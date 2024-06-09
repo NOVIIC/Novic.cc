@@ -51,7 +51,7 @@ const today = new Date();
 
 			  // 如果内容不足以填满页面，则增加填充
 			  if (contentHeight < documentHeight) {
-				const padding = documentHeight - contentHeight;
+				const padding = documentHeight - contentHeight + 300;
 			
 			// 为内容部分添加填充，使页脚总是在页面底部
 			wrapper.style.paddingBottom = `${padding}px`;
