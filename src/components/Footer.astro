@@ -2,7 +2,7 @@
 const today = new Date();
 ---
 
-<footer>
+<footer class="footer">
 	&copy; {today.getFullYear()} Novic_C. All rights reserved.
 	<div class="social-links">
 		<a href="https://m.webtoo.ls/@astro" target="_blank">
@@ -38,6 +38,26 @@ const today = new Date();
 			>
 		</a>
 	</div>
+	<script defer>
+		document.addEventListener('DOMContentLoaded', function() {
+			  const wrapper = document.querySelector('.wrapper');
+			  const footer = document.querySelector('.footer');
+
+			 // 获取页面的总高度
+			 const documentHeight = document.documentElement.clientHeight;
+
+			  // 获取内容部分和页脚的总高度
+			  const contentHeight = wrapper.offsetHeight + footer.offsetHeight;
+
+			  // 如果内容不足以填满页面，则增加填充
+			  if (contentHeight < documentHeight) {
+				const padding = documentHeight - contentHeight;
+			
+			// 为内容部分添加填充，使页脚总是在页面底部
+			wrapper.style.paddingBottom = `${padding}px`;
+		  }
+		});
+	</script>
 </footer>
 <style>
 	footer {
