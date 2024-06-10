@@ -39,17 +39,10 @@ body {
     background-repeat: no-repeat;
 	background-size: 100%,auto;
 	word-wrap: break-word;
-	overflow-wrap: anywhere;
+	overflow-wrap: break-word;
 	color: rgb(var(--gray-light));
 	font-size: 20px;
 	line-height: 1.7;
-}
-
-/* 针对窄屏的样式 */
-@media (max-width: 1500px) and (max-aspect-ratio: 16/9) {
-	body {
-		background-size: auto auto;
-	}
 }
 
 main {
@@ -142,6 +135,16 @@ hr {
 	}
 	main {
 		padding: 1em;
+	}
+	h1 {
+		font-size: 2.6em; 
+	}
+}
+
+/* 针对窄屏的样式 */
+@media (max-width: 1500px) and (max-aspect-ratio: 16/9) {
+	body {
+		background-size: auto auto;
 	}
 }
 
