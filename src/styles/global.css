@@ -39,7 +39,7 @@ body {
     background-repeat: no-repeat;
 	background-size: 100%,auto;
 	word-wrap: break-word;
-	overflow-wrap: break-word;
+	overflow-wrap: anywhere;
 	color: rgb(var(--gray-light));
 	font-size: 20px;
 	line-height: 1.7;
