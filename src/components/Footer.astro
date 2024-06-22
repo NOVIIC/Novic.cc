@@ -59,6 +59,7 @@ const today = new Date();
 		}
 		document.addEventListener('DOMContentLoaded', setFooterPadding);
 		document.addEventListener('astro:after-swap', setFooterPadding);
+		window.addEventListener('resize', setFooterPadding);
 	</script>
 </footer>
 <style>
