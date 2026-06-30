@@ -1,0 +1,36 @@
+---
+interface Heading {
+	depth: number;
+	slug: string;
+	text: string;
+}
+interface Props {
+	headings?: Heading[];
+}
+const { headings = [] } = Astro.props;
+const toc = headings.filter((h) => h.depth > 1 && h.depth < 4);
+---
+
+{
+	toc.length > 0 && (
+		<nav class="not-prose text-sm">
+			<p class="mb-2 font-semibold text-white/80">目录</p>
+			<ul class="space-y-1 border-l border-white/10">
+				{toc.map((h) => (
+					<li>
+						<a
+							href={`#${h.slug}`}
+							class:list={[
+								'-ml-px block border-l border-transparent py-0.5 pl-3 text-white/60 transition-colors hover:border-[var(--color-accent)] hover:text-white',
+								h.depth === 3 && 'pl-6',
+								h.depth === 4 && 'pl-9',
+							]}
+						>
+							{h.text}
+						</a>
+					</li>
+				))}
+			</ul>
+		</nav>
+	)
+}

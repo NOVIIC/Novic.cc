@@ -1,85 +1,56 @@
 ---
-import type { CollectionEntry } from 'astro:content';
-import BaseHead from '../components/BaseHead.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
+import Layout from './Layout.astro';
 import FormattedDate from '../components/FormattedDate.astro';
+import Toc from '../components/Toc.astro';
+import type { CollectionEntry } from 'astro:content';
 
-type Props = CollectionEntry<'blog'>['data'];
-
-const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
+interface Heading {
+	depth: number;
+	slug: string;
+	text: string;
+}
+interface Props {
+	post: CollectionEntry<'blog'>;
+	headings: Heading[];
+}
+const { post, headings } = Astro.props;
+const { title, description, pubDate, updatedDate, tags, heroImage } = post.data;
 ---
 
-<html lang="en">
-	<head>
-		<BaseHead title={title} description={description} />
-		<style>
-			main {
-				width: calc(100% - 2em);
-				max-width: 100%;
-				margin: 0;
-			}
-			.hero-image {
-				width: 100%;
-			}
-			.hero-image img {
-				display: block;
-				margin: 0 auto;
-				border-radius: 12px;
-				box-shadow: var(--box-shadow);
-			}
-			.prose {
-				width: 720px;
-				max-width: calc(100% - 2em);
-				margin: auto;
-				padding: 1em;
-				color: rgb(var(--gray-light));
-			}
-			.title {
-				margin-bottom: 1em;
-				padding: 1em 0;
-				text-align: center;
-				line-height: 1;
-			}
-			.title h1 {
-				margin: 0 0 0.5em 0;
-			}
-			.date {
-				margin-bottom: 0.5em;
-				color: rgb(var(--gray));
-			}
-			.last-updated-on {
-				font-style: italic;
-			}
-		</style>
-	</head>
-
-	<body>
-		<Header />
-		<main class="wrapper">
-			<article>
-				<div class="hero-image">
-					{heroImage && <img width={1020} height={510} src={heroImage} alt="" />}
-				</div>
-				<div class="prose">
-					<div class="title">
-						<div class="date">
-							<FormattedDate date={pubDate} />
-							{
-								updatedDate && (
-									<div class="last-updated-on">
-										Last updated on <FormattedDate date={updatedDate} />
-									</div>
-								)
-							}
-						</div>
-						<h1>{title}</h1>
-						<hr />
+<Layout title={title} description={description} image={heroImage}>
+	<article class="prose prose-invert max-w-none prose-headings:scroll-mt-20 prose-pre:bg-transparent prose-pre:p-0">
+		<header class="not-prose mb-8">
+			<h1 class="mt-0 text-4xl font-bold text-white">{title}</h1>
+			<div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/60">
+				<span>发布于 <FormattedDate date={pubDate} /></span>
+				{
+					updatedDate && (
+						<span>· 更新于 <FormattedDate date={updatedDate} /></span>
+					)
+				}
+			</div>
+			{
+				tags.length > 0 && (
+					<div class="mt-3 flex flex-wrap gap-2 text-xs">
+						{tags.map((t) => (
+							<span class="rounded-full border border-white/15 bg-white/5 px-2.5 py-0.5 text-white/70">
+								#{t}
+							</span>
+						))}
 					</div>
-					<slot />
+				)
+			}
+		</header>
+
+		<div class="lg:grid lg:grid-cols-[1fr_10rem] lg:gap-8">
+			<div class="min-w-0" data-pagefind-body>
+				<slot />
+			</div>
+			<aside class="hidden lg:block">
+				<div class="sticky top-20">
+					<Toc headings={headings} />
 				</div>
-			</article>
-		</main>
-		<Footer />
-	</body>
-</html>
+			</aside>
+		</div>
+	</article>
+</Layout>
