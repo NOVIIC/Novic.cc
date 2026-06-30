@@ -1,0 +1,45 @@
+---
+import { SITE_TITLE } from '../consts';
+
+const path = Astro.url.pathname;
+const isActive = (href: string) =>
+	href === '/' ? path === '/' : path.startsWith(href);
+
+const links = [
+	{ href: '/', label: '首页' },
+	{ href: '/blog', label: '博客' },
+	{ href: '/search', label: '搜索' },
+];
+---
+
+<header
+	class="sticky top-0 z-20 border-b border-white/10 bg-black/40 backdrop-blur-md"
+>
+	<nav class="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
+		<a
+			href="/"
+			class="text-lg font-bold text-white transition-colors hover:text-[var(--color-accent)]"
+			>{SITE_TITLE}</a
+		>
+		<div class="flex items-center gap-1 text-sm text-white/70">
+			{
+				links.map((l) => (
+					<a
+						href={l.href}
+						class:list={[
+							'rounded px-3 py-2 transition-colors hover:text-white',
+							isActive(l.href) && 'text-white',
+						]}
+					>
+						{l.label}
+					</a>
+				))
+			}
+			<a
+				href="/rss.xml"
+				class="rounded px-3 py-2 transition-colors hover:text-white"
+				>RSS</a
+			>
+		</div>
+	</nav>
+</header>

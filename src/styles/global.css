@@ -1,0 +1,43 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+	--color-accent: #8a23ff;
+	--color-accent-dark: #47008a;
+	--font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+	--font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+}
+
+html {
+	scroll-behavior: smooth;
+}
+
+body {
+	background: url("/background.jpg"), #060912;
+	background-position: top center;
+	background-repeat: no-repeat;
+	background-size: 100%, auto;
+	color: rgb(229 233 240);
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+}
+
+@media (max-width: 1500px) and (max-aspect-ratio: 16/9) {
+	body {
+		background-size: auto auto;
+	}
+}
+
+.heading-anchor {
+	margin-inline-start: 0.4em;
+	opacity: 0;
+	text-decoration: none;
+	color: var(--color-accent);
+}
+
+h1:hover .heading-anchor,
+h2:hover .heading-anchor,
+h3:hover .heading-anchor,
+h4:hover .heading-anchor {
+	opacity: 1;
+}
