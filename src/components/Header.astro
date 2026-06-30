@@ -13,15 +13,17 @@ const links = [
 ---
 
 <header
-	class="sticky top-0 z-20 border-b border-white/10 bg-black/40 backdrop-blur-md"
+	class="sticky top-0 z-20 border-b border-white/10 bg-black/40 px-4 backdrop-blur-md"
 >
-	<nav class="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
+	<nav class="relative flex h-14 items-center justify-between">
 		<a
 			href="/"
 			class="text-lg font-bold text-white transition-colors hover:text-[var(--color-accent)]"
 			>{SITE_TITLE}</a
 		>
-		<div class="flex items-center gap-1 text-sm text-white/70">
+		<div
+			class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1 text-sm text-white/70"
+		>
 			{
 				links.map((l) => (
 					<a
@@ -35,11 +37,11 @@ const links = [
 					</a>
 				))
 			}
-			<a
-				href="/rss.xml"
-				class="rounded px-3 py-2 transition-colors hover:text-white"
-				>RSS</a
-			>
 		</div>
+		<a
+			href="/rss.xml"
+			class="rounded px-3 py-2 text-sm text-white/70 transition-colors hover:text-white"
+			>RSS</a
+		>
 	</nav>
 </header>
