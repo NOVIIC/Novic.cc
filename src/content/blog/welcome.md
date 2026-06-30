@@ -1,11 +1,11 @@
 ---
-title: '欢迎来到 NovicNet'
+title: '欢迎来到 Novic.cc'
 description: '一个全新的开始 —— 这篇介绍本站用了什么技术栈搭建。'
 pubDate: 2025-06-30
 tags: ['公告', 'astro']
 ---
 
-欢迎来到 **NovicNet**。这是我用 [Astro 7](https://astro.build) 重新搭建的个人博客，
+欢迎来到 **Novic.cc**。这是我用 [Astro 7](https://astro.build) 重新搭建的个人博客，
 从旧版 `legacy-2024` 分支继承了那张深空背景图，其余则全部基于现代技术栈重写。
 
 ## 这个站点用了什么

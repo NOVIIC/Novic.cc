@@ -1,4 +1,4 @@
-# NovicNet
+# Novic.cc
 
 基于 Astro 7 的个人博客，静态输出、运行时几乎零 JS。
 
