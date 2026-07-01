@@ -1,0 +1,20 @@
+diff --git a/lib/handlers/element.js b/lib/handlers/element.js
+index 0567b6e700441e2465b73b19c330716ca2657447..6c1894627205939defd440beceeac337cda71c76 100644
+--- a/lib/handlers/element.js
++++ b/lib/handlers/element.js
+@@ -13,7 +13,14 @@ import {stringify as commas} from 'comma-separated-tokens'
+ import {name as identifierName} from 'estree-util-is-identifier-name'
+ import {find, hastToReact, svg} from 'property-information'
+ import {stringify as spaces} from 'space-separated-tokens'
+-import styleToJs from 'style-to-js'
++import * as styleToJsNS from 'style-to-js'
++const _d = styleToJsNS.default
++const styleToJs = /** @type {any} */ (
++  typeof _d === 'function' ? _d :
++  typeof _d?.default === 'function' ? _d.default :
++  typeof styleToJsNS === 'function' ? styleToJsNS :
++  _d
++)
+ 
+ const own = {}.hasOwnProperty
+ const cap = /[A-Z]/g

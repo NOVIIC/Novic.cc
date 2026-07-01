@@ -9,15 +9,15 @@ tags: ['astro', 'tailwind', '教程']
 
 ## 内容集合
 
-在 `src/content.config.ts` 里用 `glob()` 加载器声明集合，并用 Zod 校验 frontmatter：
+在 `src/content.config.ts` 里用 `glob()` 加载器声明集合，并用 Zod 校验 frontmatter。本站把内容分为 `articles`（技术文章）与 `notes`（学习笔记）两个集合：
 
 ```ts title="src/content.config.ts" showLineNumbers
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
-const blog = defineCollection({
-  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/blog' }),
+const articles = defineCollection({
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/articles' }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
@@ -27,18 +27,28 @@ const blog = defineCollection({
   }),
 });
 
-export const collections = { blog };
+const notes = defineCollection({
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/notes' }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    pubDate: z.coerce.date(),
+    draft: z.boolean().default(false),
+  }),
+});
+
+export const collections = { articles, notes };
 ```
 
 ### 渲染单篇文章
 
-动态路由 `src/pages/blog/[...slug].astro` 用 `render()` 拿到 HTML 与标题列表：
+动态路由 `src/pages/articles/[...slug].astro` 用 `render()` 拿到 HTML 与标题列表：
 
 ```ts showLineNumbers
 import { getCollection, render } from 'astro:content';
 
 export async function getStaticPaths() {
-  const posts = await getCollection('blog');
+  const posts = await getCollection('articles');
   return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
 }
 
@@ -83,4 +93,4 @@ features.reverse();
 
 ## 小结
 
-整套配置都是构建期产物，运行时几乎零 JS。下一篇文章会演示 Pagefind 搜索的接入。
+整套配置都是构建期产物，运行时几乎零 JS。
