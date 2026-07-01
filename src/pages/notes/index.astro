@@ -1,0 +1,42 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { NOTES_TOPICS, SITE_TITLE } from '../../consts';
+
+const counts = new Map<string, number>();
+const notes = await getCollection('notes', ({ data }) =>
+	import.meta.env.PROD ? !data.draft : true,
+);
+for (const note of notes) {
+	const topic = note.id.split('/')[0];
+	counts.set(topic, (counts.get(topic) ?? 0) + 1);
+}
+---
+
+<Layout title={`Notes · ${SITE_TITLE}`} description="学习笔记，按主题分类">
+	<section class="not-prose mb-10">
+		<h1 class="text-3xl font-bold text-white">Notes</h1>
+		<p class="mt-2 text-white/70">学习笔记，按主题分类。点击主题进入对应文章列表（从旧到新）。</p>
+	</section>
+
+	<div class="not-prose grid gap-4 sm:grid-cols-2">
+		{
+			NOTES_TOPICS.map((t) => (
+				<a
+					href={`/notes/${t.slug}/`}
+					class="group rounded-xl border border-white/10 bg-white/[0.03] p-6 transition-colors hover:border-[var(--accent)]/60 hover:bg-white/[0.06]"
+				>
+					<div class="flex items-center justify-between">
+						<h2 class="text-xl font-semibold text-white group-hover:text-[var(--accent)]">
+							{t.title}
+						</h2>
+						<span class="text-sm text-white/50">
+							{counts.get(t.slug) ?? 0} 篇
+						</span>
+					</div>
+					<p class="mt-2 text-sm text-white/60">{t.description}</p>
+				</a>
+			))
+		}
+	</div>
+</Layout>

@@ -1,0 +1,63 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import FormattedDate from '../../../components/FormattedDate.astro';
+import { getCollection } from 'astro:content';
+import { SITE_TITLE } from '../../../consts';
+
+export async function getStaticPaths() {
+	const posts = await getCollection('articles', ({ data }) =>
+		import.meta.env.PROD ? !data.draft : true,
+	);
+	const tags = new Set<string>();
+	for (const post of posts) {
+		for (const t of post.data.tags) tags.add(t);
+	}
+	return [...tags].map((tag) => ({
+		params: { tag },
+		props: {
+			tag,
+			posts: posts
+				.filter((p) => p.data.tags.includes(tag))
+				.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()),
+		},
+	}));
+}
+
+const { tag, posts } = Astro.props;
+---
+
+<Layout title={`#${tag} · ${SITE_TITLE}`} description={`标签 ${tag} 下的文章`}>
+	<section class="not-prose mb-8">
+		<a
+			href="/articles/"
+			class="mt-2 text-sm text-white/60 transition-colors hover:text-[var(--accent)]"
+		>
+			← Articles
+		</a>
+		<h1 class="mt-2 text-3xl font-bold text-white">
+			#{tag}
+		</h1>
+		<p class="mt-2 text-white/70">共 {posts.length} 篇文章</p>
+	</section>
+
+	<ul class="space-y-4">
+		{
+			posts.map((post) => (
+				<li class="not-prose">
+					<a
+						href={`/articles/${post.id}/`}
+						class="block rounded-xl border border-white/10 bg-white/[0.03] p-5 transition-colors hover:border-white/20 hover:bg-white/[0.06]"
+					>
+						<div class="flex items-center gap-2 text-xs" style="color: rgb(var(--gray));">
+							<FormattedDate date={post.data.pubDate} />
+						</div>
+						<h3 class="mt-1 text-lg font-semibold text-white">
+							{post.data.title}
+						</h3>
+						<p class="mt-1 text-sm text-white/60">{post.data.description}</p>
+					</a>
+				</li>
+			))
+		}
+	</ul>
+</Layout>
