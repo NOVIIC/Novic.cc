@@ -2,7 +2,7 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-	--color-accent: #8a23ff;
+	--color-accent: #6E39E0;
 	--color-gray: #9f8c60;
 	--color-gray-light: #e5e9f0;
 	--font-sans: var(--font-atkinson), system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
