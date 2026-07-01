@@ -29,7 +29,7 @@ const title = meta ? `${meta.title} · ${SITE_TITLE}` : `Notes · ${SITE_TITLE}`
 	<section class="not-prose mb-8">
 		<a
 			href="/notes/"
-			class="text-sm text-white/60 transition-colors hover:text-[var(--accent)]"
+			class="text-sm text-white/60 transition-colors hover:text-accent"
 		>
 			← Notes
 		</a>
@@ -46,12 +46,12 @@ const title = meta ? `${meta.title} · ${SITE_TITLE}` : `Notes · ${SITE_TITLE}`
 		{
 			notes.map((note) => (
 				<li class="not-prose flex flex-col border-b border-white/5 py-3 sm:flex-row sm:items-baseline sm:gap-4">
-					<span class="shrink-0 text-sm sm:w-28" style="color: rgb(var(--gray));">
+					<span class="shrink-0 text-sm sm:w-28 text-gray">
 						<FormattedDate date={note.data.pubDate} />
 					</span>
 					<a
 						href={`/notes/${note.id}/`}
-						class="text-white/90 transition-colors hover:text-[var(--accent)]"
+						class="text-white/90 transition-colors hover:text-accent"
 					>
 						{note.data.title}
 					</a>

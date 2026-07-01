@@ -24,10 +24,10 @@ for (const note of notes) {
 			NOTES_TOPICS.map((t) => (
 				<a
 					href={`/notes/${t.slug}/`}
-					class="group rounded-xl border border-white/10 bg-white/[0.03] p-6 transition-colors hover:border-[var(--accent)]/60 hover:bg-white/[0.06]"
+					class="group rounded-xl border border-white/10 bg-white/[0.03] p-6 transition-colors hover:border-accent/60 hover:bg-white/[0.06]"
 				>
 					<div class="flex items-center justify-between">
-						<h2 class="text-xl font-semibold text-white group-hover:text-[var(--accent)]">
+						<h2 class="text-xl font-semibold text-white group-hover:text-accent">
 							{t.title}
 						</h2>
 						<span class="text-sm text-white/50">

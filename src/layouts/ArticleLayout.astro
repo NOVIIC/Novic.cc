@@ -21,7 +21,7 @@ const { title, description, pubDate, updatedDate, tags, heroImage } = post.data;
 	<article class="prose prose-invert max-w-none prose-headings:scroll-mt-20 prose-pre:bg-transparent prose-pre:p-0">
 		<header class="not-prose mb-8">
 			<h1 class="mt-0 text-4xl font-bold text-white">{title}</h1>
-			<div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm" style="color: rgb(var(--gray));">
+			<div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray">
 				<span>发布于 <FormattedDate date={pubDate} /></span>
 				{
 					updatedDate && (
@@ -35,7 +35,7 @@ const { title, description, pubDate, updatedDate, tags, heroImage } = post.data;
 						{tags.map((t) => (
 							<a
 								href={`/articles/tags/${t}/`}
-								class="rounded-full border border-white/15 bg-white/5 px-2.5 py-0.5 text-white/70 transition-colors hover:border-[var(--accent)] hover:text-white"
+								class="rounded-full border border-white/15 bg-white/5 px-2.5 py-0.5 text-white/70 transition-colors hover:border-accent hover:text-white"
 							>
 								#{t}
 							</a>
