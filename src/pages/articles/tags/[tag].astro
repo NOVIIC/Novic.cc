@@ -30,7 +30,7 @@ const { tag, posts } = Astro.props;
 	<section class="not-prose mb-8">
 		<a
 			href="/articles/"
-			class="mt-2 text-sm text-white/60 transition-colors hover:text-[var(--accent)]"
+			class="mt-2 text-sm text-white/60 transition-colors hover:text-accent"
 		>
 			← Articles
 		</a>
@@ -48,7 +48,7 @@ const { tag, posts } = Astro.props;
 						href={`/articles/${post.id}/`}
 						class="block rounded-xl border border-white/10 bg-white/[0.03] p-5 transition-colors hover:border-white/20 hover:bg-white/[0.06]"
 					>
-						<div class="flex items-center gap-2 text-xs" style="color: rgb(var(--gray));">
+						<div class="flex items-center gap-2 text-xs text-gray">
 							<FormattedDate date={post.data.pubDate} />
 						</div>
 						<h3 class="mt-1 text-lg font-semibold text-white">

@@ -14,7 +14,7 @@ const isActive = (href: string) =>
 	>
 		<a
 			href="/"
-			class="text-xl font-bold text-white transition-colors hover:text-[var(--accent)]"
+			class="text-xl font-bold text-white transition-colors hover:text-accent"
 			>{SITE_TITLE}</a
 		>
 
@@ -32,7 +32,7 @@ const isActive = (href: string) =>
 						class:list={[
 						'-mb-px border-b-4 px-2 py-2 transition-colors hover:text-white',
 						isActive(l.href)
-							? 'font-bold text-white border-[var(--accent)]/50'
+							? 'font-bold text-white border-accent/50'
 							: 'font-normal border-transparent',
 						]}
 					>

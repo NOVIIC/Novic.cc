@@ -3,22 +3,15 @@
 
 @theme {
 	--color-accent: #8a23ff;
-	--color-accent-dark: #47008a;
+	--color-gray: #9f8c60;
+	--color-gray-light: #e5e9f0;
 	--font-sans: var(--font-atkinson), system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 	--font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
 }
 
 
-:root {
-	--white: 240, 237, 230;
-	--gray: 159, 140, 96;
-	--gray-light: 229, 233, 240;
-	--gray-dark: 34, 41, 57;
-	--accent: #8a23ff;
-	--accent-dark: #47008a;
-}
-
 html {
+	color-scheme: dark;
 	scroll-behavior: smooth;
 }
 
@@ -27,7 +20,7 @@ body {
 	background-position: top center;
 	background-repeat: no-repeat;
 	background-size: 100%, auto;
-	color: rgb(var(--gray-light));
+	color: #e5e9f0;
 	word-wrap: break-word;
 	overflow-wrap: break-word;
 }
@@ -42,7 +35,7 @@ body {
 	margin-inline-start: 0.4em;
 	opacity: 0;
 	text-decoration: none;
-	color: var(--accent);
+	color: #8a23ff;
 }
 
 h1:hover .heading-anchor,
