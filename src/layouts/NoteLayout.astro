@@ -2,6 +2,8 @@
 import Layout from './Layout.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import Toc from '../components/Toc.astro';
+import BackButton from '../components/BackButton.astro';
+import MobileToc from '../components/MobileToc.astro';
 import { NOTES_TOPIC_MAP } from '../consts';
 import type { CollectionEntry } from 'astro:content';
 
@@ -20,36 +22,49 @@ const { title, description, pubDate, updatedDate } = note.data;
 const topicMeta = NOTES_TOPIC_MAP[topic];
 ---
 
-<Layout title={title} description={description}>
-	<article class="prose prose-invert max-w-none prose-headings:scroll-mt-20 prose-pre:bg-transparent prose-pre:p-0">
-		<header class="not-prose mb-8">
-			{
-				topicMeta && (
-					<a
-						href={`/notes/${topic}/`}
-						class="text-sm text-white/60 transition-colors hover:text-accent"
-					>
-						← {topicMeta.title}
-					</a>
-				)
-			}
-			<h1 class="mt-2 text-3xl font-bold text-white sm:text-4xl">{title}</h1>
-			<div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray">
-				<span>发布于 <FormattedDate date={pubDate} /></span>
-				{
-					updatedDate && (
-						<span>· 更新于 <FormattedDate date={updatedDate} /></span>
-					)
-				}
-			</div>
-		</header>
-
+<Layout title={title} description={description} pageKind="article">
+	<BackButton fallbackHref="/notes" slot="floating" />
+	<MobileToc headings={headings} slot="floating" />
+	<article
+		class="prose prose-invert max-w-none prose-headings:scroll-mt-32 prose-pre:bg-transparent prose-pre:p-0"
+	>
 		<div class="lg:grid lg:grid-cols-[1fr_9rem] lg:gap-6">
-			<div class="min-w-0" data-pagefind-body>
-				<slot />
+			<div
+				class="min-w-0 rounded-2xl border border-white/10 bg-black/20 p-6  sm:p-7"
+			>
+				<header class="not-prose mb-8">
+					{
+						topicMeta && (
+							<a
+								href={`/notes/${topic}/`}
+								class="text-sm text-white/60 transition-colors hover:text-accent"
+							>
+								← {topicMeta.title}
+							</a>
+						)
+					}
+					<h1 class="mt-2 text-3xl font-bold text-white sm:text-4xl">
+						{title}
+					</h1>
+					<div
+						class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray"
+					>
+						<span>发布于 <FormattedDate date={pubDate} /></span>
+						{
+							updatedDate && (
+								<span>· 更新于 <FormattedDate date={updatedDate} /></span>
+							)
+						}
+					</div>
+				</header>
+				<div data-pagefind-body>
+					<slot />
+				</div>
 			</div>
 			<aside class="hidden lg:block">
-				<div class="sticky top-20">
+				<div
+					class="sticky top-20 rounded-2xl border border-white/10 bg-black/20 p-3 "
+				>
 					<Toc headings={headings} />
 				</div>
 			</aside>

@@ -44,3 +44,150 @@ h3:hover .heading-anchor,
 h4:hover .heading-anchor {
 	opacity: 1;
 }
+
+/* ===== 页面切换动画（Astro View Transitions） ===== */
+/* root（导航栏 + 背景 + 页脚）在所有场景都保持不动；
+   仅 main（页面内容）切换：版块间左右滑动，文章页淡入上浮。 */
+::view-transition {
+	background: #060912;
+}
+
+@keyframes vt-out {
+	to {
+		opacity: 0;
+		transform: scale(0.985);
+	}
+}
+@keyframes vt-in {
+	from {
+		opacity: 0;
+		transform: translateY(12px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* root 永远不动 */
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation: none;
+}
+
+/* 默认（文章页）：main 淡入上浮 */
+::view-transition-old(main) {
+	animation: vt-out 0.22s ease both;
+}
+::view-transition-new(main) {
+	animation: vt-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* 版块 <-> 版块：main 左右滑动（方向由导航栏版块位置决定） */
+@keyframes vt-slide-out-fwd {
+	to {
+		transform: translateX(-18%);
+		opacity: 0;
+	}
+}
+@keyframes vt-slide-in-fwd {
+	from {
+		transform: translateX(18%);
+		opacity: 0;
+	}
+	to {
+		transform: translateX(0);
+		opacity: 1;
+	}
+}
+@keyframes vt-slide-out-back {
+	to {
+		transform: translateX(18%);
+		opacity: 0;
+	}
+}
+@keyframes vt-slide-in-back {
+	from {
+		transform: translateX(-18%);
+		opacity: 0;
+	}
+	to {
+		transform: translateX(0);
+		opacity: 1;
+	}
+}
+:root[data-vt='slide']::view-transition-old(main) {
+	animation: vt-slide-out-fwd 0.26s ease both;
+}
+:root[data-vt='slide']::view-transition-new(main) {
+	animation: vt-slide-in-fwd 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+:root[data-vt='slide'][data-vt-dir='back']::view-transition-old(main) {
+	animation: vt-slide-out-back 0.26s ease both;
+}
+:root[data-vt='slide'][data-vt-dir='back']::view-transition-new(main) {
+	animation: vt-slide-in-back 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ===== 浮动按钮（返回 / 目录）入场动画 ===== */
+.float-btn {
+	opacity: 0;
+	transform: translateX(0);
+	transition:
+		opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+		transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+	will-change: opacity, transform;
+}
+.float-btn-left {
+	transform: translateX(-14px);
+}
+.float-btn-right {
+	transform: translateX(14px);
+}
+.float-btn.is-entered {
+	opacity: 1;
+	transform: translateX(0);
+}
+
+/* ===== 目录当前阅读位置高亮 ===== */
+.toc-link {
+	transition:
+		color 0.2s ease,
+		border-color 0.2s ease;
+}
+.toc-active {
+	color: #fff !important;
+	border-color: var(--color-accent) !important;
+}
+
+/* ===== 下拉/弹出面板开关动画 ===== */
+.pop-panel {
+	opacity: 0;
+	transform: translateY(-6px) scale(0.98);
+	transform-origin: top right;
+	transition:
+		opacity 0.18s ease,
+		transform 0.18s ease;
+	pointer-events: none;
+}
+.pop-panel.is-open {
+	opacity: 1;
+	transform: translateY(0) scale(1);
+	pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+	::view-transition-old(root),
+	::view-transition-new(root),
+	::view-transition-old(main),
+	::view-transition-new(main) {
+		animation: none;
+	}
+	.float-btn,
+	.pop-panel {
+		transition: none;
+	}
+}

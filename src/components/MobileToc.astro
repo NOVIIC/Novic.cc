@@ -1,0 +1,55 @@
+---
+import Toc from './Toc.astro';
+
+interface Heading {
+	depth: number;
+	slug: string;
+	text: string;
+}
+interface Props {
+	headings?: Heading[];
+}
+const { headings = [] } = Astro.props;
+const toc = headings.filter((h) => h.depth > 1 && h.depth < 4);
+---
+
+{
+	toc.length > 0 && (
+		<>
+			<div class="float-btn float-btn-right fixed right-4 top-20 z-20 lg:hidden">
+				<button
+					type="button"
+					id="toc-toggle"
+					aria-label="打开目录"
+					aria-expanded="false"
+					aria-controls="mobile-toc"
+					class="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/20 text-white/80 shadow-lg shadow-black/30 backdrop-blur-md transition-all duration-200 hover:scale-105 hover:border-gray/70 hover:bg-white/10 hover:text-white active:scale-95"
+				>
+					<svg
+						aria-hidden="true"
+						width="18"
+						height="18"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					>
+						<line x1="3" y1="6" x2="21" y2="6" />
+						<line x1="3" y1="12" x2="15" y2="12" />
+						<line x1="3" y1="18" x2="11" y2="18" />
+					</svg>
+				</button>
+			</div>
+			<div
+				id="mobile-toc"
+				class="pop-panel fixed right-4 top-32 z-20 w-60 max-h-[70vh] overflow-y-auto rounded-xl border border-white/10 bg-black/20 p-3 shadow-2xl lg:hidden"
+				aria-hidden="true"
+				inert
+			>
+				<Toc headings={headings} />
+			</div>
+		</>
+	)
+}
