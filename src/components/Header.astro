@@ -4,6 +4,12 @@ import { SITE_TITLE } from '../consts';
 const path = Astro.url.pathname;
 const isActive = (href: string) =>
 	href === '/' ? path === '/' : path === href || path.startsWith(href + '/') || path.startsWith(href);
+
+const links = [
+	{ href: '/', label: 'Home' },
+	{ href: '/articles', label: 'Articles' },
+	{ href: '/notes', label: 'Notes' },
+];
 ---
 
 <header
@@ -19,14 +25,10 @@ const isActive = (href: string) =>
 		>
 
 		<div
-			class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1 text-xl text-white/70"
+			class="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1 text-xl text-white/70 md:flex"
 		>
 			{
-				[
-					{ href: '/', label: 'Home' },
-					{ href: '/articles', label: 'Articles' },
-					{ href: '/notes', label: 'Notes' },
-				].map((l) => (
+				links.map((l) => (
 					<a
 						href={l.href}
 						class:list={[
@@ -43,6 +45,30 @@ const isActive = (href: string) =>
 		</div>
 
 		<div class="flex items-center gap-2 text-white/70">
+			<button
+				type="button"
+				id="menu-toggle"
+				aria-label="菜单"
+				aria-expanded="false"
+				aria-controls="mobile-menu"
+				class="flex items-center justify-center rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-sm backdrop-blur-md transition-colors hover:bg-white/10 hover:text-white md:hidden"
+			>
+				<svg
+					aria-hidden="true"
+					width="16"
+					height="16"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
+					<line x1="3" y1="6" x2="21" y2="6"></line>
+					<line x1="3" y1="12" x2="21" y2="12"></line>
+					<line x1="3" y1="18" x2="21" y2="18"></line>
+				</svg>
+			</button>
 			<button
 				type="button"
 				id="search-trigger"
@@ -71,7 +97,7 @@ const isActive = (href: string) =>
 			</button>
 			<a
 				href="/rss.xml"
-				class="rounded px-2.5 py-1.5 transition-colors hover:bg-white/10 hover:text-white"
+				class="hidden rounded px-2.5 py-1.5 transition-colors hover:bg-white/10 hover:text-white sm:inline-flex"
 				aria-label="RSS 订阅"
 			>
 				<svg
@@ -89,6 +115,34 @@ const isActive = (href: string) =>
 		</div>
 	</nav>
 </header>
+
+<div
+	id="mobile-menu"
+	class="fixed top-[3.75rem] z-30 hidden w-36 rounded-xl border border-white/10 bg-black/30 p-2 shadow-2xl backdrop-blur-xl md:hidden"
+	aria-hidden="true"
+>
+	<nav class="flex flex-col gap-0.5 text-white/80">
+		{
+			links.map((l) => (
+				<a
+					href={l.href}
+					class:list={[
+						'flex items-center gap-2.5 rounded-lg px-3 py-2 text-base font-medium transition-colors hover:bg-white/10 hover:text-white',
+						isActive(l.href) ? 'text-white' : 'text-white/70',
+					]}
+				>
+					<span
+						class:list={[
+							'h-1.5 w-1.5 rounded-full bg-accent',
+							isActive(l.href) ? 'opacity-100' : 'opacity-40',
+						]}
+					/>
+					{l.label}
+				</a>
+			))
+		}
+	</nav>
+</div>
 
 <dialog
 	id="search-dialog"
@@ -146,6 +200,38 @@ const isActive = (href: string) =>
 			if (e.target === dialog) close();
 		});
 
+		const menuToggle = document.getElementById('menu-toggle');
+		const mobileMenu = document.getElementById('mobile-menu');
+		if (menuToggle && mobileMenu) {
+			const toggleMenu = (force) => {
+				const willOpen = force === undefined ? mobileMenu.classList.contains('hidden') : force;
+				if (willOpen) {
+					const r = menuToggle.getBoundingClientRect();
+						if (r.left + 144 <= window.innerWidth - 8) {
+						mobileMenu.style.left = r.left + 'px';
+						mobileMenu.style.right = 'auto';
+					} else {
+						mobileMenu.style.right = '8px';
+						mobileMenu.style.left = 'auto';
+					}
+				}
+				mobileMenu.classList.toggle('hidden', !willOpen);
+				menuToggle.setAttribute('aria-expanded', String(willOpen));
+			};
+			menuToggle.addEventListener('click', (e) => {
+				e.stopPropagation();
+				toggleMenu();
+			});
+			mobileMenu.querySelectorAll('a').forEach((a) =>
+				a.addEventListener('click', () => toggleMenu(false)),
+			);
+			document.addEventListener('click', (e) => {
+				if (mobileMenu.classList.contains('hidden')) return;
+				if (!menuToggle.contains(e.target) && !mobileMenu.contains(e.target))
+					toggleMenu(false);
+			});
+		}
+
 		const isMac = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
 		document.addEventListener('keydown', (e) => {
 			if ((isMac ? e.metaKey : e.ctrlKey) && e.key.toLowerCase() === 'k') {
@@ -162,11 +248,41 @@ const isActive = (href: string) =>
 					typeof d.showModal === 'function' ? d.showModal() : d.setAttribute('open', ''),
 				);
 				c?.addEventListener('click', () =>
-					typeof d.close === 'function' ? d.close() : d.removeAttribute('open', ''),
+					typeof d.close === 'function' ? d.close() : d.removeAttribute('open'),
 				);
 				d.addEventListener('click', (ev) => {
 					if (ev.target === d)
-						typeof d.close === 'function' ? d.close() : d.removeAttribute('open', '');
+						typeof d.close === 'function' ? d.close() : d.removeAttribute('open');
+				});
+			}
+			const mt = document.getElementById('menu-toggle');
+			const mm = document.getElementById('mobile-menu');
+			if (mt && mm) {
+				const toggleMenu = (force) => {
+					const willOpen = force === undefined ? mm.classList.contains('hidden') : force;
+					if (willOpen) {
+						const r = mt.getBoundingClientRect();
+					if (r.left + 144 <= window.innerWidth - 8) {
+							mm.style.left = r.left + 'px';
+							mm.style.right = 'auto';
+						} else {
+							mm.style.right = '8px';
+							mm.style.left = 'auto';
+						}
+					}
+					mm.classList.toggle('hidden', !willOpen);
+					mt.setAttribute('aria-expanded', String(willOpen));
+				};
+				mt.addEventListener('click', (e) => {
+					e.stopPropagation();
+					toggleMenu();
+				});
+				mm.querySelectorAll('a').forEach((a) =>
+					a.addEventListener('click', () => toggleMenu(false)),
+				);
+				document.addEventListener('click', (e) => {
+					if (mm.classList.contains('hidden')) return;
+					if (!mt.contains(e.target) && !mm.contains(e.target)) toggleMenu(false);
 				});
 			}
 		});
