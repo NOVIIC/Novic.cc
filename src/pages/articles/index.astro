@@ -33,7 +33,7 @@ const tags = [...tagCounts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeC
 					{tags.map(([tag, count]) => (
 						<a
 							href={`/articles/tags/${tag}/`}
-							class="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-white/75 transition-colors hover:border-accent hover:text-white"
+							class="rounded-full border border-white/15 bg-black/20 px-3 py-1 text-white/75  transition-all duration-200 hover:scale-105 hover:border-gray hover:text-white active:scale-95"
 						>
 							#{tag} <span class="text-white/40">{count}</span>
 						</a>
@@ -50,7 +50,7 @@ const tags = [...tagCounts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeC
 				<li class="not-prose">
 					<a
 						href={`/articles/${post.id}/`}
-						class="block rounded-xl border border-white/10 bg-white/[0.03] p-5 transition-colors hover:border-white/20 hover:bg-white/[0.06]"
+						class="block rounded-xl border border-white/10 bg-black/20 p-5  transition-all duration-200 hover:-translate-y-0.5 hover:border-gray/70 hover:shadow-lg hover:shadow-black/20 active:scale-[0.99]"
 					>
 						<div class="flex items-center gap-2 text-xs text-gray">
 							<FormattedDate date={post.data.pubDate} />

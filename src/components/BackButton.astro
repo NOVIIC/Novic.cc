@@ -1,0 +1,30 @@
+---
+interface Props {
+	fallbackHref?: string;
+}
+const { fallbackHref = '/' } = Astro.props;
+---
+
+<div class="float-btn float-btn-left fixed left-4 top-20 z-20">
+	<button
+		type="button"
+		data-back-button
+		data-fallback={fallbackHref}
+		aria-label="返回上一页"
+		class="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/30 text-white/80 shadow-lg shadow-black/30 backdrop-blur-md transition-all duration-200 hover:scale-105 hover:border-gray/70 hover:bg-white/10 hover:text-white active:scale-95"
+	>
+		<svg
+			aria-hidden="true"
+			width="18"
+			height="18"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="2"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+		>
+			<path d="m15 18-6-6 6-6"></path>
+		</svg>
+	</button>
+</div>

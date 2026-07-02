@@ -10,8 +10,9 @@ interface Props {
 	title: string;
 	description?: string;
 	image?: string;
+	pageKind?: 'section' | 'article';
 }
-const { title, description, image } = Astro.props;
+const { title, description, image, pageKind = 'section' } = Astro.props;
 ---
 
 <!doctype html>
@@ -20,12 +21,208 @@ const { title, description, image } = Astro.props;
 		<BaseHead title={title} description={description} image={image} />
 		<Font cssVariable="--font-atkinson" preload />
 		<ClientRouter />
+		<noscript>
+			<style>
+				.float-btn {
+					opacity: 1 !important;
+					transform: none !important;
+				}
+			</style>
+		</noscript>
 	</head>
-	<body data-pf-theme="dark" class="flex min-h-screen flex-col font-sans antialiased">
+	<body
+		data-pf-theme="dark"
+		data-page-kind={pageKind}
+		class="relative flex min-h-screen flex-col font-sans antialiased"
+	>
 		<Header />
-	<main class="mx-auto w-full max-w-3xl flex-1 px-4 py-10">
-		<slot />
-	</main>
+		<main
+			transition:name="main"
+			class="relative z-10 mx-auto w-full max-w-3xl flex-1 px-4 py-10"
+		>
+			<slot />
+		</main>
 		<Footer />
+		<slot name="floating" />
+		<script>
+			// 页面切换：版块（Home/Articles/Notes）之间仅 main 内容左右滑动，
+			// 方向由导航栏版块位置决定；涉及文章时整体淡入上浮。
+			// 版块在导航栏中的顺序：Home=0, Articles=1, Notes=2
+			const sectionIndex = (pathname: string): number => {
+				if (pathname === '/') return 0;
+				if (pathname.startsWith('/articles')) return 1;
+				if (pathname.startsWith('/notes')) return 2;
+				return 0;
+			};
+			document.addEventListener('astro:before-swap', (e) => {
+				const ev = e as unknown as {
+					from: URL;
+					to: URL;
+					newDocument: Document;
+				};
+				const oldKind =
+					document.body?.dataset.pageKind ?? 'section';
+				const newKind =
+					ev.newDocument?.body?.dataset.pageKind ?? 'section';
+				let vt = 'fade';
+				let dir = 'forward';
+				if (oldKind === 'section' && newKind === 'section') {
+					const oi = sectionIndex(ev.from.pathname);
+					const ni = sectionIndex(ev.to.pathname);
+					if (oi !== ni) {
+						vt = 'slide';
+						dir = ni > oi ? 'forward' : 'back';
+					}
+				}
+				const root = ev.newDocument.documentElement;
+				root.dataset.vt = vt;
+				root.dataset.vtDir = dir;
+			});
+
+			const enterFloatBtns = () => {
+				requestAnimationFrame(() => {
+					document
+						.querySelectorAll('.float-btn:not(.is-entered)')
+						.forEach((b) => b.classList.add('is-entered'));
+				});
+			};
+			enterFloatBtns();
+			document.addEventListener('astro:page-load', enterFloatBtns);
+
+			// 返回按钮 + 目录开关逻辑（每次导航后重新绑定当前 DOM）
+			const setupFloatingUI = () => {
+				const backBtn = document.querySelector<HTMLElement>('[data-back-button]');
+				if (backBtn && !backBtn.dataset.bound) {
+					backBtn.dataset.bound = '1';
+					backBtn.addEventListener('click', () => {
+						if (history.length > 1) history.back();
+						else
+							location.href =
+								backBtn.getAttribute('data-fallback') || '/';
+					});
+				}
+
+				const tocToggle = document.getElementById('toc-toggle');
+				const tocPanel = document.getElementById('mobile-toc');
+				if (tocToggle && tocPanel && !tocToggle.dataset.bound) {
+					tocToggle.dataset.bound = '1';
+					const close = () => {
+						tocPanel.classList.remove('is-open');
+						tocPanel.setAttribute('aria-hidden', 'true');
+						tocPanel.inert = true;
+						tocToggle.setAttribute('aria-expanded', 'false');
+					};
+					const open = () => {
+						tocPanel.classList.add('is-open');
+						tocPanel.setAttribute('aria-hidden', 'false');
+						tocPanel.inert = false;
+						tocToggle.setAttribute('aria-expanded', 'true');
+					};
+					tocToggle.addEventListener('click', (e) => {
+						e.stopPropagation();
+						tocPanel.classList.contains('is-open') ? close() : open();
+					});
+					tocPanel
+						.querySelectorAll('a')
+						.forEach((a) => a.addEventListener('click', close));
+				}
+			};
+			setupFloatingUI();
+			document.addEventListener('astro:after-swap', setupFloatingUI);
+
+			// 目录滚动高亮（IntersectionObserver）：当前阅读章节对应的目录项高亮。
+			// 放在全局脚本中以保障从任意页面导航进入文章后都能生效。
+			let tocObserver: IntersectionObserver | null = null;
+			const initTocSpy = () => {
+				if (tocObserver) {
+					tocObserver.disconnect();
+					tocObserver = null;
+				}
+				const links = Array.from(
+					document.querySelectorAll<HTMLAnchorElement>(
+						'[data-toc-link]',
+					),
+				);
+				if (links.length === 0) return;
+				const linkMap = new Map<string, HTMLAnchorElement[]>();
+				for (const l of links) {
+					const id = l.getAttribute('data-toc-link');
+					if (id) {
+						if (!linkMap.has(id)) linkMap.set(id, []);
+						linkMap.get(id)!.push(l);
+					}
+				}
+				const headings = Array.from(
+					document.querySelectorAll<HTMLElement>(
+						'article h2[id], article h3[id]',
+					),
+				).filter((h) => linkMap.has(h.id));
+				if (headings.length === 0) return;
+
+				let activeId: string | null = null;
+				const setActive = (id: string) => {
+					if (id === activeId) return;
+					activeId = id;
+					linkMap.forEach((list, lid) => {
+						for (const l of list)
+							l.classList.toggle('toc-active', lid === id);
+					});
+				};
+
+				const visible = new Set<string>();
+				const obs = new IntersectionObserver(
+					(entries) => {
+						for (const e of entries) {
+							if (e.isIntersecting) visible.add(e.target.id);
+							else visible.delete(e.target.id);
+						}
+						if (visible.size === 0) return;
+						const topmost = headings
+							.filter((h) => visible.has(h.id))
+							.sort(
+								(a, b) =>
+									a.getBoundingClientRect().top -
+									b.getBoundingClientRect().top,
+							)[0];
+						if (topmost) setActive(topmost.id);
+					},
+					{ rootMargin: '-80px 0px -70% 0px', threshold: 0 },
+				);
+				tocObserver = obs;
+				headings.forEach((h) => obs.observe(h));
+				setActive(headings[0].id);
+			};
+			initTocSpy();
+			document.addEventListener('astro:page-load', initTocSpy);
+			document.addEventListener('astro:after-swap', () =>
+				setTimeout(initTocSpy, 0),
+			);
+
+			// 目录面板：点击外部 / Esc 关闭（全局只注册一次，每次查询当前元素）
+			document.addEventListener('click', (e) => {
+				const panel = document.getElementById('mobile-toc');
+				const toggle = document.getElementById('toc-toggle');
+				if (!panel || !toggle || !panel.classList.contains('is-open'))
+					return;
+				const target = e.target as Node;
+				if (!toggle.contains(target) && !panel.contains(target)) {
+					panel.classList.remove('is-open');
+					panel.setAttribute('aria-hidden', 'true');
+					panel.inert = true;
+					toggle.setAttribute('aria-expanded', 'false');
+				}
+			});
+			document.addEventListener('keydown', (e) => {
+				if (e.key !== 'Escape') return;
+				const panel = document.getElementById('mobile-toc');
+				const toggle = document.getElementById('toc-toggle');
+				if (panel && panel.classList.contains('is-open')) {
+					panel.classList.remove('is-open');
+					panel.setAttribute('aria-hidden', 'true');
+					panel.inert = true;
+					toggle?.setAttribute('aria-expanded', 'false');
+				}
+			});
+		</script>
 	</body>
 </html>

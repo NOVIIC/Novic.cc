@@ -51,7 +51,7 @@ const links = [
 				aria-label="菜单"
 				aria-expanded="false"
 				aria-controls="mobile-menu"
-				class="flex items-center justify-center rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-sm backdrop-blur-md transition-colors hover:bg-white/10 hover:text-white md:hidden"
+				class="flex items-center justify-center rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-sm backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-white/10 hover:text-white active:scale-95 md:hidden"
 			>
 				<svg
 					aria-hidden="true"
@@ -73,7 +73,7 @@ const links = [
 				type="button"
 				id="search-trigger"
 				aria-label="搜索"
-				class="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-sm backdrop-blur-md transition-colors hover:bg-white/10 hover:text-white"
+				class="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-sm backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-white/10 hover:text-white active:scale-95"
 			>
 				<svg
 					aria-hidden="true"
@@ -97,7 +97,7 @@ const links = [
 			</button>
 			<a
 				href="/rss.xml"
-				class="hidden rounded px-2.5 py-1.5 transition-colors hover:bg-white/10 hover:text-white sm:inline-flex"
+				class="hidden rounded px-2.5 py-1.5 transition-all duration-200 hover:scale-105 hover:bg-white/10 hover:text-white active:scale-95 sm:inline-flex"
 				aria-label="RSS 订阅"
 			>
 				<svg
@@ -154,7 +154,7 @@ const links = [
 			<button
 				type="button"
 				id="search-close"
-				class="rounded px-2 py-1 text-sm text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+				class="rounded px-2 py-1 text-sm text-white/50 transition-all duration-200 hover:bg-white/10 hover:text-white active:scale-95"
 				>关闭 <kbd class="ml-1 text-xs">Esc</kbd></button
 			>
 		</div>
