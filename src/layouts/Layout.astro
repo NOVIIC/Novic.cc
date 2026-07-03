@@ -10,9 +10,8 @@ interface Props {
 	title: string;
 	description?: string;
 	image?: string;
-	pageKind?: 'section' | 'article';
 }
-const { title, description, image, pageKind = 'section' } = Astro.props;
+const { title, description, image } = Astro.props;
 ---
 
 <!doctype html>
@@ -32,7 +31,6 @@ const { title, description, image, pageKind = 'section' } = Astro.props;
 	</head>
 	<body
 		data-pf-theme="dark"
-		data-page-kind={pageKind}
 		class="relative flex min-h-screen flex-col font-sans antialiased"
 	>
 		<Header />
@@ -45,8 +43,8 @@ const { title, description, image, pageKind = 'section' } = Astro.props;
 		<Footer />
 		<slot name="floating" />
 		<script>
-			// 页面切换：版块（Home/Articles/Notes）之间仅 main 内容左右滑动，
-			// 方向由导航栏版块位置决定；涉及文章时整体淡入上浮。
+			// 页面切换：跨版块（Home ↔ Articles ↔ Notes）横向滑动，
+			// 同版块内切换淡入上浮。
 			// 版块在导航栏中的顺序：Home=0, Articles=1, Notes=2
 			const sectionIndex = (pathname: string): number => {
 				if (pathname === '/') return 0;
@@ -60,19 +58,13 @@ const { title, description, image, pageKind = 'section' } = Astro.props;
 					to: URL;
 					newDocument: Document;
 				};
-				const oldKind =
-					document.body?.dataset.pageKind ?? 'section';
-				const newKind =
-					ev.newDocument?.body?.dataset.pageKind ?? 'section';
 				let vt = 'fade';
 				let dir = 'forward';
-				if (oldKind === 'section' && newKind === 'section') {
-					const oi = sectionIndex(ev.from.pathname);
-					const ni = sectionIndex(ev.to.pathname);
-					if (oi !== ni) {
-						vt = 'slide';
-						dir = ni > oi ? 'forward' : 'back';
-					}
+				const oi = sectionIndex(ev.from.pathname);
+				const ni = sectionIndex(ev.to.pathname);
+				if (oi !== ni) {
+					vt = 'slide';
+					dir = ni > oi ? 'forward' : 'back';
 				}
 				const root = ev.newDocument.documentElement;
 				root.dataset.vt = vt;
