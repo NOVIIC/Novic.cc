@@ -9,6 +9,19 @@
 	--font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
 }
 
+@utility content-bg {
+	border-radius: var(--radius-2xl);
+	border: 1px solid rgb(255 255 255 / 0.1);
+	background-color: rgb(0 0 0 / 0.2);
+}
+
+@utility popup-bg {
+	border-radius: var(--radius-xl);
+	border: 1px solid rgb(255 255 255 / 0.1);
+	background-color: rgb(0 0 0 / 0.3);
+	box-shadow: var(--shadow-2xl);
+	backdrop-filter: blur(24px);
+}
 
 html {
 	color-scheme: dark;
