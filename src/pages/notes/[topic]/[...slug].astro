@@ -7,7 +7,10 @@ export async function getStaticPaths() {
 		import.meta.env.PROD ? !data.draft : true,
 	);
 	return notes.map((note) => ({
-		params: { topic: note.id.split('/')[0], slug: note.id.split('/').slice(1).join('/') },
+		params: {
+			topic: note.id.split('/')[0],
+			slug: note.id.split('/').slice(1).join('/'),
+		},
 		props: { note, topic: note.id.split('/')[0] },
 	}));
 }

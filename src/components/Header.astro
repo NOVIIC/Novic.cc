@@ -3,7 +3,9 @@ import { SITE_TITLE } from '../consts';
 
 const path = Astro.url.pathname;
 const isActive = (href: string) =>
-	href === '/' ? path === '/' : path === href || path.startsWith(href + '/') || path.startsWith(href);
+	href === '/'
+		? path === '/'
+		: path === href || path.startsWith(href + '/') || path.startsWith(href);
 
 const links = [
 	{ href: '/', label: 'Home' },
@@ -32,10 +34,10 @@ const links = [
 					<a
 						href={l.href}
 						class:list={[
-						'-mb-px border-b-4 px-2 py-2 transition-colors hover:text-white',
-						isActive(l.href)
-							? 'font-bold text-white border-accent/50'
-							: 'font-normal border-transparent',
+							'-mb-px border-b-4 px-2 py-2 transition-colors hover:text-white',
+							isActive(l.href)
+								? 'font-bold text-white border-accent/50'
+								: 'font-normal border-transparent',
 						]}
 					>
 						{l.label}
@@ -149,7 +151,9 @@ const links = [
 	class="popup-bg p-0 mx-auto my-0 w-full max-w-2xl text-white backdrop:backdrop-blur-sm"
 >
 	<div class="flex flex-col">
-		<div class="flex items-center justify-between border-b border-white/10 px-4 py-3">
+		<div
+			class="flex items-center justify-between border-b border-white/10 px-4 py-3"
+		>
 			<span class="text-sm font-semibold text-white/80">搜索</span>
 			<button
 				type="button"
@@ -172,8 +176,10 @@ const links = [
 			</script>
 			<p id="search-fallback" class="text-sm text-white/40"></p>
 			<pagefind-input instance="site-search" class="block"></pagefind-input>
-			<pagefind-summary instance="site-search" class="mt-3 block"></pagefind-summary>
-			<pagefind-results instance="site-search" class="mt-4 block"></pagefind-results>
+			<pagefind-summary instance="site-search" class="mt-3 block"
+			></pagefind-summary>
+			<pagefind-results instance="site-search" class="mt-4 block"
+			></pagefind-results>
 		</div>
 	</div>
 </dialog>
@@ -204,10 +210,11 @@ const links = [
 		const mobileMenu = document.getElementById('mobile-menu');
 		if (menuToggle && mobileMenu) {
 			const toggleMenu = (force) => {
-				const willOpen = force === undefined ? mobileMenu.classList.contains('hidden') : force;
+				const willOpen =
+					force === undefined ? mobileMenu.classList.contains('hidden') : force;
 				if (willOpen) {
 					const r = menuToggle.getBoundingClientRect();
-						if (r.left + 144 <= window.innerWidth - 8) {
+					if (r.left + 144 <= window.innerWidth - 8) {
 						mobileMenu.style.left = r.left + 'px';
 						mobileMenu.style.right = 'auto';
 					} else {
@@ -222,9 +229,9 @@ const links = [
 				e.stopPropagation();
 				toggleMenu();
 			});
-			mobileMenu.querySelectorAll('a').forEach((a) =>
-				a.addEventListener('click', () => toggleMenu(false)),
-			);
+			mobileMenu
+				.querySelectorAll('a')
+				.forEach((a) => a.addEventListener('click', () => toggleMenu(false)));
 			document.addEventListener('click', (e) => {
 				if (mobileMenu.classList.contains('hidden')) return;
 				if (!menuToggle.contains(e.target) && !mobileMenu.contains(e.target))
@@ -245,24 +252,29 @@ const links = [
 			const c = document.getElementById('search-close');
 			if (d && t) {
 				t.addEventListener('click', () =>
-					typeof d.showModal === 'function' ? d.showModal() : d.setAttribute('open', ''),
+					typeof d.showModal === 'function'
+						? d.showModal()
+						: d.setAttribute('open', ''),
 				);
 				c?.addEventListener('click', () =>
 					typeof d.close === 'function' ? d.close() : d.removeAttribute('open'),
 				);
 				d.addEventListener('click', (ev) => {
 					if (ev.target === d)
-						typeof d.close === 'function' ? d.close() : d.removeAttribute('open');
+						typeof d.close === 'function'
+							? d.close()
+							: d.removeAttribute('open');
 				});
 			}
 			const mt = document.getElementById('menu-toggle');
 			const mm = document.getElementById('mobile-menu');
 			if (mt && mm) {
 				const toggleMenu = (force) => {
-					const willOpen = force === undefined ? mm.classList.contains('hidden') : force;
+					const willOpen =
+						force === undefined ? mm.classList.contains('hidden') : force;
 					if (willOpen) {
 						const r = mt.getBoundingClientRect();
-					if (r.left + 144 <= window.innerWidth - 8) {
+						if (r.left + 144 <= window.innerWidth - 8) {
 							mm.style.left = r.left + 'px';
 							mm.style.right = 'auto';
 						} else {
@@ -282,7 +294,8 @@ const links = [
 				);
 				document.addEventListener('click', (e) => {
 					if (mm.classList.contains('hidden')) return;
-					if (!mt.contains(e.target) && !mm.contains(e.target)) toggleMenu(false);
+					if (!mt.contains(e.target) && !mm.contains(e.target))
+						toggleMenu(false);
 				});
 			}
 		});

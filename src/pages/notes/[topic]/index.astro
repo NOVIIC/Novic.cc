@@ -34,11 +34,7 @@ const title = meta ? `${meta.title} · ${SITE_TITLE}` : `Notes · ${SITE_TITLE}`
 			← Notes
 		</a>
 		<h1 class="mt-2 text-3xl font-bold text-white">{meta?.title ?? topic}</h1>
-		{
-			meta && (
-				<p class="mt-2 text-white/70">{meta.description}</p>
-			)
-		}
+		{meta && <p class="mt-2 text-white/70">{meta.description}</p>}
 		<p class="mt-2 text-sm text-white/40">共 {notes.length} 篇，从旧到新</p>
 	</section>
 

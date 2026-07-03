@@ -83,14 +83,13 @@ const { title, description, image } = Astro.props;
 
 			// 返回按钮 + 目录开关逻辑（每次导航后重新绑定当前 DOM）
 			const setupFloatingUI = () => {
-				const backBtn = document.querySelector<HTMLElement>('[data-back-button]');
+				const backBtn =
+					document.querySelector<HTMLElement>('[data-back-button]');
 				if (backBtn && !backBtn.dataset.bound) {
 					backBtn.dataset.bound = '1';
 					backBtn.addEventListener('click', () => {
 						if (history.length > 1) history.back();
-						else
-							location.href =
-								backBtn.getAttribute('data-fallback') || '/';
+						else location.href = backBtn.getAttribute('data-fallback') || '/';
 					});
 				}
 
@@ -131,9 +130,7 @@ const { title, description, image } = Astro.props;
 					tocObserver = null;
 				}
 				const links = Array.from(
-					document.querySelectorAll<HTMLAnchorElement>(
-						'[data-toc-link]',
-					),
+					document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]'),
 				);
 				if (links.length === 0) return;
 				const linkMap = new Map<string, HTMLAnchorElement[]>();
@@ -156,8 +153,7 @@ const { title, description, image } = Astro.props;
 					if (id === activeId) return;
 					activeId = id;
 					linkMap.forEach((list, lid) => {
-						for (const l of list)
-							l.classList.toggle('toc-active', lid === id);
+						for (const l of list) l.classList.toggle('toc-active', lid === id);
 					});
 				};
 
@@ -173,8 +169,7 @@ const { title, description, image } = Astro.props;
 							.filter((h) => visible.has(h.id))
 							.sort(
 								(a, b) =>
-									a.getBoundingClientRect().top -
-									b.getBoundingClientRect().top,
+									a.getBoundingClientRect().top - b.getBoundingClientRect().top,
 							)[0];
 						if (topmost) setActive(topmost.id);
 					},
@@ -194,8 +189,7 @@ const { title, description, image } = Astro.props;
 			document.addEventListener('click', (e) => {
 				const panel = document.getElementById('mobile-toc');
 				const toggle = document.getElementById('toc-toggle');
-				if (!panel || !toggle || !panel.classList.contains('is-open'))
-					return;
+				if (!panel || !toggle || !panel.classList.contains('is-open')) return;
 				const target = e.target as Node;
 				if (!toggle.contains(target) && !panel.contains(target)) {
 					panel.classList.remove('is-open');
@@ -216,5 +210,6 @@ const { title, description, image } = Astro.props;
 				}
 			});
 		</script>
+
 	</body>
 </html>

@@ -10,7 +10,7 @@ tags: ['mdx', '测试']
 
 ## 文本样式
 
-支持 **加粗**、*斜体*、***加粗斜体***、~~删除线~~、`行内代码`，以及 [链接](https://astro.build)。
+支持 **加粗**、_斜体_、**_加粗斜体_**、~~删除线~~、`行内代码`，以及 [链接](https://astro.build)。
 
 还可以使用上下标（借助 HTML）：H<sub>2</sub>O、x<sup>2</sup>。
 
@@ -95,20 +95,20 @@ console.log(`The answer is ${answer}`);
 
 ## 表格
 
-| 工具           | 作用         | 是否启用 |
-| -------------- | ------------ | -------- |
-| Astro          | 框架         | ✅       |
-| Tailwind       | 样式         | ✅       |
-| Pagefind       | 搜索         | ✅       |
-| ExpressiveCode | 代码块美化   | ✅       |
-| MDX            | 组件增强     | ✅       |
+| 工具           | 作用       | 是否启用 |
+| -------------- | ---------- | -------- |
+| Astro          | 框架       | ✅       |
+| Tailwind       | 样式       | ✅       |
+| Pagefind       | 搜索       | ✅       |
+| ExpressiveCode | 代码块美化 | ✅       |
+| MDX            | 组件增强   | ✅       |
 
 ### 对齐表格
 
-| 左对齐         | 居中对齐       | 右对齐         |
-| :------------- | :------------: | -------------: |
-| Left           | Center         | Right          |
-| 靠左           | 居中           | 靠右           |
+| 左对齐 | 居中对齐 | 右对齐 |
+| :----- | :------: | -----: |
+| Left   |  Center  |  Right |
+| 靠左   |   居中   |   靠右 |
 
 ## 分隔线
 
@@ -125,6 +125,7 @@ console.log(`The answer is ${answer}`);
 这里有一个脚注引用[^1]，还有一个长脚注[^longnote]。
 
 [^1]: 这是第一个脚注的内容。
+
 [^longnote]: 这是一个包含多段内容的脚注。
 
     后续段落需要缩进以包含在脚注里。
@@ -132,10 +133,10 @@ console.log(`The answer is ${answer}`);
 ## 定义列表（HTML）
 
 <dl>
-  <dt>Astro</dt>
-  <dd>现代静态站点生成框架。</dd>
-  <dt>MDX</dt>
-  <dd>Markdown + JSX 的混合体。</dd>
+	<dt>Astro</dt>
+	<dd>现代静态站点生成框架。</dd>
+	<dt>MDX</dt>
+	<dd>Markdown + JSX 的混合体。</dd>
 </dl>
 
 ## 键盘按键
@@ -157,15 +158,16 @@ console.log(`The answer is ${answer}`);
 ## 嵌入式 HTML
 
 <div class="not-prose my-4 rounded border-l-4 border-accent bg-accent/10 p-4">
-  这是一段直接用 HTML 写的<strong>高亮提示框</strong>，MDX 允许在 Markdown 中混写 HTML。
+	这是一段直接用 HTML 写的<strong>高亮提示框</strong>，MDX 允许在 Markdown
+	中混写 HTML。
 </div>
 
 ## 链接引用
 
 这是一个[引用式链接][ref-link]，还有[另一个][ref-two]。
 
-[ref-link]: https://astro.build "Astro 官网"
-[ref-two]: https://tailwindcss.com "Tailwind CSS"
+[ref-link]: https://astro.build 'Astro 官网'
+[ref-two]: https://tailwindcss.com 'Tailwind CSS'
 
 ## 转义字符
 
