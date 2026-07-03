@@ -27,7 +27,7 @@ const { title, description, pubDate, updatedDate, tags, heroImage } = post.data;
 	>
 		<div class="lg:grid lg:grid-cols-[1fr_9rem] lg:gap-6">
 			<div
-				class="min-w-0 rounded-2xl border border-white/10 bg-black/20 p-6  sm:p-7"
+				class="content-bg min-w-0 p-6 sm:p-7"
 			>
 				<header class="not-prose mb-8">
 					<h1 class="mt-0 text-3xl font-bold text-white sm:text-4xl">
@@ -49,7 +49,7 @@ const { title, description, pubDate, updatedDate, tags, heroImage } = post.data;
 								{tags.map((t) => (
 									<a
 										href={`/articles/tags/${t}/`}
-										class="rounded-full border border-white/15 bg-black/20 px-2.5 py-0.5 text-white/70  transition-all duration-200 hover:scale-105 hover:border-gray hover:text-white active:scale-95"
+										class="content-bg rounded-full px-2.5 py-0.5 text-white/70 transition-all duration-200 hover:scale-105 hover:border-gray hover:text-white active:scale-95"
 									>
 										#{t}
 									</a>
@@ -64,7 +64,7 @@ const { title, description, pubDate, updatedDate, tags, heroImage } = post.data;
 			</div>
 			<aside class="hidden lg:block">
 				<div
-					class="sticky top-20 rounded-2xl border border-white/10 bg-black/20 p-3 "
+					class="content-bg sticky top-20 p-3"
 				>
 					<Toc headings={headings} />
 				</div>
