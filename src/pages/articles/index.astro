@@ -16,13 +16,17 @@ for (const post of posts) {
 		tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
 	}
 }
-const tags = [...tagCounts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+const tags = [...tagCounts.entries()].sort(
+	(a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
+);
 ---
 
 <Layout title={`Articles · ${SITE_TITLE}`} description="所有技术文章">
 	<section class="not-prose mb-10">
 		<h1 class="text-3xl font-bold text-white">Articles</h1>
-		<p class="mt-2 text-white/70">共 {posts.length} 篇文章，按创建时间倒序排列。</p>
+		<p class="mt-2 text-white/70">
+			共 {posts.length} 篇文章，按创建时间倒序排列。
+		</p>
 	</section>
 
 	{

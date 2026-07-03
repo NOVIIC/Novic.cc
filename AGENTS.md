@@ -21,6 +21,7 @@ pnpm astro dev logs     # 日志
 ```bash
 pnpm run build          # 构建 + pagefind 搜索索引
 pnpm run check          # astro check（类型检查）
+pnpm run format         # Prettier 格式化
 pnpm run preview        # 预览构建产物
 ```
 
@@ -47,6 +48,7 @@ src/
 - **样式**: Tailwind CSS v4（`@tailwindcss/vite` + `@tailwindcss/typography`）
 - **内容**: MDX + `@astrojs/mdx`
 - **搜索**: Pagefind
+- **格式化**: Prettier + prettier-plugin-astro
 - **包管理**: pnpm
 - **Node**: >= 22.12.0
 

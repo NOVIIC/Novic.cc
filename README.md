@@ -6,10 +6,10 @@
 
 博客内容分为两个集合，分别对应不同路由：
 
-| 集合 | 目录 | 路由 | 列表顺序 |
-| :--- | :--- | :--- | :--- |
-| **Articles**（技术文章） | `src/content/articles/` | `/articles/`、`/articles/tags/[tag]/`、`/articles/[...slug]/` | 按创建时间倒序（最新在上） |
-| **Notes**（学习笔记） | `src/content/notes/<topic>/` | `/notes/`、`/notes/[topic]/`、`/notes/[topic]/[...slug]/` | 主题内按时间正序（从旧到新） |
+| 集合                     | 目录                         | 路由                                                          | 列表顺序                     |
+| :----------------------- | :--------------------------- | :------------------------------------------------------------ | :--------------------------- |
+| **Articles**（技术文章） | `src/content/articles/`      | `/articles/`、`/articles/tags/[tag]/`、`/articles/[...slug]/` | 按创建时间倒序（最新在上）   |
+| **Notes**（学习笔记）    | `src/content/notes/<topic>/` | `/notes/`、`/notes/[topic]/`、`/notes/[topic]/[...slug]/`     | 主题内按时间正序（从旧到新） |
 
 - **Articles** 顶部列出所有 tag（带计数），点击进入该 tag 的独立文章列表页。
 - **Notes** 按主题分目录存放（目录名即英文 slug），首页展示主题卡片，点击进入主题内笔记列表。主题元数据定义在 `src/consts.ts` 的 `NOTES_TOPICS`。
@@ -18,19 +18,19 @@
 
 ## 技术栈
 
-| 类别 | 选型 | 说明 |
-| :--- | :--- | :--- |
-| 框架 | Astro 7 | 岛屿架构，默认纯静态输出 |
-| 内容 | Content Collections + Glob Loader | 本地 Markdown/MDX，带类型校验与查询；`articles` 与 `notes` 两个集合 |
-| 排版 | MDX | 支持在文章中嵌入组件 |
-| 样式 | Tailwind CSS v4 + Typography | 通过 `@tailwindcss/vite` 接入，`@plugin` 引入排版 |
-| 字体 | Atkinson | `public/fonts/` 下 woff 文件，`global.css` 中 `@font-face` |
-| 代码块 | Expressive Code + 行号插件 | 语法高亮、行号、复制、行高亮、diff |
-| 锚点 | rehype-slug + rehype-autolink-headings | 标题自动加 id 与 `#` 锚点链接 |
-| 目录 | `render()` 返回的 headings | 文章与笔记均带侧边 TOC |
-| 订阅 | @astrojs/rss | `/rss.xml`，同时输出 articles 与 notes |
-| SEO | @astrojs/sitemap | `sitemap-index.xml` |
-| 搜索 | Pagefind + Component UI | 构建期生成索引，搜索入口在导航栏右侧（按钮 + `⌘K` / `Ctrl+K` 模态弹窗） |
+| 类别   | 选型                                   | 说明                                                                    |
+| :----- | :------------------------------------- | :---------------------------------------------------------------------- |
+| 框架   | Astro 7                                | 岛屿架构，默认纯静态输出                                                |
+| 内容   | Content Collections + Glob Loader      | 本地 Markdown/MDX，带类型校验与查询；`articles` 与 `notes` 两个集合     |
+| 排版   | MDX                                    | 支持在文章中嵌入组件                                                    |
+| 样式   | Tailwind CSS v4 + Typography           | 通过 `@tailwindcss/vite` 接入，`@plugin` 引入排版                       |
+| 字体   | Atkinson                               | `public/fonts/` 下 woff 文件，`global.css` 中 `@font-face`              |
+| 代码块 | Expressive Code + 行号插件             | 语法高亮、行号、复制、行高亮、diff                                      |
+| 锚点   | rehype-slug + rehype-autolink-headings | 标题自动加 id 与 `#` 锚点链接                                           |
+| 目录   | `render()` 返回的 headings             | 文章与笔记均带侧边 TOC                                                  |
+| 订阅   | @astrojs/rss                           | `/rss.xml`，同时输出 articles 与 notes                                  |
+| SEO    | @astrojs/sitemap                       | `sitemap-index.xml`                                                     |
+| 搜索   | Pagefind + Component UI                | 构建期生成索引，搜索入口在导航栏右侧（按钮 + `⌘K` / `Ctrl+K` 模态弹窗） |
 
 Markdown 处理器使用 `@astrojs/markdown-remark` 的 `unified()`（见 `astro.config.mjs`），以支持上述 rehype 插件。
 
@@ -99,14 +99,14 @@ Markdown 处理器使用 `@astrojs/markdown-remark` 的 `unified()`（见 `astro
 
 所有命令在项目根目录执行：
 
-| 命令 | 作用 |
-| :--- | :--- |
-| `pnpm install` | 安装依赖（会自动应用 `patches/` 下的补丁） |
-| `pnpm dev` | 启动开发服务器（`localhost:4321`） |
-| `pnpm check` | TypeScript / Astro 类型检查 |
-| `pnpm build` | 构建生产站点到 `./dist/`，并运行 Pagefind 生成搜索索引 |
-| `pnpm preview` | 本地预览构建产物（搜索在此时可用） |
-| `pnpm astro ...` | 运行 Astro CLI，如 `astro add`、`astro check` |
+| 命令             | 作用                                                   |
+| :--------------- | :----------------------------------------------------- |
+| `pnpm install`   | 安装依赖（会自动应用 `patches/` 下的补丁）             |
+| `pnpm dev`       | 启动开发服务器（`localhost:4321`）                     |
+| `pnpm check`     | TypeScript / Astro 类型检查                            |
+| `pnpm build`     | 构建生产站点到 `./dist/`，并运行 Pagefind 生成搜索索引 |
+| `pnpm preview`   | 本地预览构建产物（搜索在此时可用）                     |
+| `pnpm astro ...` | 运行 Astro CLI，如 `astro add`、`astro check`          |
 
 > 注意：Pagefind 索引在 `pnpm build` 时生成，因此搜索功能仅在 `pnpm preview` 或部署后可用，开发模式下会显示提示。
 
@@ -118,11 +118,11 @@ Markdown 处理器使用 `@astrojs/markdown-remark` 的 `unified()`（见 `astro
 ---
 title: '文章标题'
 description: '摘要，会显示在列表与 SEO 中'
-pubDate: 2025-07-01          # 发布日期
-updatedDate: 2025-07-03      # 可选，更新日期
-tags: ['astro', '教程']      # 可选，默认 []
-draft: false                 # 可选，true 时生产构建会排除、dev 下可见
-heroImage: '/path/to/img'    # 可选，OG/Twitter 分享图
+pubDate: 2025-07-01 # 发布日期
+updatedDate: 2025-07-03 # 可选，更新日期
+tags: ['astro', '教程'] # 可选，默认 []
+draft: false # 可选，true 时生产构建会排除、dev 下可见
+heroImage: '/path/to/img' # 可选，OG/Twitter 分享图
 ---
 ```
 
@@ -133,8 +133,8 @@ heroImage: '/path/to/img'    # 可选，OG/Twitter 分享图
 title: '笔记标题'
 description: '摘要'
 pubDate: 2025-06-10
-updatedDate: 2025-06-12      # 可选
-draft: false                 # 可选
+updatedDate: 2025-06-12 # 可选
+draft: false # 可选
 ---
 ```
 
@@ -176,17 +176,20 @@ Could not parse `style` attribute on `span`
 
 ```js
 // 修复前
-import styleToJs from 'style-to-js'
+import styleToJs from 'style-to-js';
 
 // 修复后
-import * as styleToJsNS from 'style-to-js'
-const _d = styleToJsNS.default
+import * as styleToJsNS from 'style-to-js';
+const _d = styleToJsNS.default;
 const styleToJs = /** @type {any} */ (
-  typeof _d === 'function' ? _d :
-  typeof _d?.default === 'function' ? _d.default :
-  typeof styleToJsNS === 'function' ? styleToJsNS :
-  _d
-)
+	typeof _d === 'function'
+		? _d
+		: typeof _d?.default === 'function'
+			? _d.default
+			: typeof styleToJsNS === 'function'
+				? styleToJsNS
+				: _d
+);
 ```
 
 补丁文件：`patches/hast-util-to-estree@3.1.3.patch`；声明在 `pnpm-workspace.yaml` 的 `patchedDependencies`。`pnpm install` 会自动应用，无需手动操作。

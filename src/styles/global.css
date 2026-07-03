@@ -1,12 +1,15 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 @plugin "@tailwindcss/typography";
 
 @theme {
-	--color-accent: #6E39E0;
+	--color-accent: #6e39e0;
 	--color-gray: #9f8c60;
 	--color-gray-light: #e5e9f0;
-	--font-sans: var(--font-atkinson), system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-	--font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+	--font-sans:
+		var(--font-atkinson), system-ui, -apple-system, 'Segoe UI', Roboto, Arial,
+		sans-serif;
+	--font-mono:
+		ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
 }
 
 @utility content-bg {
@@ -29,7 +32,7 @@ html {
 }
 
 body {
-	background: url("/background.jpg"), #060912;
+	background: url('/background.jpg'), #060912;
 	background-position: top center;
 	background-repeat: no-repeat;
 	background-size: 100%, auto;
@@ -205,7 +208,9 @@ h4:hover .heading-anchor {
 	--pf-shadow-md: none;
 	--pf-shadow-lg: none;
 	--pf-border-radius: 8px;
-	--pf-font: var(--font-atkinson), system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+	--pf-font:
+		var(--font-atkinson), system-ui, -apple-system, 'Segoe UI', Roboto, Arial,
+		sans-serif;
 }
 
 @media (prefers-reduced-motion: reduce) {
