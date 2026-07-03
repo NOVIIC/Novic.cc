@@ -189,6 +189,25 @@ h4:hover .heading-anchor {
 	pointer-events: auto;
 }
 
+#search-dialog {
+	--pf-text: rgb(255 255 255 / 0.9);
+	--pf-text-secondary: rgb(255 255 255 / 0.6);
+	--pf-text-muted: rgb(255 255 255 / 0.4);
+	--pf-background: rgb(255 255 255 / 0.05);
+	--pf-border: rgb(255 255 255 / 0.1);
+	--pf-border-focus: rgb(255 255 255 / 0.2);
+	--pf-hover: rgb(255 255 255 / 0.08);
+	--pf-mark: var(--color-accent);
+	--pf-skeleton: rgb(255 255 255 / 0.05);
+	--pf-skeleton-shine: rgb(255 255 255 / 0.08);
+	--pf-scroll-shadow: rgba(0, 0, 0, 0.3);
+	--pf-shadow-sm: none;
+	--pf-shadow-md: none;
+	--pf-shadow-lg: none;
+	--pf-border-radius: 8px;
+	--pf-font: var(--font-atkinson), system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	html {
 		scroll-behavior: auto;
