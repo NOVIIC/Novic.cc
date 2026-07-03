@@ -22,7 +22,7 @@ const { title, description, pubDate, updatedDate } = note.data;
 const topicMeta = NOTES_TOPIC_MAP[topic];
 ---
 
-<Layout title={title} description={description} pageKind="article">
+<Layout title={title} description={description}>
 	<BackButton fallbackHref="/notes" slot="floating" />
 	<MobileToc headings={headings} slot="floating" />
 	<article

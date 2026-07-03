@@ -19,7 +19,7 @@ const { post, headings } = Astro.props;
 const { title, description, pubDate, updatedDate, tags, heroImage } = post.data;
 ---
 
-<Layout title={title} description={description} image={heroImage} pageKind="article">
+<Layout title={title} description={description} image={heroImage}>
 	<BackButton fallbackHref="/articles" slot="floating" />
 	<MobileToc headings={headings} slot="floating" />
 	<article
