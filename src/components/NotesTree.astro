@@ -11,7 +11,7 @@ const { topics, activeTopicSlug, activeArticleSlug } = Astro.props;
 const articleSlug = (id: string) => id.split('/').slice(1).join('/');
 ---
 
-<nav class="not-prose text-sm">
+<nav class="notes-tree not-prose text-sm">
 	<a
 		href="/notes/"
 		class="mb-2 block font-semibold text-white/80 transition-colors hover:text-white"
@@ -21,70 +21,80 @@ const articleSlug = (id: string) => id.split('/').slice(1).join('/');
 		{
 			topics.map((t) => {
 				const topicActive = activeTopicSlug === t.slug;
+				const introActive = topicActive && activeArticleSlug === 'intro';
+				const hasChildren = !!t.intro || t.articles.length > 0;
 				return (
 					<li
 						class="notes-topic"
 						data-topic={t.slug}
-						class:list={[{ 'is-expanded': topicActive }]}
+						class:list={[
+							{ 'is-expanded': topicActive, 'is-active': topicActive },
+						]}
 					>
 						<div class="notes-topic-row flex items-center gap-1 rounded-md px-1.5 py-1 transition-colors hover:bg-white/5">
 							<button
 								type="button"
-								class="notes-caret flex h-4 w-4 shrink-0 items-center justify-center text-white/45 transition-transform duration-200 hover:text-white/80"
-								aria-label="展开/收起主题"
-								tabindex="-1"
+								class="notes-topic-btn flex flex-1 items-center gap-1 rounded-md text-left"
+								aria-expanded={topicActive ? 'true' : 'false'}
 							>
-								<svg
-									aria-hidden="true"
-									width="10"
-									height="10"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2.5"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								>
-									<polyline points="9 18 15 12 9 6" />
-								</svg>
+								<span class="notes-caret flex h-4 w-4 shrink-0 items-center justify-center text-white/45 transition-transform duration-200">
+									<svg
+										aria-hidden="true"
+										width="10"
+										height="10"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2.5"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									>
+										<polyline points="9 18 15 12 9 6" />
+									</svg>
+								</span>
+								<span class="notes-topic-title flex-1 truncate">{t.title}</span>
 							</button>
-							<a
-								href={`/notes/${t.slug}/intro/`}
-								data-topic-link={t.slug}
-								class:list={[
-									'flex-1 truncate transition-colors',
-									topicActive
-										? 'font-medium text-white'
-										: 'text-white/65 hover:text-white',
-								]}
-							>
-								{t.title}
-							</a>
 							<span class="shrink-0 text-[11px] tabular-nums text-white/30">
 								{t.articles.length}
 							</span>
 						</div>
-						{t.articles.length > 0 && (
-							<ul class="notes-articles mt-0.5 ml-3.5 space-y-0.5 border-l border-white/10">
-								{t.articles.map((a) => {
-									const artActive =
-										topicActive && activeArticleSlug === articleSlug(a.id);
-									return (
+						{hasChildren && (
+							<div class="notes-articles">
+								<ul class="notes-articles-inner ml-3.5 space-y-0.5 border-l border-white/10 pt-0.5">
+									{t.intro && (
 										<li>
 											<a
-												href={`/notes/${a.id}/`}
-												data-article-link={a.id}
+												href={`/notes/${t.slug}/intro/`}
+												data-article-link={`${t.slug}/intro`}
 												class:list={[
-													'toc-link -ml-px block truncate border-l border-transparent py-0.5 pl-3 text-white/55 hover:border-accent hover:text-white',
-													artActive && 'toc-active',
+													'toc-link -ml-px block truncate py-0.5 pl-3 text-white/55 hover:text-white',
+													introActive && 'toc-active',
 												]}
 											>
-												{a.data.title}
+												前言
 											</a>
 										</li>
-									);
-								})}
-							</ul>
+									)}
+									{t.articles.map((a) => {
+										const artActive =
+											topicActive && activeArticleSlug === articleSlug(a.id);
+										return (
+											<li>
+												<a
+													href={`/notes/${a.id}/`}
+													data-article-link={a.id}
+													class:list={[
+														'toc-link -ml-px block truncate py-0.5 pl-3 text-white/55 hover:text-white',
+														artActive && 'toc-active',
+													]}
+												>
+													{a.data.title}
+												</a>
+											</li>
+										);
+									})}
+								</ul>
+							</div>
 						)}
 					</li>
 				);

@@ -15,7 +15,9 @@ const { activeTopicSlug, activeArticleSlug } = parseNotesPath(
 
 <aside
 	class={`notes-nav-aside not-prose hidden xl:block ${className}`}
-	transition:name="notes-nav"
+	transition:name="notes-nav-desktop"
+	transition:persist="notes-nav-desktop"
+	transition:animate="none"
 >
 	<div
 		class="content-bg no-scrollbar sticky top-20 max-h-[calc(100dvh-6rem)] w-full overflow-y-auto p-3"
