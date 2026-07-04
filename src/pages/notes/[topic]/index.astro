@@ -1,58 +1,13 @@
 ---
-import Layout from '../../../layouts/Layout.astro';
-import FormattedDate from '../../../components/FormattedDate.astro';
-import { getCollection } from 'astro:content';
-import { NOTES_TOPIC_MAP, SITE_TITLE } from '../../../consts';
+import { getNotesTree } from '../../../utils/notes';
 
 export async function getStaticPaths() {
-	const notes = await getCollection('notes', ({ data }) =>
-		import.meta.env.PROD ? !data.draft : true,
-	);
-	const topics = new Set(notes.map((n) => n.id.split('/')[0]));
-	return [...topics].map((topic) => ({
-		params: { topic },
-		props: {
-			topic,
-			notes: notes
-				.filter((n) => n.id.split('/')[0] === topic)
-				.sort((a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf()),
-		},
+	const topics = await getNotesTree();
+	return topics.map((t) => ({
+		params: { topic: t.slug },
+		props: { target: `/notes/${t.slug}/intro/` },
 	}));
 }
 
-const { topic, notes } = Astro.props;
-const meta = NOTES_TOPIC_MAP[topic];
-const title = meta ? `${meta.title} · ${SITE_TITLE}` : `Notes · ${SITE_TITLE}`;
+return Astro.redirect(Astro.props.target, 301);
 ---
-
-<Layout title={title} description={meta?.description}>
-	<section class="not-prose mb-8">
-		<a
-			href="/notes/"
-			class="text-sm text-white/60 transition-colors hover:text-accent"
-		>
-			← Notes
-		</a>
-		<h1 class="mt-2 text-3xl font-bold text-white">{meta?.title ?? topic}</h1>
-		{meta && <p class="mt-2 text-white/70">{meta.description}</p>}
-		<p class="mt-2 text-sm text-white/40">共 {notes.length} 篇，从旧到新</p>
-	</section>
-
-	<ol class="space-y-2">
-		{
-			notes.map((note) => (
-				<li class="not-prose flex flex-col border-b border-white/5 py-3 sm:flex-row sm:items-baseline sm:gap-4">
-					<span class="shrink-0 text-sm sm:w-28 text-gray">
-						<FormattedDate date={note.data.pubDate} />
-					</span>
-					<a
-						href={`/notes/${note.id}/`}
-						class="text-white/90 transition-colors hover:text-accent"
-					>
-						{note.data.title}
-					</a>
-				</li>
-			))
-		}
-	</ol>
-</Layout>

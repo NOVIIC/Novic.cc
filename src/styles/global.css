@@ -145,6 +145,34 @@ h4:hover .heading-anchor {
 	animation: vt-slide-in-back 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* ===== Notes 目录树 view transition ===== */
+/* section 内切换（文章↔文章）：目录树完全静止。
+   旧快照瞬间隐藏（opacity:0 + 无动画），新快照瞬间全亮，
+   避免 old 叠在 new 上渐隐时因高亮/展开状态不同而产生的重影闪烁。 */
+::view-transition-group(notes-nav) {
+	animation: none;
+}
+::view-transition-old(notes-nav) {
+	animation: none;
+	opacity: 0;
+}
+::view-transition-new(notes-nav) {
+	animation: none;
+}
+/* 跨 section 切换：目录树跟随 main 横向滑动 */
+:root[data-vt='slide']::view-transition-old(notes-nav) {
+	animation: vt-slide-out-fwd 0.26s ease both;
+}
+:root[data-vt='slide']::view-transition-new(notes-nav) {
+	animation: vt-slide-in-fwd 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+:root[data-vt='slide'][data-vt-dir='back']::view-transition-old(notes-nav) {
+	animation: vt-slide-out-back 0.26s ease both;
+}
+:root[data-vt='slide'][data-vt-dir='back']::view-transition-new(notes-nav) {
+	animation: vt-slide-in-back 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 /* ===== 浮动按钮（返回 / 目录）入场动画 ===== */
 .float-btn {
 	opacity: 0;
@@ -174,6 +202,26 @@ h4:hover .heading-anchor {
 .toc-active {
 	color: #fff !important;
 	border-color: var(--color-accent) !important;
+}
+
+/* ===== 隐藏滚动条 ===== */
+.no-scrollbar {
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+	display: none;
+}
+
+/* ===== Notes 左侧目录树：展开/收起 ===== */
+.notes-articles {
+	display: none;
+}
+.notes-topic.is-expanded > .notes-articles {
+	display: block;
+}
+.notes-topic.is-expanded > .notes-topic-row > .notes-caret {
+	transform: rotate(90deg);
 }
 
 /* ===== 下拉/弹出面板开关动画 ===== */
@@ -220,7 +268,9 @@ h4:hover .heading-anchor {
 	::view-transition-old(root),
 	::view-transition-new(root),
 	::view-transition-old(main),
-	::view-transition-new(main) {
+	::view-transition-new(main),
+	::view-transition-old(notes-nav),
+	::view-transition-new(notes-nav) {
 		animation: none;
 	}
 	.float-btn,
