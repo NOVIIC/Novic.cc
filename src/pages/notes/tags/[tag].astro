@@ -34,13 +34,14 @@ const { tag, topics } = Astro.props;
 <Layout
 	title={`#${tag} · ${SITE_TITLE}`}
 	description={`标签 ${tag} 下的笔记主题`}
-	wide
 >
 	<BackButton fallbackHref="/notes/" slot="floating" />
 	<NotesNavMobile slot="floating" />
-	<div class="xl:grid xl:grid-cols-[15rem_1fr] xl:gap-6">
-		<NotesNav />
-		<div class="min-w-0">
+	<div
+		class="mx-auto max-w-3xl xl:max-w-none xl:grid xl:grid-cols-[1fr_minmax(0,48rem)_1fr] xl:gap-6"
+	>
+		<NotesNav class="xl:col-start-1 xl:justify-self-end xl:w-52" />
+		<div class="min-w-0 xl:col-start-2">
 			<section class="not-prose mb-8">
 				<a
 					href="/notes/"

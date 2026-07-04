@@ -27,37 +27,39 @@ const { tag, posts } = Astro.props;
 ---
 
 <Layout title={`#${tag} · ${SITE_TITLE}`} description={`标签 ${tag} 下的文章`}>
-	<section class="not-prose mb-8">
-		<a
-			href="/articles/"
-			class="mt-2 text-sm text-white/60 transition-colors hover:text-accent"
-		>
-			← Articles
-		</a>
-		<h1 class="mt-2 text-3xl font-bold text-white">
-			#{tag}
-		</h1>
-		<p class="mt-2 text-white/70">共 {posts.length} 篇文章</p>
-	</section>
+	<div class="mx-auto max-w-3xl">
+		<section class="not-prose mb-8">
+			<a
+				href="/articles/"
+				class="mt-2 text-sm text-white/60 transition-colors hover:text-accent"
+			>
+				← Articles
+			</a>
+			<h1 class="mt-2 text-3xl font-bold text-white">
+				#{tag}
+			</h1>
+			<p class="mt-2 text-white/70">共 {posts.length} 篇文章</p>
+		</section>
 
-	<ul class="space-y-4">
-		{
-			posts.map((post) => (
-				<li class="not-prose">
-					<a
-						href={`/articles/${post.id}/`}
-						class="content-bg rounded-xl block p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-gray/70 hover:shadow-lg hover:shadow-black/20 active:scale-[0.99]"
-					>
-						<div class="flex items-center gap-2 text-xs text-gray">
-							<FormattedDate date={post.data.pubDate} />
-						</div>
-						<h3 class="mt-1 text-lg font-semibold text-white">
-							{post.data.title}
-						</h3>
-						<p class="mt-1 text-sm text-white/60">{post.data.description}</p>
-					</a>
-				</li>
-			))
-		}
-	</ul>
+		<ul class="space-y-4">
+			{
+				posts.map((post) => (
+					<li class="not-prose">
+						<a
+							href={`/articles/${post.id}/`}
+							class="content-bg rounded-xl block p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-gray/70 hover:shadow-lg hover:shadow-black/20 active:scale-[0.99]"
+						>
+							<div class="flex items-center gap-2 text-xs text-gray">
+								<FormattedDate date={post.data.pubDate} />
+							</div>
+							<h3 class="mt-1 text-lg font-semibold text-white">
+								{post.data.title}
+							</h3>
+							<p class="mt-1 text-sm text-white/60">{post.data.description}</p>
+						</a>
+					</li>
+				))
+			}
+		</ul>
+	</div>
 </Layout>
