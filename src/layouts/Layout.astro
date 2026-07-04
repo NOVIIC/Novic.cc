@@ -10,8 +10,9 @@ interface Props {
 	title: string;
 	description?: string;
 	image?: string;
+	wide?: boolean;
 }
-const { title, description, image } = Astro.props;
+const { title, description, image, wide = false } = Astro.props;
 ---
 
 <!doctype html>
@@ -36,7 +37,10 @@ const { title, description, image } = Astro.props;
 		<Header />
 		<main
 			transition:name="main"
-			class="relative z-10 mx-auto w-full max-w-3xl flex-1 px-4 py-10"
+			class:list={[
+				'relative z-10 mx-auto w-full flex-1 px-4 py-10',
+				wide ? 'max-w-3xl xl:max-w-5xl' : 'max-w-3xl',
+			]}
 		>
 			<slot />
 		</main>
@@ -117,6 +121,75 @@ const { title, description, image } = Astro.props;
 						.querySelectorAll('a')
 						.forEach((a) => a.addEventListener('click', close));
 				}
+
+				// Notes 左侧目录树：窄屏面板开关
+				const navToggle = document.getElementById('notes-nav-toggle');
+				const navPanel = document.getElementById('notes-nav-panel');
+				if (navToggle && navPanel && !navToggle.dataset.bound) {
+					navToggle.dataset.bound = '1';
+					const closeNav = () => {
+						navPanel.classList.remove('is-open');
+						navPanel.setAttribute('aria-hidden', 'true');
+						navPanel.inert = true;
+						navToggle.setAttribute('aria-expanded', 'false');
+					};
+					const openNav = () => {
+						navPanel.classList.add('is-open');
+						navPanel.setAttribute('aria-hidden', 'false');
+						navPanel.inert = false;
+						navToggle.setAttribute('aria-expanded', 'true');
+					};
+					navToggle.addEventListener('click', (e) => {
+						e.stopPropagation();
+						navPanel.classList.contains('is-open') ? closeNav() : openNav();
+					});
+					navPanel
+						.querySelectorAll('a')
+						.forEach((a) => a.addEventListener('click', closeNav));
+				}
+
+				// Notes 目录树展开/收起 + 跨页面状态持久化（localStorage）
+				const notesTopics =
+					document.querySelectorAll<HTMLElement>('.notes-topic');
+				if (notesTopics.length > 0) {
+					let stored: string[] = [];
+					try {
+						stored = JSON.parse(
+							localStorage.getItem('notes-nav-expanded') || '[]',
+						);
+					} catch {
+						stored = [];
+					}
+					const persistExpanded = () => {
+						const expanded: string[] = [];
+						document
+							.querySelectorAll<HTMLElement>('.notes-topic.is-expanded')
+							.forEach((li) => {
+								const s = li.dataset.topic;
+								if (s) expanded.push(s);
+							});
+						try {
+							localStorage.setItem(
+								'notes-nav-expanded',
+								JSON.stringify(expanded),
+							);
+						} catch {}
+					};
+					notesTopics.forEach((li) => {
+						const slug = li.dataset.topic;
+						if (slug && stored.includes(slug)) li.classList.add('is-expanded');
+						const caret = li.querySelector<HTMLElement>('.notes-caret');
+						if (caret && !caret.dataset.bound) {
+							caret.dataset.bound = '1';
+							caret.addEventListener('click', (e) => {
+								e.preventDefault();
+								e.stopPropagation();
+								li.classList.toggle('is-expanded');
+								persistExpanded();
+							});
+						}
+					});
+				}
 			};
 			setupFloatingUI();
 			document.addEventListener('astro:after-swap', setupFloatingUI);
@@ -189,13 +262,25 @@ const { title, description, image } = Astro.props;
 			document.addEventListener('click', (e) => {
 				const panel = document.getElementById('mobile-toc');
 				const toggle = document.getElementById('toc-toggle');
-				if (!panel || !toggle || !panel.classList.contains('is-open')) return;
-				const target = e.target as Node;
-				if (!toggle.contains(target) && !panel.contains(target)) {
-					panel.classList.remove('is-open');
-					panel.setAttribute('aria-hidden', 'true');
-					panel.inert = true;
-					toggle.setAttribute('aria-expanded', 'false');
+				if (panel && toggle && panel.classList.contains('is-open')) {
+					const target = e.target as Node;
+					if (!toggle.contains(target) && !panel.contains(target)) {
+						panel.classList.remove('is-open');
+						panel.setAttribute('aria-hidden', 'true');
+						panel.inert = true;
+						toggle.setAttribute('aria-expanded', 'false');
+					}
+				}
+				const navPanel = document.getElementById('notes-nav-panel');
+				const navToggle = document.getElementById('notes-nav-toggle');
+				if (navPanel && navToggle && navPanel.classList.contains('is-open')) {
+					const target = e.target as Node;
+					if (!navToggle.contains(target) && !navPanel.contains(target)) {
+						navPanel.classList.remove('is-open');
+						navPanel.setAttribute('aria-hidden', 'true');
+						navPanel.inert = true;
+						navToggle.setAttribute('aria-expanded', 'false');
+					}
 				}
 			});
 			document.addEventListener('keydown', (e) => {
@@ -207,6 +292,14 @@ const { title, description, image } = Astro.props;
 					panel.setAttribute('aria-hidden', 'true');
 					panel.inert = true;
 					toggle?.setAttribute('aria-expanded', 'false');
+				}
+				const navPanel = document.getElementById('notes-nav-panel');
+				const navToggle = document.getElementById('notes-nav-toggle');
+				if (navPanel && navPanel.classList.contains('is-open')) {
+					navPanel.classList.remove('is-open');
+					navPanel.setAttribute('aria-hidden', 'true');
+					navPanel.inert = true;
+					navToggle?.setAttribute('aria-expanded', 'false');
 				}
 			});
 		</script>
