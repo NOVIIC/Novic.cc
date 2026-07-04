@@ -146,30 +146,32 @@ h4:hover .heading-anchor {
 }
 
 /* ===== Notes 目录树 view transition ===== */
-/* section 内切换（文章↔文章）：目录树完全静止。
-   旧快照瞬间隐藏（opacity:0 + 无动画），新快照瞬间全亮，
-   避免 old 叠在 new 上渐隐时因高亮/展开状态不同而产生的重影闪烁。 */
-::view-transition-group(notes-nav) {
-	animation: none;
-}
-::view-transition-old(notes-nav) {
-	animation: none;
-	opacity: 0;
-}
-::view-transition-new(notes-nav) {
-	animation: none;
-}
-/* 跨 section 切换：目录树跟随 main 横向滑动 */
-:root[data-vt='slide']::view-transition-old(notes-nav) {
+/* transition:persist + transition:animate="none" 让 Astro 自动注入
+   view-transition-name 与 animation:none，版块内切换时目录树静止不动，
+   避免 old/new 快照叠加产生高亮/展开状态不同的重影闪烁。
+   跨版块切换时，用以下规则覆盖 none，让目录树跟随 main 横向滑动。 */
+:root[data-vt='slide']::view-transition-old(notes-nav-desktop),
+:root[data-vt='slide']::view-transition-old(notes-nav-mobile) {
 	animation: vt-slide-out-fwd 0.26s ease both;
 }
-:root[data-vt='slide']::view-transition-new(notes-nav) {
+:root[data-vt='slide']::view-transition-new(notes-nav-desktop),
+:root[data-vt='slide']::view-transition-new(notes-nav-mobile) {
 	animation: vt-slide-in-fwd 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-:root[data-vt='slide'][data-vt-dir='back']::view-transition-old(notes-nav) {
+:root[data-vt='slide'][data-vt-dir='back']::view-transition-old(
+		notes-nav-desktop
+	),
+:root[data-vt='slide'][data-vt-dir='back']::view-transition-old(
+		notes-nav-mobile
+	) {
 	animation: vt-slide-out-back 0.26s ease both;
 }
-:root[data-vt='slide'][data-vt-dir='back']::view-transition-new(notes-nav) {
+:root[data-vt='slide'][data-vt-dir='back']::view-transition-new(
+		notes-nav-desktop
+	),
+:root[data-vt='slide'][data-vt-dir='back']::view-transition-new(
+		notes-nav-mobile
+	) {
 	animation: vt-slide-in-back 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -213,15 +215,67 @@ h4:hover .heading-anchor {
 	display: none;
 }
 
-/* ===== Notes 左侧目录树：展开/收起 ===== */
+/* ===== Notes 左侧目录树 ===== */
+/* 主题标题：默认/悬停/激活态（CSS 驱动，便于 JS 跨页面切换） */
+.notes-topic-title {
+	color: rgb(255 255 255 / 0.65);
+	transition:
+		color 0.2s ease,
+		opacity 0.2s ease;
+}
+.notes-topic-btn:hover .notes-topic-title {
+	color: #fff;
+}
+.notes-topic.is-active > .notes-topic-row .notes-topic-title {
+	color: #fff;
+	font-weight: 500;
+}
+
+/* 展开/收起：grid 行高过渡 */
 .notes-articles {
-	display: none;
+	display: grid;
+	grid-template-rows: 0fr;
+	transition: grid-template-rows 0.22s ease;
+}
+.notes-articles-inner {
+	overflow: clip;
+	overflow-clip-margin: 4px;
+	min-height: 0;
 }
 .notes-topic.is-expanded > .notes-articles {
-	display: block;
+	grid-template-rows: 1fr;
 }
-.notes-topic.is-expanded > .notes-topic-row > .notes-caret {
+.notes-topic.is-expanded .notes-caret {
 	transform: rotate(90deg);
+}
+
+/* 文章条目高亮：紫色指示条从旧高亮位置竖直滑入 */
+.notes-articles .toc-link {
+	position: relative;
+	transition: color 0.2s ease;
+}
+.notes-articles .toc-link::before {
+	content: '';
+	position: absolute;
+	left: -1px;
+	top: 0;
+	bottom: 0;
+	width: 2px;
+	border-radius: 1px;
+	background: var(--color-accent);
+	opacity: 0;
+	/* 高亮滑入：从 --hl-from 偏移过渡到 0 */
+	transform: translateY(var(--hl-from, 0px));
+	transition:
+		opacity 0.18s ease,
+		transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.notes-articles .toc-active {
+	color: #fff;
+}
+.notes-articles .toc-active::before {
+	opacity: 1;
+	transform: translateY(0);
 }
 
 /* ===== 下拉/弹出面板开关动画 ===== */
@@ -269,12 +323,19 @@ h4:hover .heading-anchor {
 	::view-transition-new(root),
 	::view-transition-old(main),
 	::view-transition-new(main),
-	::view-transition-old(notes-nav),
-	::view-transition-new(notes-nav) {
+	::view-transition-old(notes-nav-desktop),
+	::view-transition-new(notes-nav-desktop),
+	::view-transition-old(notes-nav-mobile),
+	::view-transition-new(notes-nav-mobile) {
 		animation: none;
 	}
 	.float-btn,
-	.pop-panel {
+	.pop-panel,
+	.notes-articles,
+	.notes-caret,
+	.notes-topic-title,
+	.notes-articles .toc-link,
+	.notes-articles .toc-link::before {
 		transition: none;
 	}
 }

@@ -143,45 +143,95 @@ const { title, description, image } = Astro.props;
 						.querySelectorAll('a')
 						.forEach((a) => a.addEventListener('click', closeNav));
 				}
-
-				// Notes 目录树展开/收起 + 跨页面状态持久化（localStorage）
+				// Notes 目录树：展开/收起 + 当前主题/文章高亮
+				// 状态直接保留在 DOM 中（transition:persist 跨页面保留元素），无需持久化存储：
+				// - 用户展开/收起的主题随 DOM 保留，跨页面不变
+				// - 进入文章页：自动展开当前主题 + 高亮对应文章
+				// - 回到主题列表页 /notes/：全部收起、清除高亮
 				const notesTopics =
 					document.querySelectorAll<HTMLElement>('.notes-topic');
 				if (notesTopics.length > 0) {
-					let stored: string[] = [];
-					try {
-						stored = JSON.parse(
-							localStorage.getItem('notes-nav-expanded') || '[]',
-						);
-					} catch {
-						stored = [];
+					const onNotesIndex =
+						location.pathname === '/notes/' || location.pathname === '/notes';
+
+					// 解析当前路径 → 激活主题/文章
+					const m = location.pathname.match(
+						/^\/notes\/(?!tags(?:\/|$))([^/]+)(?:\/([^/]+))?\/?$/,
+					);
+					const activeTopicSlug = m?.[1];
+					const activeArticleSlug = m?.[2];
+
+					// 1) 更新激活高亮 + 自动展开当前主题（或列表页全部收起）
+					notesTopics.forEach((li) => {
+						const isActive =
+							!onNotesIndex && li.dataset.topic === activeTopicSlug;
+						li.classList.toggle('is-active', isActive);
+						const btn = li.querySelector<HTMLElement>('.notes-topic-btn');
+						if (onNotesIndex) {
+							li.classList.remove('is-expanded');
+							btn?.setAttribute('aria-expanded', 'false');
+						} else if (isActive) {
+							li.classList.add('is-expanded');
+							btn?.setAttribute('aria-expanded', 'true');
+						}
+					});
+
+					// 清除旧高亮，高亮当前文章（带竖向滑动动画）
+					// 旧 toc-active 由 persist 保留在 DOM 中，读取其位置作为动画起点
+					const oldActive = document.querySelector<HTMLElement>(
+						'.notes-articles .toc-link.toc-active',
+					);
+					let oldY: number | null = null;
+					if (oldActive) {
+						oldY = oldActive.getBoundingClientRect().top;
+						oldActive.classList.remove('toc-active');
 					}
-					const persistExpanded = () => {
-						const expanded: string[] = [];
-						document
-							.querySelectorAll<HTMLElement>('.notes-topic.is-expanded')
-							.forEach((li) => {
-								const s = li.dataset.topic;
-								if (s) expanded.push(s);
-							});
-						try {
-							localStorage.setItem(
-								'notes-nav-expanded',
-								JSON.stringify(expanded),
+					if (!onNotesIndex && activeTopicSlug && activeArticleSlug) {
+						const linkId = `${activeTopicSlug}/${activeArticleSlug}`;
+						const link = document.querySelector<HTMLElement>(
+							`.notes-articles [data-article-link="${CSS.escape(linkId)}"]`,
+						);
+						if (link) {
+							// 计算旧高亮相对新高亮的竖向偏移，作为伪指示条的滑动起点
+							if (oldY !== null) {
+								const newY = link.getBoundingClientRect().top;
+								const fromY = oldY - newY;
+								if (Math.abs(fromY) > 0.5) {
+									link.style.setProperty('--hl-from', `${fromY}px`);
+								}
+							}
+							link.classList.add('toc-active');
+							// 动画结束后清除起始偏移，避免后续 hover 等再触发位移
+							link.addEventListener(
+								'transitionend',
+								() => link.style.removeProperty('--hl-from'),
+								{ once: true },
 							);
-						} catch {}
+						}
+					}
+
+					// 2) 绑定主题点击切换（persist 保留 DOM 与监听器，data-bound 防重复）
+					const setTopicExpanded = (slug: string, force: boolean) => {
+						const sel = `.notes-topic[data-topic="${CSS.escape(slug)}"]`;
+						document
+							.querySelectorAll<HTMLElement>(sel)
+							.forEach((li) => li.classList.toggle('is-expanded', force));
+						document
+							.querySelectorAll<HTMLElement>(`${sel} .notes-topic-btn`)
+							.forEach((b) =>
+								b.setAttribute('aria-expanded', force ? 'true' : 'false'),
+							);
 					};
 					notesTopics.forEach((li) => {
-						const slug = li.dataset.topic;
-						if (slug && stored.includes(slug)) li.classList.add('is-expanded');
-						const caret = li.querySelector<HTMLElement>('.notes-caret');
-						if (caret && !caret.dataset.bound) {
-							caret.dataset.bound = '1';
-							caret.addEventListener('click', (e) => {
+						const btn = li.querySelector<HTMLElement>('.notes-topic-btn');
+						if (btn && !btn.dataset.bound) {
+							btn.dataset.bound = '1';
+							btn.addEventListener('click', (e) => {
 								e.preventDefault();
 								e.stopPropagation();
-								li.classList.toggle('is-expanded');
-								persistExpanded();
+								const slug = li.dataset.topic;
+								if (!slug || !li.querySelector('.notes-articles')) return;
+								setTopicExpanded(slug, !li.classList.contains('is-expanded'));
 							});
 						}
 					});
