@@ -11,7 +11,7 @@ const [topics, tags] = await Promise.all([getNotesTree(), getNotesTags()]);
 	<div
 		class="mx-auto max-w-3xl xl:max-w-none xl:grid xl:grid-cols-[1fr_minmax(0,48rem)_1fr] xl:gap-6"
 	>
-		<NotesNav class="xl:col-start-1 xl:justify-self-end xl:w-52" />
+		<NotesNav />
 		<div class="min-w-0 xl:col-start-2">
 			<section class="not-prose mb-10">
 				<h1 class="text-3xl font-bold text-white">Notes</h1>
