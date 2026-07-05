@@ -249,7 +249,16 @@ h4:hover .heading-anchor {
 	transform: rotate(90deg);
 }
 
-/* 文章条目高亮：紫色指示条从旧高亮位置竖直滑入 */
+/* View Transition 期间冻结左侧目录树的所有过渡，
+   让 before-swap 中的 class 更新在截图前吃到最终态 */
+.vt-freeze,
+.vt-freeze *,
+.vt-freeze *::before,
+.vt-freeze *::after {
+	transition: none !important;
+}
+
+/* 文章条目高亮：紫色指示条 */
 .notes-articles .toc-link {
 	position: relative;
 	transition: color 0.2s ease;
@@ -264,18 +273,12 @@ h4:hover .heading-anchor {
 	border-radius: 1px;
 	background: var(--color-accent);
 	opacity: 0;
-	/* 高亮滑入：从 --hl-from 偏移过渡到 0 */
-	transform: translateY(var(--hl-from, 0px));
-	transition:
-		opacity 0.18s ease,
-		transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .notes-articles .toc-active {
 	color: #fff;
 }
 .notes-articles .toc-active::before {
 	opacity: 1;
-	transform: translateY(0);
 }
 
 /* ===== 下拉/弹出面板开关动画 ===== */
