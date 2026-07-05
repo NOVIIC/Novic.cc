@@ -2,7 +2,7 @@
 title: '从 0 开始创建个人网站'
 description: '使用 OpenCode ，从 0 开始建一个 Astro v7 个人博客网站'
 pubDate: 2026-07-01
-updatedDate: 2026-07-04
+updatedDate: 2026-07-05
 tags: ['AI', 'Web', '开发']
 ---
 
@@ -25,13 +25,11 @@ tags: ['AI', 'Web', '开发']
 
 ### 开发环境搭建
 
-（_搭建步骤详见[后文](#环境搭建流程)_）
-
 目前我日用的环境是 VSCode + ClaudeCode Extension + DeepSeek V4 Pro
 
 这次要用 OpenCode ，一开始的想法自然也是整个 VSCode 扩展
 
-扩展要求先装 cli （我的评价是不如 ClaudeCode 那样内嵌一个）
+扩展要求先装 cli （我的评价是不如 ClaudeCode 扩展那样内嵌一个）
 
 于是打开官网文档看看如何安装
 
@@ -54,7 +52,7 @@ tags: ['AI', 'Web', '开发']
 就我本人来说，我还是经常需要看看文件树和代码（更别说我还要写 mdx ），而 OpenCode 的文件操作界面还是比不上 IDE ，（也不能手动编辑？）而是更贴近于 Github Review 的那种体验。
 
 所以我依旧在我的后台开着 VSCode，两个窗口来回切换。  
-（所以 OpenCode 你的 VSCode 扩展能不能好好做做 QAQ）
+（所以 OpenCode 你的 VSCode 扩展能不能做个 GUI 的 QAQ）
 
 </div>
 
@@ -64,23 +62,21 @@ tags: ['AI', 'Web', '开发']
 
 当前架构如下：
 
-| 类别      | 选型                                                                                          |
-| --------- | --------------------------------------------------------------------------------------------- |
-| 框架      | Astro v7（静态输出，Content Collections + Glob Loader）                                       |
-| 内容格式  | Markdown / MDX                                                                                |
-| 样式      | Tailwind CSS v4（`@tailwindcss/vite` + Typography 插件）                                      |
-| 字体      | Atkinson（本地 woff，使用 Astro Fonts API）                                                   |
-| 代码高亮  | Expressive Code（行号、行高亮、复制、diff）                                                   |
-| 锚点      | rehype-slug + rehype-autolink-headings                                                        |
-| 目录/TOC  | Astro 原生 `render()` → `headings`，自定义 `Toc.astro` 组件 + IntersectionObserver scroll-spy |
-| 搜索      | Pagefind（构建期生成索引）                                                                    |
-| SEO       | @astrojs/sitemap + canonical + OG/Twitter                                                     |
-| 订阅      | @astrojs/rss (`/rss.xml`)                                                                     |
-| 构建工具  | Vite v8 (rolldown 内核)                                                                       |
-| 包管理    | pnpm v11                                                                                      |
-| 类型检查  | Astro check + TypeScript v6                                                                   |
-| 格式化    | Prettier + prettier-plugin-astro                                                              |
-| 运行时 JS | 几乎为零（仅 scroll-spy + 搜索模态 + 移动端 TOC 切换）                                        |
+| 类别     | 选型                                                                                          |
+| -------- | --------------------------------------------------------------------------------------------- |
+| 框架     | Astro v7（静态）                                                                              |
+| 内容格式 | Markdown / MDX                                                                                |
+| 样式     | Tailwind CSS v4（`@tailwindcss/vite` + Typography 插件）                                      |
+| 字体     | 本地 woff，使用 Astro Fonts API                                                              |
+| 代码高亮 | Expressive Code（行号、行高亮、复制、diff）                                                   |
+| 锚点     | rehype-slug + rehype-autolink-headings                                                        |
+| 搜索     | Pagefind（构建期生成索引）                                                                    |
+| SEO      | @astrojs/sitemap + canonical + OG/Twitter                                                     |
+| RSS     | @astrojs/rss                                                                                 |
+| 构建工具 | Vite v8 (rolldown 内核)                                                                       |
+| 包管理   | pnpm v11                                                                                      |
+| 类型检查 | Astro check + TypeScript v6                                                                   |
+| 格式化   | Prettier + prettier-plugin-astro                                                              |
 
 确定技术栈后便让 GLM 5.2 写出了一个初始框架。接下来的开发便是不断向 AI 提出需求，然后验收。  
 OpenCode GO 用 GLM 5.2 体感上额度消耗得挺快的，因此我还接入了 DeepSeek 的 API ，小任务使用 DeepSeek V4 Pro 。
@@ -88,15 +84,15 @@ OpenCode GO 用 GLM 5.2 体感上额度消耗得挺快的，因此我还接入�
 就我的体感而言，并没有体会到 GLM 5.2 的前端美术强到什么特别的程度。当然也有可能是因为我的大部分设计细节都自己描述得相当清楚，没有留给它很大的发挥空间。  
 （如果我不描述具体一点，它做出来的效果似乎也达不到我的预期）
 
-## 开发的过程
+## 开发过程中的小问题
 
 ### 代码能否完全交给 AI
 
 对于这种复杂度较低的小型博客网站，只要手动测试下来没有问题，那其实大抵就是 OK 的。毕竟前端嘛，主要就是视觉效果。
 
-但就我而言，我还是会大概扫一遍代码。其实很多相关语法我也不是那么了解，但是大概的结构还是要清楚。
+但就我而言，还是会大概扫一遍代码。其实很多相关语法我也不是那么了解，但是大概的结构还是要清楚。
 
-明白项目的大概结构，才能更好地给 AI 提出修改建议，并且在出一些奇奇怪怪的问题时可以更快~~也更省钱~~地排查出来。
+明白项目结构，才能更好地给 AI 提出修改建议，并且在出一些奇奇怪怪的问题时可以更快~~也更省钱~~地排查出来。
 
 一些代码风格上细节也需要主动告诉 AI 怎么写更优雅  
 （当然你要是完全不看代码，也不会注意到这些细节。~~就让 AI 写屎山也没事，反正代码量不大，不太容易出事~~）
@@ -109,8 +105,38 @@ AI 的确让开发网站的门槛和难度降低了非常多。即使你完全�
 
 因此，我的建议是：**可以不懂语法，但最好不要不懂代码**。在搭建的过程中有意识地去了解熟悉相关逻辑（如果不懂让 AI 解释就好了），去注意一些技术细节，然后才能引导 AI 写出质量更好的代码。
 
-_我也刚涉足前端领域，这些话不一定正确，仅作为当前的感想，提供一些参考。_
+_我目前对前端并不是非常熟悉，这些话不一定正确，仅作为当前的感想，提供一些参考。_
 
-### 环境搭建流程
+### Debian 上安装 Nodejs 最新 LTS
+
+Debian 13 (Trixie) 默认仓库自带的是 Node.js 20 ，已经终止支持。当前最新 LTS 版本为 24 。
+
+我选择使用 NodeSource + extrepo 安装 Nodejs ，好处是依旧由 apt 托管更新
+
+```bash
+# 安装 extrepo
+sudo apt update
+sudo apt install -y extrepo
+
+# 启用 NodeSource 的 Node.js 24.x 源
+sudo extrepo enable node_24.x
+
+# 更新并安装
+sudo apt update
+sudo apt install -y nodejs
+
+# 验证
+node -v   # 应输出 v24.x.x
+npm -v    # 应输出 11.x.x
+```
+
+卸载：
+```bash
+sudo extrepo disable node_24.x
+sudo rm -f /etc/apt/sources.list.d/extrepo_node_24.x.sources
+sudo rm -f /var/lib/extrepo/keys/node_24.x.asc
+sudo apt remove --purge nodejs
+sudo apt update
+```
 
 ### 未完待续
