@@ -197,23 +197,23 @@ const links = [
 						let crumbs = '';
 						if (section === 'notes') {
 							crumbs =
-								'<p class="pf-result-crumbs"><span class="pf-crumb">Notes</span>';
+								'<p class="search-result-crumbs"><span class="search-crumb">Notes</span>';
 							if (topic)
-								crumbs += `<span class="pf-crumb-sep">›</span><span class="pf-crumb">${topic}</span>`;
+								crumbs += `<span class="search-crumb-sep">›</span><span class="search-crumb">${topic}</span>`;
 							if (kind === 'intro')
-								crumbs += '<span class="pf-crumb-tag">主题首页</span>';
+								crumbs += '<span class="search-crumb-tag">主题首页</span>';
 							crumbs += '</p>';
 						} else if (section === 'articles') {
 							crumbs =
-								'<p class="pf-result-crumbs"><span class="pf-crumb">Articles</span></p>';
+								'<p class="search-result-crumbs"><span class="search-crumb">Articles</span></p>';
 						}
 
-						return `<li class="pf-result">
-							<div class="pf-result-card">
-								<div class="pf-result-content">
+						return `<li class="search-result">
+							<div class="search-result-card">
+								<div class="search-result-content">
 									${crumbs}
-									<p class="pf-result-title"><a class="pf-result-link" href="${url}">${title}</a></p>
-									${excerpt ? `<p class="pf-result-excerpt">${excerpt}</p>` : ''}
+									<p class="search-result-title"><a class="search-result-link" href="${url}">${title}</a></p>
+									${excerpt ? `<p class="search-result-excerpt">${excerpt}</p>` : ''}
 								</div>
 							</div>
 						</li>`;
@@ -269,29 +269,29 @@ const links = [
 			<p id="search-fallback" class="text-sm text-white/40"></p>
 			<pagefind-input instance="site-search" class="block"></pagefind-input>
 			<div class="mt-3 flex items-center gap-2">
-				<pagefind-summary instance="site-search" class="block flex-1"
-				></pagefind-summary>
+			<pagefind-summary instance="site-search" class="block"
+			></pagefind-summary>
 				<div
 					id="section-filter"
-					class="flex items-center gap-1.5"
+					class="ml-auto flex items-center gap-1.5"
 					role="group"
 					aria-label="版块筛选"
 				>
 					<button
 						type="button"
-						class="pf-section-pill"
+						class="search-section-pill"
 						data-section="articles"
 						aria-pressed="true">Articles</button
 					>
 					<button
 						type="button"
-						class="pf-section-pill"
+						class="search-section-pill"
 						data-section="notes"
 						aria-pressed="true">Notes</button
 					>
 				</div>
 			</div>
-			<pagefind-results instance="site-search" class="mt-4 block">
+			<pagefind-results instance="site-search" class="block">
 			</pagefind-results>
 		</div>
 	</div>
