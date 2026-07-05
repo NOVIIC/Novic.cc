@@ -25,7 +25,7 @@ tags: ['AI', 'Web', '开发']
 
 ### 开发环境搭建
 
-（_搭建步骤详见[后文](环境搭建流程)_）
+（_搭建步骤详见[后文](#环境搭建流程)_）
 
 目前我日用的环境是 VSCode + ClaudeCode Extension + DeepSeek V4 Pro
 
