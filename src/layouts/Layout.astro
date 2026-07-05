@@ -143,74 +143,11 @@ const { title, description, image } = Astro.props;
 						.querySelectorAll('a')
 						.forEach((a) => a.addEventListener('click', closeNav));
 				}
-				// Notes 目录树：展开/收起 + 当前主题/文章高亮
-				// 状态直接保留在 DOM 中（transition:persist 跨页面保留元素），无需持久化存储：
-				// - 用户展开/收起的主题随 DOM 保留，跨页面不变
-				// - 进入文章页：自动展开当前主题 + 高亮对应文章
-				// - 回到主题列表页 /notes/：全部收起、清除高亮
+
+				// Notes 目录树：绑定主题点击切换（persist 保留 DOM 与监听器，data-bound 防重复）
 				const notesTopics =
 					document.querySelectorAll<HTMLElement>('.notes-topic');
 				if (notesTopics.length > 0) {
-					const onNotesIndex =
-						location.pathname === '/notes/' || location.pathname === '/notes';
-
-					// 解析当前路径 → 激活主题/文章
-					const m = location.pathname.match(
-						/^\/notes\/(?!tags(?:\/|$))([^/]+)(?:\/([^/]+))?\/?$/,
-					);
-					const activeTopicSlug = m?.[1];
-					const activeArticleSlug = m?.[2];
-
-					// 1) 更新激活高亮 + 自动展开当前主题（或列表页全部收起）
-					notesTopics.forEach((li) => {
-						const isActive =
-							!onNotesIndex && li.dataset.topic === activeTopicSlug;
-						li.classList.toggle('is-active', isActive);
-						const btn = li.querySelector<HTMLElement>('.notes-topic-btn');
-						if (onNotesIndex) {
-							li.classList.remove('is-expanded');
-							btn?.setAttribute('aria-expanded', 'false');
-						} else if (isActive) {
-							li.classList.add('is-expanded');
-							btn?.setAttribute('aria-expanded', 'true');
-						}
-					});
-
-					// 清除旧高亮，高亮当前文章（带竖向滑动动画）
-					// 旧 toc-active 由 persist 保留在 DOM 中，读取其位置作为动画起点
-					const oldActive = document.querySelector<HTMLElement>(
-						'.notes-articles .toc-link.toc-active',
-					);
-					let oldY: number | null = null;
-					if (oldActive) {
-						oldY = oldActive.getBoundingClientRect().top;
-						oldActive.classList.remove('toc-active');
-					}
-					if (!onNotesIndex && activeTopicSlug && activeArticleSlug) {
-						const linkId = `${activeTopicSlug}/${activeArticleSlug}`;
-						const link = document.querySelector<HTMLElement>(
-							`.notes-articles [data-article-link="${CSS.escape(linkId)}"]`,
-						);
-						if (link) {
-							// 计算旧高亮相对新高亮的竖向偏移，作为伪指示条的滑动起点
-							if (oldY !== null) {
-								const newY = link.getBoundingClientRect().top;
-								const fromY = oldY - newY;
-								if (Math.abs(fromY) > 0.5) {
-									link.style.setProperty('--hl-from', `${fromY}px`);
-								}
-							}
-							link.classList.add('toc-active');
-							// 动画结束后清除起始偏移，避免后续 hover 等再触发位移
-							link.addEventListener(
-								'transitionend',
-								() => link.style.removeProperty('--hl-from'),
-								{ once: true },
-							);
-						}
-					}
-
-					// 2) 绑定主题点击切换（persist 保留 DOM 与监听器，data-bound 防重复）
 					const setTopicExpanded = (slug: string, force: boolean) => {
 						const sel = `.notes-topic[data-topic="${CSS.escape(slug)}"]`;
 						document
@@ -237,8 +174,76 @@ const { title, description, image } = Astro.props;
 					});
 				}
 			};
+
+			// Notes 目录树：更新激活状态（展开/收起 + 当前文章高亮）
+			// 导航时在 before-swap 中提前更新（冻结过渡），让 View Transition 截图拍到最终态；
+			// 首次加载时直接更新（服务器已渲染正确状态，此处做兜底）。
+			const updateNotesTreeState = (pathname: string) => {
+				const topics =
+					document.querySelectorAll<HTMLElement>('.notes-topic');
+				if (topics.length === 0) return;
+				const onNotesIndex =
+					pathname === '/notes/' || pathname === '/notes';
+				const m = pathname.match(
+					/^\/notes\/(?!tags(?:\/|$))([^/]+)(?:\/([^/]+))?\/?$/,
+				);
+				const activeTopicSlug = m?.[1];
+				const activeArticleSlug = m?.[2];
+
+				topics.forEach((li) => {
+					const isActive =
+						!onNotesIndex && li.dataset.topic === activeTopicSlug;
+					li.classList.toggle('is-active', isActive);
+					const btn = li.querySelector<HTMLElement>('.notes-topic-btn');
+					if (onNotesIndex) {
+						li.classList.remove('is-expanded');
+						btn?.setAttribute('aria-expanded', 'false');
+					} else if (isActive) {
+						li.classList.add('is-expanded');
+						btn?.setAttribute('aria-expanded', 'true');
+					}
+				});
+
+				const oldActive = document.querySelector<HTMLElement>(
+					'.notes-articles .toc-link.toc-active',
+				);
+				if (oldActive) {
+					oldActive.classList.remove('toc-active');
+				}
+				if (!onNotesIndex && activeTopicSlug && activeArticleSlug) {
+					const linkId = `${activeTopicSlug}/${activeArticleSlug}`;
+					const link = document.querySelector<HTMLElement>(
+						`.notes-articles [data-article-link="${CSS.escape(linkId)}"]`,
+					);
+					if (link) {
+						link.classList.add('toc-active');
+					}
+				}
+			};
+
 			setupFloatingUI();
+			updateNotesTreeState(location.pathname);
 			document.addEventListener('astro:after-swap', setupFloatingUI);
+
+			// 导航前：冻结过渡 → 提前更新目录树状态 → 截图拍到最终态
+			document.addEventListener('astro:before-swap', (e) => {
+				const ev = e as unknown as { to: URL };
+				const paths = document.querySelectorAll(
+					'.notes-nav-aside, #notes-nav-panel',
+				);
+				if (paths.length === 0) return;
+				paths.forEach((el) => el.classList.add('vt-freeze'));
+				// 强制重排，让 vt-freeze 的 transition:none 生效后再改 class
+				document.body.offsetHeight;
+				updateNotesTreeState(ev.to.pathname);
+			});
+
+			// 导航后：解冻过渡，让后续手动点击展开/收起恢复正常动画
+			document.addEventListener('astro:page-load', () => {
+				document
+					.querySelectorAll('.notes-nav-aside, #notes-nav-panel')
+					.forEach((el) => el.classList.remove('vt-freeze'));
+			});
 
 			// 目录滚动高亮（IntersectionObserver）：当前阅读章节对应的目录项高亮。
 			// 放在全局脚本中以保障从任意页面导航进入文章后都能生效。
