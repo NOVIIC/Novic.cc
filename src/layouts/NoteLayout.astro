@@ -1,19 +1,10 @@
 ---
-import Layout from './Layout.astro';
-import FormattedDate from '../components/FormattedDate.astro';
-import Toc from '../components/Toc.astro';
-import BackButton from '../components/BackButton.astro';
-import MobileToc from '../components/MobileToc.astro';
+import ContentLayout, { type Heading } from '../components/ContentLayout.astro';
 import NotesNav from '../components/NotesNav.astro';
 import NotesNavMobile from '../components/NotesNavMobile.astro';
 import { SITE_TITLE } from '../consts';
 import type { CollectionEntry } from 'astro:content';
 
-interface Heading {
-	depth: number;
-	slug: string;
-	text: string;
-}
 interface Props {
 	note: CollectionEntry<'notes'>;
 	headings: Heading[];
@@ -26,82 +17,32 @@ const { description, pubDate, updatedDate, tags } = note.data;
 const displayTitle = isIntro ? '前言' : note.data.title;
 const pageTitle = isIntro ? `${topicTitle} · ${SITE_TITLE}` : note.data.title;
 const fallbackHref = isIntro ? '/notes/' : `/notes/${topic}/intro/`;
-const toc = headings.filter((h) => h.depth > 1 && h.depth < 4);
 
-// Pagefind 索引元数据 + 过滤器：让搜索结果能呈现 notes 的「主题 → 文章」层级关系。
-// - section: 版块（notes / articles），用于按版块过滤
-// - topic:   所属主题标题，搜索结果中以面包屑形式展示
-// - kind:    intro（主题首页） / article（普通文章）
-// intro 页的 h1 显示「前言」，索引时把 title 覆写为主题标题，
-// 让搜索结果能直接体现「这是某主题的总览页」。
-// 注意：data-pagefind-meta 单属性中多个 inline `key:value` 仅最后一个生效，
-// 因此使用 `[data-*]` 属性捕获语法以支持一次声明多个字段。
 const pagefindMeta = isIntro
 	? 'section[data-pf-section], topic[data-pf-topic], kind[data-pf-kind], title[data-pf-topic]'
 	: 'section[data-pf-section], topic[data-pf-topic], kind[data-pf-kind]';
+
+const extraArticleAttrs = {
+	'data-pf-topic': topicTitle,
+	'data-pf-kind': isIntro ? 'intro' : 'article',
+};
 ---
 
-<Layout title={pageTitle} description={description}>
-	<BackButton fallbackHref={fallbackHref} slot="floating" />
-	<MobileToc headings={headings} slot="floating" />
-	<NotesNavMobile slot="floating" />
-	<article
-		class="prose prose-invert max-w-none prose-headings:scroll-mt-32 prose-pre:bg-transparent prose-pre:p-0"
-		data-pf-section="notes"
-		data-pf-topic={topicTitle}
-		data-pf-kind={isIntro ? 'intro' : 'article'}
-		data-pagefind-meta={pagefindMeta}
-		data-pagefind-filter="section:notes"
-	>
-		<div
-			class="mx-auto max-w-3xl xl:max-w-none xl:grid xl:grid-cols-[1fr_minmax(0,48rem)_1fr] xl:gap-6"
-		>
-			<NotesNav class="xl:col-start-1 xl:justify-self-end xl:w-52" />
-			<div class="content-bg min-w-0 p-6 sm:p-7 xl:col-start-2">
-				<header class="not-prose mb-8">
-					<h1 class="text-3xl font-bold text-white sm:text-4xl">
-						{displayTitle}
-					</h1>
-					<div
-						class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray"
-					>
-						<span>发布于 <FormattedDate date={pubDate} /></span>
-						{
-							updatedDate && (
-								<span>
-									· 更新于 <FormattedDate date={updatedDate} />
-								</span>
-							)
-						}
-					</div>
-					{
-						tags.length > 0 && (
-							<div class="mt-3 flex flex-wrap gap-2 text-xs">
-								{tags.map((t) => (
-									<a
-										href={`/notes/tags/${t}/`}
-										class="content-bg rounded-full px-2.5 py-0.5 text-white/70 transition-all duration-200 hover:scale-105 hover:border-gray hover:text-white active:scale-95"
-									>
-										#{t}
-									</a>
-								))}
-							</div>
-						)
-					}
-				</header>
-				<div data-pagefind-body>
-					<slot />
-				</div>
-			</div>
-			{
-				toc.length > 0 && (
-					<aside class="hidden xl:block xl:col-start-3 justify-self-start">
-						<div class="content-bg sticky top-20 w-36 p-3">
-							<Toc headings={headings} />
-						</div>
-					</aside>
-				)
-			}
-		</div>
-	</article>
-</Layout>
+<ContentLayout
+	title={pageTitle}
+	h1Title={displayTitle}
+	description={description}
+	headings={headings}
+	pubDate={pubDate}
+	updatedDate={updatedDate}
+	tags={tags}
+	tagBasePath="/notes/tags/"
+	backFallback={fallbackHref}
+	section="notes"
+	pagefindMeta={pagefindMeta}
+	extraArticleAttrs={extraArticleAttrs}
+>
+	<NotesNav class="xl:col-start-1 xl:justify-self-end xl:w-52" slot="left-sidebar" />
+	<NotesNavMobile slot="floating-extras" />
+	<slot />
+</ContentLayout>
