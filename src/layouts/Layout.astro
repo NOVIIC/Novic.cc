@@ -228,9 +228,7 @@ const { title, description, image } = Astro.props;
 			// 导航前：冻结过渡 → 提前更新目录树状态 → 截图拍到最终态
 			document.addEventListener('astro:before-swap', (e) => {
 				const ev = e as unknown as { to: URL };
-				const paths = document.querySelectorAll(
-					'.notes-nav-aside, #notes-nav-panel',
-				);
+				const paths = document.querySelectorAll('.notes-nav-aside');
 				if (paths.length === 0) return;
 				paths.forEach((el) => el.classList.add('vt-freeze'));
 				// 强制重排，让 vt-freeze 的 transition:none 生效后再改 class
@@ -241,7 +239,7 @@ const { title, description, image } = Astro.props;
 			// 导航后：解冻过渡，让后续手动点击展开/收起恢复正常动画
 			document.addEventListener('astro:page-load', () => {
 				document
-					.querySelectorAll('.notes-nav-aside, #notes-nav-panel')
+					.querySelectorAll('.notes-nav-aside')
 					.forEach((el) => el.classList.remove('vt-freeze'));
 			});
 
