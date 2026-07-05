@@ -52,6 +52,8 @@ src/
 - **包管理**: pnpm
 - **Node**: >= 22.12.0
 
+在开发时，要主动查阅相关文档，尽量使用最新的、技术栈推荐的方式实现功能。
+
 ## 参考文档
 
 - [Astro 路由](https://docs.astro.build/en/guides/routing/)
