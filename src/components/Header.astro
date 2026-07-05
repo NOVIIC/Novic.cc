@@ -219,8 +219,44 @@ const links = [
 						</li>`;
 					};
 				};
+				const bindSectionPills = () => {
+					const wrap = document.getElementById('section-filter');
+					if (!wrap || wrap.dataset.bound) return;
+					wrap.dataset.bound = '1';
+					const pills = wrap.querySelectorAll('button[data-section]');
+					if (!pills.length) return;
+					const activeSections = () =>
+						Array.from(pills)
+							.filter((b) => b.getAttribute('aria-pressed') === 'true')
+							.map((b) => b.dataset.section);
+					const apply = () => {
+						const input = document.querySelector(
+							'pagefind-input[instance="site-search"]',
+						);
+						const inst = input?.instance;
+						if (!inst || typeof inst.triggerFilters !== 'function') return;
+						const a = activeSections();
+						// 选中全部或全未选时不过滤，显示所有版块
+						if (a.length === 0 || a.length === pills.length) {
+							inst.triggerFilters({});
+						} else {
+							inst.triggerFilters({ section: a });
+						}
+					};
+					pills.forEach((btn) =>
+						btn.addEventListener('click', () => {
+							btn.setAttribute(
+								'aria-pressed',
+								String(btn.getAttribute('aria-pressed') !== 'true'),
+							);
+							apply();
+						}),
+					);
+				};
 				bindPfTemplate();
+				bindSectionPills();
 				document.addEventListener('astro:page-load', bindPfTemplate);
+				document.addEventListener('astro:page-load', bindSectionPills);
 				try {
 					await import('/pagefind/pagefind-component-ui.js');
 				} catch (e) {
@@ -233,17 +269,27 @@ const links = [
 			<p id="search-fallback" class="text-sm text-white/40"></p>
 			<pagefind-input instance="site-search" class="block"></pagefind-input>
 			<div class="mt-3 flex items-center gap-2">
-				<pagefind-summary
-					instance="site-search"
-					class="block flex-1"
+				<pagefind-summary instance="site-search" class="block flex-1"
 				></pagefind-summary>
-				<pagefind-filter-dropdown
-					instance="site-search"
-					filter="section"
-					label="版块"
-					single-select
-					sort="alphabetical"
-				></pagefind-filter-dropdown>
+				<div
+					id="section-filter"
+					class="flex items-center gap-1.5"
+					role="group"
+					aria-label="版块筛选"
+				>
+					<button
+						type="button"
+						class="pf-section-pill"
+						data-section="articles"
+						aria-pressed="true">Articles</button
+					>
+					<button
+						type="button"
+						class="pf-section-pill"
+						data-section="notes"
+						aria-pressed="true">Notes</button
+					>
+				</div>
 			</div>
 			<pagefind-results instance="site-search" class="mt-4 block">
 			</pagefind-results>

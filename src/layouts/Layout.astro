@@ -179,11 +179,9 @@ const { title, description, image } = Astro.props;
 			// 导航时在 before-swap 中提前更新（冻结过渡），让 View Transition 截图拍到最终态；
 			// 首次加载时直接更新（服务器已渲染正确状态，此处做兜底）。
 			const updateNotesTreeState = (pathname: string) => {
-				const topics =
-					document.querySelectorAll<HTMLElement>('.notes-topic');
+				const topics = document.querySelectorAll<HTMLElement>('.notes-topic');
 				if (topics.length === 0) return;
-				const onNotesIndex =
-					pathname === '/notes/' || pathname === '/notes';
+				const onNotesIndex = pathname === '/notes/' || pathname === '/notes';
 				const m = pathname.match(
 					/^\/notes\/(?!tags(?:\/|$))([^/]+)(?:\/([^/]+))?\/?$/,
 				);
