@@ -318,8 +318,21 @@ h4:hover .heading-anchor {
 		sans-serif;
 }
 
+/*
+ * pagefind 自定义元素被 pagefind-component-ui.css 用 `all: initial` 重置，
+ * 而 Tailwind 工具类位于 @layer utilities，层样式优先级低于无层样式，
+ * 因此 <pagefind-*> 上的 flex-1 / mt-* 等工具类会失效。
+ * 这里用 #search-dialog 作用域的无层规则覆盖回来。
+ */
+#search-dialog pagefind-summary {
+	flex: 1 1 0%;
+}
+#search-dialog pagefind-results {
+	margin-top: 0.5rem;
+}
+
 /* 版块筛选胶囊 */
-#search-dialog .pf-section-pill {
+#search-dialog .search-section-pill {
 	display: inline-flex;
 	align-items: center;
 	padding: 0.2rem 0.6rem;
@@ -335,22 +348,22 @@ h4:hover .heading-anchor {
 		color 0.15s ease,
 		border-color 0.15s ease;
 }
-#search-dialog .pf-section-pill:hover {
+#search-dialog .search-section-pill:hover {
 	background: rgb(255 255 255 / 0.1);
 	color: rgb(255 255 255 / 0.85);
 }
-#search-dialog .pf-section-pill[aria-pressed='true'] {
+#search-dialog .search-section-pill[aria-pressed='true'] {
 	border-color: color-mix(in oklab, var(--color-accent) 55%, transparent);
 	background: color-mix(in oklab, var(--color-accent) 22%, transparent);
 	color: rgb(255 255 255 / 0.95);
 }
-#search-dialog .pf-section-pill:focus-visible {
+#search-dialog .search-section-pill:focus-visible {
 	outline: 2px solid var(--color-accent);
 	outline-offset: 2px;
 }
 
 /* 搜索结果面包屑：体现 Notes「主题 → 文章」层级关系 */
-#search-dialog .pf-result-crumbs {
+#search-dialog .search-result-crumbs {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
@@ -360,13 +373,13 @@ h4:hover .heading-anchor {
 	color: rgb(255 255 255 / 0.45);
 	line-height: 1.4;
 }
-#search-dialog .pf-crumb {
+#search-dialog .search-crumb {
 	color: rgb(255 255 255 / 0.5);
 }
-#search-dialog .pf-crumb-sep {
+#search-dialog .search-crumb-sep {
 	color: rgb(255 255 255 / 0.3);
 }
-#search-dialog .pf-crumb-tag {
+#search-dialog .search-crumb-tag {
 	margin-inline-start: 0.35em;
 	padding: 0 0.4em;
 	border-radius: 9999px;
