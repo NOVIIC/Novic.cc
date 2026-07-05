@@ -28,15 +28,20 @@ export async function GET(context: APIContext) {
 			link: `/articles/${post.id}/`,
 			categories: post.data.tags,
 		})),
-		...notes.map((note) => ({
-			title: note.data.title,
-			description: note.data.description,
-			pubDate: note.data.pubDate,
-			link: `/notes/${note.id}/`,
-			categories: [topicTitleBySlug.get(note.id.split('/')[0])].filter(
-				Boolean,
-			) as string[],
-		})),
+		...notes.map((note) => {
+			const topicTitle = topicTitleBySlug.get(note.id.split('/')[0]);
+			// 标题前缀主题名，让 RSS 阅读器中能直接看到「主题 · 文章」层级关系；
+			// categories 同时保留主题，便于按主题聚合订阅。
+			return {
+				title: topicTitle
+					? `${topicTitle} · ${note.data.title}`
+					: note.data.title,
+				description: note.data.description,
+				pubDate: note.data.pubDate,
+				link: `/notes/${note.id}/`,
+				categories: [topicTitle].filter(Boolean) as string[],
+			};
+		}),
 	].sort((a, b) => b.pubDate.valueOf() - a.pubDate.valueOf());
 
 	return rss({
