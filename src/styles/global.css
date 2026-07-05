@@ -315,6 +315,33 @@ h4:hover .heading-anchor {
 		sans-serif;
 }
 
+/* 搜索结果面包屑：体现 Notes「主题 → 文章」层级关系 */
+#search-dialog .pf-result-crumbs {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.35em;
+	margin: 0 0 0.25em;
+	font-size: 0.7rem;
+	color: rgb(255 255 255 / 0.45);
+	line-height: 1.4;
+}
+#search-dialog .pf-crumb {
+	color: rgb(255 255 255 / 0.5);
+}
+#search-dialog .pf-crumb-sep {
+	color: rgb(255 255 255 / 0.3);
+}
+#search-dialog .pf-crumb-tag {
+	margin-inline-start: 0.35em;
+	padding: 0 0.4em;
+	border-radius: 9999px;
+	border: 1px solid rgb(255 255 255 / 0.12);
+	background: rgb(255 255 255 / 0.05);
+	color: rgb(255 255 255 / 0.55);
+	font-size: 0.62rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	html {
 		scroll-behavior: auto;

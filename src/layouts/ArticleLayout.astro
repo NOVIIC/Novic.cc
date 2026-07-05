@@ -25,6 +25,9 @@ const toc = headings.filter((h) => h.depth > 1 && h.depth < 4);
 	<MobileToc headings={headings} slot="floating" />
 	<article
 		class="prose prose-invert max-w-none prose-headings:scroll-mt-32 prose-pre:bg-transparent prose-pre:p-0"
+		data-pf-section="articles"
+		data-pagefind-meta="section[data-pf-section]"
+		data-pagefind-filter="section:articles"
 	>
 		<div
 			class="mx-auto max-w-3xl xl:max-w-none xl:grid xl:grid-cols-[1fr_minmax(0,48rem)_1fr] xl:gap-6"

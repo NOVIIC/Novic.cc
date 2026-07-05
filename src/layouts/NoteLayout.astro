@@ -27,6 +27,18 @@ const displayTitle = isIntro ? '前言' : note.data.title;
 const pageTitle = isIntro ? `${topicTitle} · ${SITE_TITLE}` : note.data.title;
 const fallbackHref = isIntro ? '/notes/' : `/notes/${topic}/intro/`;
 const toc = headings.filter((h) => h.depth > 1 && h.depth < 4);
+
+// Pagefind 索引元数据 + 过滤器：让搜索结果能呈现 notes 的「主题 → 文章」层级关系。
+// - section: 版块（notes / articles），用于按版块过滤
+// - topic:   所属主题标题，搜索结果中以面包屑形式展示
+// - kind:    intro（主题首页） / article（普通文章）
+// intro 页的 h1 显示「前言」，索引时把 title 覆写为主题标题，
+// 让搜索结果能直接体现「这是某主题的总览页」。
+// 注意：data-pagefind-meta 单属性中多个 inline `key:value` 仅最后一个生效，
+// 因此使用 `[data-*]` 属性捕获语法以支持一次声明多个字段。
+const pagefindMeta = isIntro
+	? 'section[data-pf-section], topic[data-pf-topic], kind[data-pf-kind], title[data-pf-topic]'
+	: 'section[data-pf-section], topic[data-pf-topic], kind[data-pf-kind]';
 ---
 
 <Layout title={pageTitle} description={description}>
@@ -35,6 +47,11 @@ const toc = headings.filter((h) => h.depth > 1 && h.depth < 4);
 	<NotesNavMobile slot="floating" />
 	<article
 		class="prose prose-invert max-w-none prose-headings:scroll-mt-32 prose-pre:bg-transparent prose-pre:p-0"
+		data-pf-section="notes"
+		data-pf-topic={topicTitle}
+		data-pf-kind={isIntro ? 'intro' : 'article'}
+		data-pagefind-meta={pagefindMeta}
+		data-pagefind-filter="section:notes"
 	>
 		<div
 			class="mx-auto max-w-3xl xl:max-w-none xl:grid xl:grid-cols-[1fr_minmax(0,48rem)_1fr] xl:gap-6"
