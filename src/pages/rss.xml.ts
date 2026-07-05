@@ -11,10 +11,12 @@ export async function GET(context: APIContext) {
 		(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 	);
 	const notesTopics = await getNotesTree();
+	const validTopicSlugs = new Set(notesTopics.map((t) => t.slug));
 	const topicTitleBySlug = new Map(notesTopics.map((t) => [t.slug, t.title]));
 
 	// intro 由主题首页承载，不作为独立条目进入 RSS
 	const notes = (await getCollection('notes', filter))
+		.filter((n) => validTopicSlugs.has(n.id.split('/')[0]))
 		.filter((n) => n.id.split('/').slice(1).join('/') !== 'intro')
 		.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 

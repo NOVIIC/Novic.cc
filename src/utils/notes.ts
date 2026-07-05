@@ -13,11 +13,9 @@ export interface NotesTopic {
 const isIntro = (entry: CollectionEntry<'notes'>) =>
 	entry.id.split('/').slice(1).join('/') === 'intro';
 
-const draftFilter = ({ data }: { data: { draft: boolean } }) =>
-	import.meta.env.PROD ? !data.draft : true;
-
 export async function getNotesTree(): Promise<NotesTopic[]> {
-	const notes = await getCollection('notes', draftFilter);
+	const isProd = import.meta.env.PROD;
+	const notes = await getCollection('notes');
 	const byTopic = new Map<string, CollectionEntry<'notes'>[]>();
 	for (const n of notes) {
 		const topic = n.id.split('/')[0];
@@ -25,20 +23,25 @@ export async function getNotesTree(): Promise<NotesTopic[]> {
 		byTopic.get(topic)!.push(n);
 	}
 
-	const topics: NotesTopic[] = [...byTopic.entries()].map(([slug, items]) => {
+	const topics: NotesTopic[] = [];
+	for (const [slug, items] of byTopic.entries()) {
 		const intro = items.find(isIntro);
+
+		if (isProd && intro?.data.draft) continue;
+
 		const articles = items
 			.filter((n) => !isIntro(n))
+			.filter((n) => (isProd ? !n.data.draft : true))
 			.sort((a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf());
-		return {
+		topics.push({
 			slug,
 			intro,
 			title: intro?.data.title ?? slug,
 			description: intro?.data.description ?? '',
 			tags: intro?.data.tags ?? [],
 			articles,
-		};
-	});
+		});
+	}
 
 	topics.sort(
 		(a, b) =>
