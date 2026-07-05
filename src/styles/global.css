@@ -354,9 +354,7 @@ h4:hover .heading-anchor {
 	::view-transition-old(main),
 	::view-transition-new(main),
 	::view-transition-old(notes-nav-desktop),
-	::view-transition-new(notes-nav-desktop),
-	::view-transition-old(notes-nav-mobile),
-	::view-transition-new(notes-nav-mobile) {
+	::view-transition-new(notes-nav-desktop) {
 		animation: none;
 	}
 	.float-btn,
