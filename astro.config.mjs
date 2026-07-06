@@ -11,6 +11,9 @@ import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 // https://astro.build/config
 export default defineConfig({
 	site: 'https://novic.cc',
+	image: {
+		layout: 'constrained',
+	},
 	integrations: [expressiveCode(), mdx(), sitemap()],
 	fonts: [
 		{
