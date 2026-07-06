@@ -3,7 +3,7 @@ title: '从 0 开始创建个人网站'
 description: '使用 OpenCode ，从 0 开始建一个 Astro v7 个人博客网站'
 pubDate: 2026-07-01
 updatedDate: 2026-07-06
-tags: ['AI', 'Web', '开发']
+tags: ['AI', 'Web', '开发', 'Linux']
 ---
 
 ## 欢迎来到 **Novic.cc**
@@ -25,7 +25,7 @@ tags: ['AI', 'Web', '开发']
 
 ### 开发环境搭建
 
-（_详细步骤详见 [后文](#环境搭建流程)_ ）
+（_详细步骤详见 [后文](#完整的环境配置和开发部署流程)_ ）
 
 目前我日用的环境是 VSCode + ClaudeCode Extension + DeepSeek V4 Pro
 
@@ -142,7 +142,7 @@ sudo apt remove --purge nodejs
 sudo apt update
 ```
 
-## 完整环境搭建和配置流程
+## 完整的环境配置和开发部署流程
 
 下面的流程基于最新版本的 Windows 11
 
@@ -150,7 +150,7 @@ sudo apt update
 
 #### Visual Studio Code
 
-VSCode 是一个轻量~~(?)~~而功能强大的编辑器，支持几乎所有语言。  
+VSCode 是一个轻量 ~~(?)~~ 而功能强大的编辑器，支持几乎所有语言。  
 如果你决定完全不操作代码，可以跳过这一步。
 
 打开 [VSCode 官方网站](https://code.visualstudio.com/) 下载安装包并安装。
@@ -207,7 +207,31 @@ Node.js 是一个 JavaScript 运行时环境，如今大部分网站技术栈都
 
 ### Git
 
-未完待续
+Git 是一个开源的分布式版本控制系统，对于项目开发和管理可以说是必需的。推荐安装。
+
+但本文将不会介绍 Git 的使用方式。感兴趣可自行研究
+
+_Git 的操作是纯命令行的，但如果安装了 VSCode，一部分操作可以在 VSCode 的 GUI 上完成。_
+
+#### Windows
+
+可从 [Git for Windows 官网](https://git-scm.com/install/windows) 下载安装包( Git for Windows/x64 Setup )
+
+也可以通过 winget 安装——直接在终端中运行：
+
+```powershell
+winget install --id Git.Git -e --source winget
+```
+
+安装完成后运行 `git --version` 来验证是否安装成功（应输出版本号）。
+
+#### Debian
+
+```bash
+sudo apt update && sudo apt install git
+```
+
+安装完后同样通过 `git --version` 来验证。
 
 ### OpenCode
 
@@ -258,7 +282,7 @@ _后文若无特殊说明，则表示无论是 Windows 还是 Debian ，都是�
 npm install -g pnpm
 ```
 
-即可安装（如果慢可[配置镜像源](#debian-1)）
+即可安装（如果慢可[配置镜像源](#debian-2)）
 
 安装完成后建议给 pnpm 也配置镜像源：
 
@@ -271,7 +295,7 @@ pnpm config set registry https://registry.npmmirror.com
 首先在命令行里打开用于放置你的项目的文件夹（不是项目的文件夹，而是放置项目文件夹的文件夹，懂？）
 
 如果是 Windows ，可以直接在 文件资源管理器 中打开文件夹，然后右键空白部分，选择 在终端中打开 。  
-也可以先打开终端，然后使用 `cd <文件夹路径>` 来切换文件夹。如果是跨盘符（如从 C 盘切换到 D 盘）则需要使用 `cd /d <文件夹路径>` 。
+也可以先打开终端，然后使用 `cd <文件夹路径>`[^1] 来切换文件夹。如果是跨盘符（如从 C 盘切换到 D 盘）则需要使用 `cd /d <文件夹路径>`[^1] 。
 
 对于 Debian ，可以通过 `ls` 查看当前目录文件，`mkdir` 创建新目录，`cd` 切换目录。  
 对于不熟悉 Linux 的人，建议直接使用默认的用户`home`目录，无需切换。
@@ -284,14 +308,27 @@ pnpm create astro@latest
 
 即可进入项目初始化流程。
 
-根据提示完成后便会在当前目录下自动创建好你的项目的文件夹。  
+根据提示完成后便会在当前目录下自动创建好你的项目的文件夹。（还会帮你初始化好 Git 仓库）  
 对于 Windows ，可以在文件资源管理器中直接看到；对于 Debian ，使用 `ls` 查看是否创建成功。
 
-在命令行中通过 `cd <文件夹名>`[^详细语法] 进入你的项目文件夹，然后运行 `code .` （注意有个`.`）即可在 VSCode 中打开该文件夹
+在命令行中通过 `cd <文件夹名>`[^1] 进入你的项目文件夹，然后运行 `code .` （注意有个`.`）即可在 VSCode 中打开该文件夹
 
 打开 OpenCode，在 GUI 中可以选择并打开该文件夹。接下来就可以让你的 AI 来写网站了。关于项目有任何疑问也可以问它。
 
-[^详细语法]:
+#### 一些常用指令
+
+```bash
+pnpm astro dev              # 启动开发服务器（用于实时预览网站效果）关闭终端窗口后便会关闭
+pnpm astro dev --background # 启动开发服务器（后台模式）关闭终端窗口后仍会保持运行
+pnpm astro dev stop         # 停止开发服务器 （后台模式要通过这个指令关）
+
+pnpm run build              # 以当前代码构建网站（不会随代码更新而实时更新，而是需要手动构建）
+pnpm run preview            # 启动网页服务器预览构建产物
+# 构建产物在 dist/ 目录
+
+```
+
+[^1]:
     `cd <路径>` 中的路径，既可以是绝对路径( `D:/Projects/My-site` )也可以是相对路径( `My-site` )。相对路径即叠加在当前所在的目录上。  
     在相对路径中， `./` 表示当前目录， `../`表示上一级目录。  
     所以，如果你当前正在 `D:/Projects` 目录，则 `cd D:/Projects/My-site` 、`cd ./My-site` 和 `cd My-site`是等效的。  
@@ -299,4 +336,35 @@ pnpm create astro@latest
 
 ### 发布网站
 
+#### 全自动发布流程
+
 我们使用 Astro 构建静态网站，在 [Github Pages](https://docs.astro.build/zh-cn/guides/deploy/github/)、 [Vercel](https://docs.astro.build/zh-cn/guides/deploy/vercel/) 、 [Netlify](https://docs.astro.build/zh-cn/guides/deploy/netlify/) 等平台都可以部署。可自行查阅相关文档。
+
+这种方式会需要使用 Git ，将代码托管到 Github 之类的平台。在这里就不详细介绍了
+
+#### 手动发布
+
+上面的方式对于不熟悉的人来说可能有些难以上手，因此在此介绍一种更为简单的手动发布方式
+
+我们使用 Netlify 平台的免费套餐服务
+
+首先 [注册一个账号](https://app.netlify.com/signup)  
+如果没有 Github 账号，可以选择 `sign up with email`使用邮箱注册
+
+然后在 `Projects` 页面选择 `Add new project` 来新建网站
+
+![Netlify 的新建网站页面](../images/first-post/netlify-deploy.png)
+
+可以看到，下面有一个 `Upload your project files` ，可以直接从本地上传
+
+_（只有静态网站可以这样部署。幸运的是，我们开发的正是一个静态网站）_
+
+前面提到了，`pnpm run build` 用于构建网站，构建产物在 `dist/` 下
+
+因此，只需要在此处上传 `dist` 文件夹即可部署。
+
+到此便**大功告成**
+
+在项目管理面板中能上传新的 `dist` 手动更新网站  
+还能更改网站域名之类的  
+可以自行研究
