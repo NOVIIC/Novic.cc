@@ -2,7 +2,7 @@
 title: '从 0 开始创建个人网站'
 description: '使用 OpenCode ，从 0 开始建一个 Astro v7 个人博客网站'
 pubDate: 2026-07-01
-updatedDate: 2026-07-05
+updatedDate: 2026-07-06
 tags: ['AI', 'Web', '开发']
 ---
 
@@ -24,6 +24,8 @@ tags: ['AI', 'Web', '开发']
 御三家的模型大抵是不好整的。思索之后，决定开个 OpenCode GO 尝试一下 GLM5.2 ，顺便试试 OpenCode 。
 
 ### 开发环境搭建
+
+（_详细步骤详见 [后文](#环境搭建流程)_ ）
 
 目前我日用的环境是 VSCode + ClaudeCode Extension + DeepSeek V4 Pro
 
@@ -62,21 +64,21 @@ tags: ['AI', 'Web', '开发']
 
 当前架构如下：
 
-| 类别     | 选型                                                                                          |
-| -------- | --------------------------------------------------------------------------------------------- |
-| 框架     | Astro v7（静态）                                                                              |
-| 内容格式 | Markdown / MDX                                                                                |
-| 样式     | Tailwind CSS v4（`@tailwindcss/vite` + Typography 插件）                                      |
-| 字体     | 本地 woff，使用 Astro Fonts API                                                              |
-| 代码高亮 | Expressive Code（行号、行高亮、复制、diff）                                                   |
-| 锚点     | rehype-slug + rehype-autolink-headings                                                        |
-| 搜索     | Pagefind（构建期生成索引）                                                                    |
-| SEO      | @astrojs/sitemap + canonical + OG/Twitter                                                     |
-| RSS     | @astrojs/rss                                                                                 |
-| 构建工具 | Vite v8 (rolldown 内核)                                                                       |
-| 包管理   | pnpm v11                                                                                      |
-| 类型检查 | Astro check + TypeScript v6                                                                   |
-| 格式化   | Prettier + prettier-plugin-astro                                                              |
+| 类别     | 选型                                                     |
+| -------- | -------------------------------------------------------- |
+| 框架     | Astro v7（静态）                                         |
+| 内容格式 | Markdown / MDX                                           |
+| 样式     | Tailwind CSS v4（`@tailwindcss/vite` + Typography 插件） |
+| 字体     | 本地 woff，使用 Astro Fonts API                          |
+| 代码高亮 | Expressive Code（行号、行高亮、复制、diff）              |
+| 锚点     | rehype-slug + rehype-autolink-headings                   |
+| 搜索     | Pagefind（构建期生成索引）                               |
+| SEO      | @astrojs/sitemap + canonical + OG/Twitter                |
+| RSS      | @astrojs/rss                                             |
+| 构建工具 | Vite v8 (rolldown 内核)                                  |
+| 包管理   | pnpm v11                                                 |
+| 类型检查 | Astro check + TypeScript v6                              |
+| 格式化   | Prettier + prettier-plugin-astro                         |
 
 确定技术栈后便让 GLM 5.2 写出了一个初始框架。接下来的开发便是不断向 AI 提出需求，然后验收。  
 OpenCode GO 用 GLM 5.2 体感上额度消耗得挺快的，因此我还接入了 DeepSeek 的 API ，小任务使用 DeepSeek V4 Pro 。
@@ -107,7 +109,7 @@ AI 的确让开发网站的门槛和难度降低了非常多。即使你完全�
 
 _我目前对前端并不是非常熟悉，这些话不一定正确，仅作为当前的感想，提供一些参考。_
 
-### Debian 上安装 Nodejs 最新 LTS
+### Debian 安装 Node.js
 
 Debian 13 (Trixie) 默认仓库自带的是 Node.js 20 ，已经终止支持。当前最新 LTS 版本为 24 。
 
@@ -131,6 +133,7 @@ npm -v    # 应输出 11.x.x
 ```
 
 卸载：
+
 ```bash
 sudo extrepo disable node_24.x
 sudo rm -f /etc/apt/sources.list.d/extrepo_node_24.x.sources
@@ -139,4 +142,161 @@ sudo apt remove --purge nodejs
 sudo apt update
 ```
 
-### 未完待续
+## 完整环境搭建和配置流程
+
+下面的流程基于最新版本的 Windows 11
+
+### VSCode 和 WSL （可选）
+
+#### Visual Studio Code
+
+VSCode 是一个轻量~~(?)~~而功能强大的编辑器，支持几乎所有语言。  
+如果你决定完全不操作代码，可以跳过这一步。
+
+打开 [VSCode 官方网站](https://code.visualstudio.com/) 下载安装包并安装。
+
+首次打开 VSCode ，在左边侧栏找到 Extension 扩展选项（也可以使用 <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd> 快捷键打开），搜索 Chinese ，安装简体中文语言包。  
+安装完成后右下角会有提示 是否要切换语言并重启 VSCode 。重启完 UI 界面就会变成中文。  
+如果错过了那个提示弹窗，可以使用快捷键 <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> 打开命令面板，输入 lang ，选择 `Configure Display Language` ，即可更改显示语言。
+
+#### Windows Subsystem for Linux
+
+WSL 可以让我们在 Windows 中高效地运行一个 Linux 发行版，并丝滑地集成到日常的开发工作中。
+
+推荐使用 WSL 的原因主要有二：
+
+1. AI 相较于 Windows 更熟悉 Linux 的命令行（训练数据更多），并且 Linux 命令行标准更统一。
+2. 把 Agent 放在 WSL 中运行相当于进行了一层隔离，更加安全（但其实通过 `mnt/` 也能访问到 Win 上的文件）
+
+但如果不熟悉命令行，增加一层 WSL 可能会增加上手和理解的难度。因此请自行选择是否安装 WSL 。后文的教程将会同时对 WSL 和 Win 介绍。
+
+根据 [WSL 官方文档](https://learn.microsoft.com/zh-cn/windows/wsl/install) ，打开 终端 （ CMD / Powershell 皆可）运行 `wsl --install` 即可安装
+
+**但是**默认将会安装 Ubuntu 发行版，而我推荐使用 Debian （关于发行版的选择可自行搜索，后文以 Debian 13 为例）。  
+因此，安装使用：
+
+```powershell
+wsl.exe --install -d Debian
+```
+
+安装完后需要初始化系统（设置用户名和密码）。具体过程和其它可选配置此处省略。
+
+之后在开始菜单的应用列表里可以找到 Debian 。也可以在 终端 的选项卡中打开 Debian 的命令行。  
+后文中 Debian 版块的命令都需要在 Debian 的命令行中运行。
+
+还有一个**重要的推荐设置**：在开始菜单中找到并打开 WSL Settings ，找到 网络 选项卡，将网络模式更改为 `Mirrored` 。  
+（进行了这个设置后，就可以通过 `127.0.0.1` 本地回环地址访问 WSL 中开放的服务。）
+
+_如果完成了相关安装和设置却疑似没有生效，可尝试重启相关软件或者直接重启电脑_
+
+### Node.js
+
+Node.js 是一个 JavaScript 运行时环境，如今大部分网站技术栈都依托它来运行
+
+建议使用最新的 LTS （长期支持）版本
+
+#### Windows
+
+直接在 [官方网站](https://nodejs.org/zh-cn/download) 下载最新的 Windows 安装程序(.msi) 并安装即可。
+
+![](../images/first-post/nodejs-win.png)
+
+#### Debian
+
+参考 [Debian 上安装 Nodejs 最新 LTS](#debian-安装-nodejs)
+
+### Git
+
+未完待续
+
+### OpenCode
+
+#### Windows
+
+Windows 上可以直接从 [官网](https://opencode.ai/zh/download) 下载桌面应用安装包并安装使用。
+
+#### Debian
+
+运行 `npm i -g opencode-ai` 即可安装
+
+如果官方源下载慢，可以先配置阿里镜像源再安装：
+
+```bash
+npm config set registry https://registry.npmmirror.com
+npm i -g opencode-ai
+```
+
+安装完成后运行
+
+```bash
+opencode web --hostname 127.0.0.1 --port 46229
+```
+
+然后在浏览器中打开命令行中显示的`Web interface`地址（不出意外应该是 http://127.0.0.1:46229/ ）即可看到 OpenCode 的面板。与桌面应用的界面一模一样。
+
+<div class="text-sm text-white/50">
+细心的你可能会发现，运行时还报了一个 Warning :
+<p class="text-yellow-300"> !  OPENCODE_SERVER_PASSWORD is not set; server is unsecured. </p>
+但是不用担心。我们只在 127.0.0.1 上开放了服务，仅本机可访问，因此不需要设置密码也是安全的。
+</div>
+
+### 选择技术栈并初始化项目
+
+首先要定下的核心技术栈是：**包管理器**和**网站框架**
+
+可自行了解选择，这里以我使用的 pnpm 和 Astro 为例介绍如何初始化项目
+
+_后文若无特殊说明，则表示无论是 Windows 还是 Debian ，都是输入相同的命令_
+
+#### 安装 pnpm
+
+我们安装的 Node.js 默认的包管理器是 npm 而不是 pnpm ，因此我们首先要安装 pnpm。
+
+使用：
+
+```bash
+npm install -g pnpm
+```
+
+即可安装（如果慢可[配置镜像源](#debian-1)）
+
+安装完成后建议给 pnpm 也配置镜像源：
+
+```bash
+pnpm config set registry https://registry.npmmirror.com
+```
+
+#### 初始化 Astro 项目
+
+首先在命令行里打开用于放置你的项目的文件夹（不是项目的文件夹，而是放置项目文件夹的文件夹，懂？）
+
+如果是 Windows ，可以直接在 文件资源管理器 中打开文件夹，然后右键空白部分，选择 在终端中打开 。  
+也可以先打开终端，然后使用 `cd <文件夹路径>` 来切换文件夹。如果是跨盘符（如从 C 盘切换到 D 盘）则需要使用 `cd /d <文件夹路径>` 。
+
+对于 Debian ，可以通过 `ls` 查看当前目录文件，`mkdir` 创建新目录，`cd` 切换目录。  
+对于不熟悉 Linux 的人，建议直接使用默认的用户`home`目录，无需切换。
+
+进入到正确的目录后，运行：
+
+```bash
+pnpm create astro@latest
+```
+
+即可进入项目初始化流程。
+
+根据提示完成后便会在当前目录下自动创建好你的项目的文件夹。  
+对于 Windows ，可以在文件资源管理器中直接看到；对于 Debian ，使用 `ls` 查看是否创建成功。
+
+在命令行中通过 `cd <文件夹名>`[^详细语法] 进入你的项目文件夹，然后运行 `code .` （注意有个`.`）即可在 VSCode 中打开该文件夹
+
+打开 OpenCode，在 GUI 中可以选择并打开该文件夹。接下来就可以让你的 AI 来写网站了。关于项目有任何疑问也可以问它。
+
+[^详细语法]:
+    `cd <路径>` 中的路径，既可以是绝对路径( `D:/Projects/My-site` )也可以是相对路径( `My-site` )。相对路径即叠加在当前所在的目录上。  
+    在相对路径中， `./` 表示当前目录， `../`表示上一级目录。  
+    所以，如果你当前正在 `D:/Projects` 目录，则 `cd D:/Projects/My-site` 、`cd ./My-site` 和 `cd My-site`是等效的。  
+    切换目录时可根据情况来使用更方便的路径表示方法。
+
+### 发布网站
+
+我们使用 Astro 构建静态网站，在 [Github Pages](https://docs.astro.build/zh-cn/guides/deploy/github/)、 [Vercel](https://docs.astro.build/zh-cn/guides/deploy/vercel/) 、 [Netlify](https://docs.astro.build/zh-cn/guides/deploy/netlify/) 等平台都可以部署。可自行查阅相关文档。
