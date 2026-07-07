@@ -1,8 +1,8 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import FormattedDate from '../../components/FormattedDate.astro';
+import Layout from '@/layouts/Layout.astro';
+import FormattedDate from '@/components/FormattedDate.astro';
 import { getCollection } from 'astro:content';
-import { SITE_TITLE } from '../../consts';
+import { SITE_TITLE } from '@/consts';
 
 const posts = (
 	await getCollection('articles', ({ data }) =>
