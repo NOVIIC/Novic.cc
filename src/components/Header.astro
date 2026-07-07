@@ -18,23 +18,26 @@ const links = [
 	class="sticky top-0 z-30 border-b border-white/5 bg-black/20 backdrop-blur-md"
 >
 	<nav
-		class="relative mx-auto flex h-15 items-center justify-between pl-6 pr-3"
+		class="relative mx-auto flex h-15 items-center pl-6 pr-3"
 	>
-		<a
-			href="/"
-			class="text-xl font-bold text-white transition-colors hover:text-accent"
-			>{SITE_TITLE}</a
-		>
+		<div class="flex flex-1 justify-start">
+			<a
+				href="/"
+				class="text-xl font-bold text-white transition-colors hover:text-accent"
+				>{SITE_TITLE}</a
+			>
+		</div>
 
 		<div
-			class="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1 text-xl text-white/70 md:flex"
+			class="flex flex-1 items-center justify-center gap-1 text-lg text-white/70 md:text-xl"
 		>
 			{
 				links.map((l) => (
 					<a
 						href={l.href}
 						class:list={[
-							'-mb-px border-b-4 px-2 py-2 transition-colors hover:text-white',
+							'-mb-px whitespace-nowrap border-b-4 px-1.5 py-2 transition-colors hover:text-white sm:px-2',
+							l.href === '/' && 'max-[420px]:hidden',
 							isActive(l.href)
 								? 'font-bold text-white border-accent/50'
 								: 'font-normal border-transparent',
@@ -46,31 +49,7 @@ const links = [
 			}
 		</div>
 
-		<div class="flex items-center gap-2 text-white/70">
-			<button
-				type="button"
-				id="menu-toggle"
-				aria-label="菜单"
-				aria-expanded="false"
-				aria-controls="mobile-menu"
-				class="flex items-center justify-center rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-sm backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-white/10 hover:text-white active:scale-95 md:hidden"
-			>
-				<svg
-					aria-hidden="true"
-					width="16"
-					height="16"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-				>
-					<line x1="3" y1="6" x2="21" y2="6"></line>
-					<line x1="3" y1="12" x2="21" y2="12"></line>
-					<line x1="3" y1="18" x2="21" y2="18"></line>
-				</svg>
-			</button>
+		<div class="flex flex-1 items-center justify-end gap-2 text-white/70">
 			<button
 				type="button"
 				id="search-trigger"
@@ -117,34 +96,6 @@ const links = [
 		</div>
 	</nav>
 </header>
-
-<div
-	id="mobile-menu"
-	class="popup-bg p-2 fixed top-15 z-30 hidden w-36 md:hidden"
-	aria-hidden="true"
->
-	<nav class="flex flex-col gap-0.5 text-white/80">
-		{
-			links.map((l) => (
-				<a
-					href={l.href}
-					class:list={[
-						'flex items-center gap-2.5 rounded-lg px-3 py-2 text-base font-medium transition-colors hover:bg-white/10 hover:text-white',
-						isActive(l.href) ? 'text-white' : 'text-white/70',
-					]}
-				>
-					<span
-						class:list={[
-							'h-1.5 w-1.5 rounded-full bg-accent',
-							isActive(l.href) ? 'opacity-100' : 'opacity-40',
-						]}
-					/>
-					{l.label}
-				</a>
-			))
-		}
-	</nav>
-</div>
 
 <dialog
 	id="search-dialog"
@@ -343,46 +294,9 @@ const links = [
 			});
 		};
 
-		const bindMobileMenu = () => {
-			const menuToggle = document.getElementById('menu-toggle');
-			const mobileMenu = document.getElementById('mobile-menu');
-			if (!menuToggle || !mobileMenu) return;
-
-			const toggleMenu = (force) => {
-				const willOpen =
-					force === undefined ? mobileMenu.classList.contains('hidden') : force;
-				if (willOpen) {
-					const r = menuToggle.getBoundingClientRect();
-					if (r.left + 144 <= window.innerWidth - 8) {
-						mobileMenu.style.left = r.left + 'px';
-						mobileMenu.style.right = 'auto';
-					} else {
-						mobileMenu.style.right = '8px';
-						mobileMenu.style.left = 'auto';
-					}
-				}
-				mobileMenu.classList.toggle('hidden', !willOpen);
-				menuToggle.setAttribute('aria-expanded', String(willOpen));
-			};
-			menuToggle.addEventListener('click', (e) => {
-				e.stopPropagation();
-				toggleMenu();
-			});
-			mobileMenu
-				.querySelectorAll('a')
-				.forEach((a) => a.addEventListener('click', () => toggleMenu(false)));
-			document.addEventListener('click', (e) => {
-				if (mobileMenu.classList.contains('hidden')) return;
-				if (!menuToggle.contains(e.target) && !mobileMenu.contains(e.target))
-					toggleMenu(false);
-			});
-		};
-
 		bindSearchUI();
-		bindMobileMenu();
 		document.addEventListener('astro:after-swap', () => {
 			bindSearchUI();
-			bindMobileMenu();
 		});
 
 		if (!window.__searchKeydownBound) {
