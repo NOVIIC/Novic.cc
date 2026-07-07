@@ -9,10 +9,10 @@ const [topics, tags] = await Promise.all([getNotesTree(), getNotesTags()]);
 
 <Layout title={`Notes · ${SITE_TITLE}`} description="学习笔记，按主题分类">
 	<div
-		class="mx-auto max-w-3xl xl:max-w-none xl:grid xl:grid-cols-[1fr_minmax(0,48rem)_1fr] xl:gap-6"
+		class="mx-auto max-w-3xl lg:max-w-none lg:grid lg:grid-cols-[minmax(9rem,1fr)_minmax(32rem,3fr)_minmax(9rem,1fr)] lg:gap-6 xl:grid-cols-[1fr_minmax(0,48rem)_1fr]"
 	>
 		<NotesNav />
-		<div class="min-w-0 xl:col-start-2">
+		<div class="min-w-0 lg:col-start-2">
 			<section class="not-prose mb-10">
 				<h1 class="text-3xl font-bold text-white">Notes</h1>
 				<p class="mt-2 text-white/70">学习笔记</p>

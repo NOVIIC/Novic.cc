@@ -16,7 +16,7 @@ const toc = headings.filter((h) => h.depth > 1 && h.depth < 4);
 {
 	toc.length > 0 && (
 		<>
-			<div class="float-btn float-btn-right fixed right-4 top-20 z-20 xl:hidden">
+			<div class="float-btn float-btn-right fixed right-4 top-20 z-20 lg:hidden">
 				<button
 					type="button"
 					id="toc-toggle"
@@ -44,7 +44,7 @@ const toc = headings.filter((h) => h.depth > 1 && h.depth < 4);
 			</div>
 			<div
 				id="mobile-toc"
-				class="pop-panel popup-bg p-3 fixed right-4 top-32 z-20 w-60 max-h-[70vh] overflow-y-auto xl:hidden"
+				class="pop-panel popup-bg p-3 fixed right-4 top-32 z-20 w-60 max-h-[70vh] overflow-y-auto lg:hidden"
 				aria-hidden="true"
 				inert
 			>
