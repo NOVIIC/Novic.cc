@@ -14,6 +14,10 @@ export default defineConfig({
 	image: {
 		layout: 'constrained',
 	},
+	prefetch: {
+		prefetchAll: true,
+		defaultStrategy: 'hover',
+	},
 	integrations: [expressiveCode(), mdx(), sitemap()],
 	fonts: [
 		{

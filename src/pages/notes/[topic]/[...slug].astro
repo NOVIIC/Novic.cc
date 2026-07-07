@@ -1,7 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
-import NoteLayout from '../../../layouts/NoteLayout.astro';
-import { getNotesTree } from '../../../utils/notes';
+import NoteLayout from '@/layouts/NoteLayout.astro';
+import { getNotesTree } from '@/utils/notes';
 
 export async function getStaticPaths() {
 	const isProd = import.meta.env.PROD;

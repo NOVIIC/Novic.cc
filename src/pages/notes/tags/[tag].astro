@@ -1,10 +1,10 @@
 ---
-import Layout from '../../../layouts/Layout.astro';
-import BackButton from '../../../components/BackButton.astro';
-import NotesNav from '../../../components/NotesNav.astro';
-import NotesNavMobile from '../../../components/NotesNavMobile.astro';
-import { getNotesTree } from '../../../utils/notes';
-import { SITE_TITLE } from '../../../consts';
+import Layout from '@/layouts/Layout.astro';
+import BackButton from '@/components/BackButton.astro';
+import NotesNav from '@/components/NotesNav.astro';
+import NotesNavMobile from '@/components/NotesNavMobile.astro';
+import { getNotesTree } from '@/utils/notes';
+import { SITE_TITLE } from '@/consts';
 
 export async function getStaticPaths() {
 	const topics = await getNotesTree();
@@ -29,6 +29,7 @@ export async function getStaticPaths() {
 }
 
 const { tag, topics } = Astro.props;
+const treeTopics = await getNotesTree();
 ---
 
 <Layout
@@ -36,11 +37,11 @@ const { tag, topics } = Astro.props;
 	description={`标签 ${tag} 下的笔记主题`}
 >
 	<BackButton fallbackHref="/notes/" slot="floating" />
-	<NotesNavMobile slot="floating" />
+	<NotesNavMobile topics={treeTopics} slot="floating" />
 	<div
 		class="mx-auto max-w-3xl xl:max-w-none xl:grid xl:grid-cols-[1fr_minmax(0,48rem)_1fr] xl:gap-6"
 	>
-		<NotesNav />
+		<NotesNav topics={treeTopics} />
 		<div class="min-w-0 xl:col-start-2">
 			<section class="not-prose mb-8">
 				<a

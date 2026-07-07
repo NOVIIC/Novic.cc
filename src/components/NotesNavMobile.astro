@@ -1,8 +1,12 @@
 ---
-import NotesTree from './NotesTree.astro';
-import { getNotesTree, parseNotesPath } from '../utils/notes';
+import NotesTree from '@/components/NotesTree.astro';
+import type { NotesTopic } from '@/utils/notes';
+import { parseNotesPath } from '@/utils/notes';
 
-const topics = await getNotesTree();
+interface Props {
+	topics: NotesTopic[];
+}
+const { topics } = Astro.props;
 const { activeTopicSlug, activeArticleSlug } = parseNotesPath(
 	Astro.url.pathname,
 );

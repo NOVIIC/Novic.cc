@@ -1,8 +1,9 @@
 ---
-import ContentLayout, { type Heading } from '../components/ContentLayout.astro';
-import NotesNav from '../components/NotesNav.astro';
-import NotesNavMobile from '../components/NotesNavMobile.astro';
-import { SITE_TITLE } from '../consts';
+import ContentLayout, { type Heading } from '@/components/ContentLayout.astro';
+import NotesNav from '@/components/NotesNav.astro';
+import NotesNavMobile from '@/components/NotesNavMobile.astro';
+import { SITE_TITLE } from '@/consts';
+import { getNotesTree } from '@/utils/notes';
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
@@ -17,6 +18,8 @@ const { description, pubDate, updatedDate, tags } = note.data;
 const displayTitle = isIntro ? '前言' : note.data.title;
 const pageTitle = isIntro ? `${topicTitle} · ${SITE_TITLE}` : note.data.title;
 const fallbackHref = isIntro ? '/notes/' : `/notes/${topic}/intro/`;
+
+const navTopics = await getNotesTree();
 
 const pagefindMeta = isIntro
 	? 'section[data-pf-section], topic[data-pf-topic], kind[data-pf-kind], title[data-pf-topic]'
@@ -42,7 +45,7 @@ const extraArticleAttrs = {
 	pagefindMeta={pagefindMeta}
 	extraArticleAttrs={extraArticleAttrs}
 >
-	<NotesNav slot="left-sidebar" />
-	<NotesNavMobile slot="floating-extras" />
+	<NotesNav topics={navTopics} slot="left-sidebar" />
+	<NotesNavMobile topics={navTopics} slot="floating-extras" />
 	<slot />
 </ContentLayout>

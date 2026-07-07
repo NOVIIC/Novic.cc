@@ -1,5 +1,5 @@
 ---
-import { SITE_TITLE } from '../consts';
+import { SITE_TITLE } from '@/consts';
 
 const path = Astro.url.pathname;
 const isActive = (href: string) =>
@@ -17,9 +17,7 @@ const links = [
 <header
 	class="sticky top-0 z-30 border-b border-white/5 bg-black/20 backdrop-blur-md"
 >
-	<nav
-		class="relative mx-auto flex h-15 items-center pl-6 pr-3"
-	>
+	<nav class="relative mx-auto flex h-15 items-center pl-6 pr-3">
 		<div class="flex flex-1 justify-start">
 			<a
 				href="/"
