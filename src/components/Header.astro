@@ -165,60 +165,62 @@ const links = [
 		<div class="max-h-[70vh] overflow-y-auto p-4" data-pagefind-ignore>
 			<link rel="stylesheet" href="/pagefind/pagefind-component-ui.css" />
 			<script is:inline type="module">
-				const bindPfTemplate = () => {
-					const pfResults = document.querySelector(
+				const esc = (s) =>
+					String(s ?? '').replace(
+						/[&<>"']/g,
+						(c) =>
+							({
+								'&': '&amp;',
+								'<': '&lt;',
+								'>': '&gt;',
+								'"': '&quot;',
+								"'": '&#39;',
+							})[c],
+					);
+
+				const getResultTemplate = () => (result) => {
+					const m = result?.meta ?? {};
+					const section = esc(m.section);
+					const topic = esc(m.topic);
+					const kind = esc(m.kind);
+					const title = esc(m.title || 'Untitled');
+					const url = esc(m.url || result?.url || '');
+					const excerpt = result?.excerpt || '';
+
+					let crumbs = '';
+					if (section === 'notes') {
+						crumbs =
+							'<p class="search-result-crumbs"><span class="search-crumb">Notes</span>';
+						if (topic)
+							crumbs += `<span class="search-crumb-sep">›</span><span class="search-crumb">${topic}</span>`;
+						if (kind === 'intro')
+							crumbs += '<span class="search-crumb-tag">主题首页</span>';
+						crumbs += '</p>';
+					} else if (section === 'articles') {
+						crumbs =
+							'<p class="search-result-crumbs"><span class="search-crumb">Articles</span></p>';
+					}
+
+					return `<li class="search-result">
+						<div class="search-result-card">
+							<div class="search-result-content">
+								${crumbs}
+								<p class="search-result-title"><a class="search-result-link" href="${url}">${title}</a></p>
+								${excerpt ? `<p class="search-result-excerpt">${excerpt}</p>` : ''}
+							</div>
+						</div>
+					</li>`;
+				};
+
+				const applyResultTemplate = (doc) => {
+					const pfResults = doc.querySelector(
 						'pagefind-results[instance="site-search"]',
 					);
 					if (!pfResults || pfResults.dataset.tplBound) return;
 					pfResults.dataset.tplBound = '1';
-					const esc = (s) =>
-						String(s ?? '').replace(
-							/[&<>"']/g,
-							(c) =>
-								({
-									'&': '&amp;',
-									'<': '&lt;',
-									'>': '&gt;',
-									'"': '&quot;',
-									"'": '&#39;',
-								})[c],
-						);
-					// 自定义结果模板：在标题上方展示「Notes › 主题」面包屑，
-					// 体现 notes 主题 → 文章 的层级关系。
-					pfResults.resultTemplate = (result) => {
-						const m = result?.meta ?? {};
-						const section = esc(m.section);
-						const topic = esc(m.topic);
-						const kind = esc(m.kind);
-						const title = esc(m.title || 'Untitled');
-						const url = esc(m.url || result?.url || '');
-						const excerpt = result?.excerpt || '';
-
-						let crumbs = '';
-						if (section === 'notes') {
-							crumbs =
-								'<p class="search-result-crumbs"><span class="search-crumb">Notes</span>';
-							if (topic)
-								crumbs += `<span class="search-crumb-sep">›</span><span class="search-crumb">${topic}</span>`;
-							if (kind === 'intro')
-								crumbs += '<span class="search-crumb-tag">主题首页</span>';
-							crumbs += '</p>';
-						} else if (section === 'articles') {
-							crumbs =
-								'<p class="search-result-crumbs"><span class="search-crumb">Articles</span></p>';
-						}
-
-						return `<li class="search-result">
-							<div class="search-result-card">
-								<div class="search-result-content">
-									${crumbs}
-									<p class="search-result-title"><a class="search-result-link" href="${url}">${title}</a></p>
-									${excerpt ? `<p class="search-result-excerpt">${excerpt}</p>` : ''}
-								</div>
-							</div>
-						</li>`;
-					};
+					pfResults.resultTemplate = getResultTemplate();
 				};
+
 				const bindSectionPills = () => {
 					const wrap = document.getElementById('section-filter');
 					if (!wrap || wrap.dataset.bound) return;
@@ -236,7 +238,6 @@ const links = [
 						const inst = input?.instance;
 						if (!inst || typeof inst.triggerFilters !== 'function') return;
 						const a = activeSections();
-						// 选中全部或全未选时不过滤，显示所有版块
 						if (a.length === 0 || a.length === pills.length) {
 							inst.triggerFilters({});
 						} else {
@@ -253,10 +254,25 @@ const links = [
 						}),
 					);
 				};
-				bindPfTemplate();
+
+				applyResultTemplate(document);
 				bindSectionPills();
-				document.addEventListener('astro:page-load', bindPfTemplate);
-				document.addEventListener('astro:page-load', bindSectionPills);
+
+				document.addEventListener('astro:page-load', () => {
+					applyResultTemplate(document);
+					bindSectionPills();
+				});
+
+				document.addEventListener('astro:before-swap', (e) => {
+					applyResultTemplate(e.newDocument);
+
+					const d = document.getElementById('search-dialog');
+					if (d?.open) {
+						if (typeof d.close === 'function') d.close();
+						else d.removeAttribute('open');
+					}
+				});
+
 				try {
 					await import('/pagefind/pagefind-component-ui.js');
 				} catch (e) {
@@ -299,29 +315,39 @@ const links = [
 
 <script is:inline>
 	(() => {
-		const dialog = document.getElementById('search-dialog');
-		const trigger = document.getElementById('search-trigger');
-		const closeBtn = document.getElementById('search-close');
-		if (!dialog || !trigger) return;
+		const getDialog = () => document.getElementById('search-dialog');
 
-		const open = () => {
-			if (typeof dialog.showModal === 'function') dialog.showModal();
-			else dialog.setAttribute('open', '');
+		const openDialog = () => {
+			const d = getDialog();
+			if (!d) return;
+			if (typeof d.showModal === 'function') d.showModal();
+			else d.setAttribute('open', '');
 		};
-		const close = () => {
-			if (typeof dialog.close === 'function') dialog.close();
-			else dialog.removeAttribute('open');
+		const closeDialog = () => {
+			const d = getDialog();
+			if (!d) return;
+			if (typeof d.close === 'function') d.close();
+			else d.removeAttribute('open');
 		};
 
-		trigger.addEventListener('click', open);
-		closeBtn?.addEventListener('click', close);
-		dialog.addEventListener('click', (e) => {
-			if (e.target === dialog) close();
-		});
+		const bindSearchUI = () => {
+			const d = getDialog();
+			const t = document.getElementById('search-trigger');
+			const c = document.getElementById('search-close');
+			if (!d || !t) return;
 
-		const menuToggle = document.getElementById('menu-toggle');
-		const mobileMenu = document.getElementById('mobile-menu');
-		if (menuToggle && mobileMenu) {
+			t.addEventListener('click', openDialog);
+			c?.addEventListener('click', closeDialog);
+			d.addEventListener('click', (ev) => {
+				if (ev.target === d) closeDialog();
+			});
+		};
+
+		const bindMobileMenu = () => {
+			const menuToggle = document.getElementById('menu-toggle');
+			const mobileMenu = document.getElementById('mobile-menu');
+			if (!menuToggle || !mobileMenu) return;
+
 			const toggleMenu = (force) => {
 				const willOpen =
 					force === undefined ? mobileMenu.classList.contains('hidden') : force;
@@ -350,67 +376,24 @@ const links = [
 				if (!menuToggle.contains(e.target) && !mobileMenu.contains(e.target))
 					toggleMenu(false);
 			});
-		}
+		};
 
-		const isMac = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
-		document.addEventListener('keydown', (e) => {
-			if ((isMac ? e.metaKey : e.ctrlKey) && e.key.toLowerCase() === 'k') {
-				e.preventDefault();
-				open();
-			}
-		});
+		bindSearchUI();
+		bindMobileMenu();
 		document.addEventListener('astro:after-swap', () => {
-			const d = document.getElementById('search-dialog');
-			const t = document.getElementById('search-trigger');
-			const c = document.getElementById('search-close');
-			if (d && t) {
-				t.addEventListener('click', () =>
-					typeof d.showModal === 'function'
-						? d.showModal()
-						: d.setAttribute('open', ''),
-				);
-				c?.addEventListener('click', () =>
-					typeof d.close === 'function' ? d.close() : d.removeAttribute('open'),
-				);
-				d.addEventListener('click', (ev) => {
-					if (ev.target === d)
-						typeof d.close === 'function'
-							? d.close()
-							: d.removeAttribute('open');
-				});
-			}
-			const mt = document.getElementById('menu-toggle');
-			const mm = document.getElementById('mobile-menu');
-			if (mt && mm) {
-				const toggleMenu = (force) => {
-					const willOpen =
-						force === undefined ? mm.classList.contains('hidden') : force;
-					if (willOpen) {
-						const r = mt.getBoundingClientRect();
-						if (r.left + 144 <= window.innerWidth - 8) {
-							mm.style.left = r.left + 'px';
-							mm.style.right = 'auto';
-						} else {
-							mm.style.right = '8px';
-							mm.style.left = 'auto';
-						}
-					}
-					mm.classList.toggle('hidden', !willOpen);
-					mt.setAttribute('aria-expanded', String(willOpen));
-				};
-				mt.addEventListener('click', (e) => {
-					e.stopPropagation();
-					toggleMenu();
-				});
-				mm.querySelectorAll('a').forEach((a) =>
-					a.addEventListener('click', () => toggleMenu(false)),
-				);
-				document.addEventListener('click', (e) => {
-					if (mm.classList.contains('hidden')) return;
-					if (!mt.contains(e.target) && !mm.contains(e.target))
-						toggleMenu(false);
-				});
-			}
+			bindSearchUI();
+			bindMobileMenu();
 		});
+
+		if (!window.__searchKeydownBound) {
+			window.__searchKeydownBound = true;
+			const isMac = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
+			document.addEventListener('keydown', (e) => {
+				if ((isMac ? e.metaKey : e.ctrlKey) && e.key.toLowerCase() === 'k') {
+					e.preventDefault();
+					openDialog();
+				}
+			});
+		}
 	})();
 </script>
