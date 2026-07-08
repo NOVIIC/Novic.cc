@@ -46,6 +46,7 @@
 		"remark-lint-no-unused-definitions": "^4.0.2",
 		"remark-mdx": "^3.1.1",
 		"remark-validate-links": "^13.1.0",
-		"typescript": "^6.0.3"
+		"typescript": "^6.0.3",
+		"vite-plugin-font": "^5.1.2"
 	}
 }
