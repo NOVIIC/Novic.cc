@@ -1,0 +1,26 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import CardLink from '@/components/CardLink.astro';
+import FormattedDate from '@/components/FormattedDate.astro';
+
+interface Props {
+	article: CollectionEntry<'articles'>;
+	showTags?: boolean;
+}
+const { article, showTags = true } = Astro.props;
+---
+
+<CardLink href={`/articles/${article.id}/`}>
+	<div class="flex items-center gap-2 text-xs text-gray">
+		<FormattedDate date={article.data.pubDate} />
+		{
+			showTags && article.data.tags.length > 0 && (
+				<span>· {article.data.tags.join(' / ')}</span>
+			)
+		}
+	</div>
+	<h3 class="mt-1 text-lg font-semibold text-white">
+		{article.data.title}
+	</h3>
+	<p class="mt-1 text-sm text-white/60">{article.data.description}</p>
+</CardLink>

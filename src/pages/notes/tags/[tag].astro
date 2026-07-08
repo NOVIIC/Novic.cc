@@ -3,6 +3,7 @@ import Layout from '@/layouts/Layout.astro';
 import BackButton from '@/components/BackButton.astro';
 import NotesNav from '@/components/NotesNav.astro';
 import NotesNavMobile from '@/components/NotesNavMobile.astro';
+import TopicCard from '@/components/TopicCard.astro';
 import { getNotesTree } from '@/utils/notes';
 import { SITE_TITLE } from '@/consts';
 
@@ -55,22 +56,7 @@ const treeTopics = await getNotesTree();
 			</section>
 
 			<div class="not-prose grid gap-4 sm:grid-cols-2">
-				{
-					topics.map((t) => (
-						<a
-							href={`/notes/${t.slug}/intro/`}
-							class="content-bg rounded-xl group p-6 transition-all duration-200 hover:-translate-y-0.5 hover:border-gray/70 hover:shadow-lg hover:shadow-black/20 active:scale-[0.99]"
-						>
-							<div class="flex items-center justify-between">
-								<h2 class="text-xl font-semibold text-white">{t.title}</h2>
-								<span class="text-sm text-white/50">{t.count} 篇</span>
-							</div>
-							{t.description && (
-								<p class="mt-2 text-sm text-white/60">{t.description}</p>
-							)}
-						</a>
-					))
-				}
+				{topics.map((t) => <TopicCard topic={t} showTags={false} />)}
 			</div>
 		</div>
 	</div>

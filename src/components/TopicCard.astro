@@ -1,0 +1,36 @@
+---
+import CardLink from '@/components/CardLink.astro';
+
+interface Props {
+	topic: {
+		slug: string;
+		title: string;
+		description?: string;
+		tags?: string[];
+		count: number;
+	};
+	showTags?: boolean;
+}
+const { topic, showTags = true } = Astro.props;
+---
+
+<CardLink href={`/notes/${topic.slug}/intro/`}>
+	<div class="flex items-center justify-between">
+		<h2 class="text-xl font-semibold text-white">{topic.title}</h2>
+		<span class="text-sm text-white/50">{topic.count} 篇</span>
+	</div>
+	{
+		topic.description && (
+			<p class="mt-2 text-sm text-white/60">{topic.description}</p>
+		)
+	}
+	{
+		showTags && topic.tags && topic.tags.length > 0 && (
+			<div class="mt-3 flex flex-wrap gap-1.5 text-xs text-white/45">
+				{topic.tags.map((tag) => (
+					<span>#{tag}</span>
+				))}
+			</div>
+		)
+	}
+</CardLink>
