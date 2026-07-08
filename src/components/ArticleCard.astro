@@ -2,22 +2,25 @@
 import type { CollectionEntry } from 'astro:content';
 import CardLink from '@/components/CardLink.astro';
 import FormattedDate from '@/components/FormattedDate.astro';
+import { countWords, formatWordCount } from '@/utils/reading';
 
 interface Props {
 	article: CollectionEntry<'articles'>;
 	showTags?: boolean;
 }
 const { article, showTags = true } = Astro.props;
+const wordCount = countWords(article);
 ---
 
 <CardLink href={`/articles/${article.id}/`}>
-	<div class="flex items-center gap-2 text-xs text-gray">
+	<div class="flex flex-wrap items-center gap-2 text-xs text-gray">
 		<FormattedDate date={article.data.pubDate} />
 		{
 			showTags && article.data.tags.length > 0 && (
 				<span>· {article.data.tags.join(' / ')}</span>
 			)
 		}
+		<span>· {formatWordCount(wordCount)}</span>
 	</div>
 	<h3 class="mt-1 text-lg font-semibold text-white">
 		{article.data.title}
