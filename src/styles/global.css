@@ -246,6 +246,28 @@ h4:hover .heading-anchor {
 	animation: vt-slide-in-back 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* ===== 顶部导航进度条（弱网加载反馈） ===== */
+#nav-progress {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 3px;
+	z-index: 100;
+	pointer-events: none;
+	opacity: 0;
+	contain: layout paint;
+}
+#nav-progress .bar {
+	height: 100%;
+	width: 100%;
+	transform: scaleX(0);
+	transform-origin: 0 50%;
+	background: var(--color-accent);
+	box-shadow: 0 0 10px 1px
+		color-mix(in oklab, var(--color-accent) 55%, transparent);
+}
+
 /* ===== 浮动按钮（返回 / 目录）入场动画 ===== */
 .float-btn {
 	opacity: 0;
@@ -472,6 +494,8 @@ h4:hover .heading-anchor {
 	::view-transition-new(notes-nav-desktop) {
 		animation: none;
 	}
+	#nav-progress,
+	#nav-progress .bar,
 	.float-btn,
 	.pop-panel,
 	.notes-articles,

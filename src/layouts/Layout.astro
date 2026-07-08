@@ -23,6 +23,110 @@ const { title, description, image } = Astro.props;
 	<head>
 		<BaseHead title={title} description={description} image={image} />
 		<ClientRouter />
+		<script>
+			// 顶部导航进度条：点击链接 → fetch 新页面 → page-load 期间显示，
+			// 缓解弱网下「点击后无反馈」的体感。仅在 ClientRouter 导航时触发。
+			(() => {
+				const bar = document.createElement('div');
+				bar.id = 'nav-progress';
+				bar.setAttribute('aria-hidden', 'true');
+				const fill = document.createElement('div');
+				fill.className = 'bar';
+				bar.appendChild(fill);
+				document.documentElement.appendChild(bar);
+
+				const reduce = window.matchMedia(
+					'(prefers-reduced-motion: reduce)',
+				).matches;
+
+				let progress = 0;
+				let rafId = 0;
+				let showTimer = 0;
+				let hideTimer = 0;
+				let fallbackTimer = 0;
+				let loading = false;
+
+				const apply = () => {
+					fill.style.transform = `scaleX(${progress})`;
+				};
+				const stopTrickle = () => {
+					if (rafId) {
+						cancelAnimationFrame(rafId);
+						rafId = 0;
+					}
+				};
+				// NProgress 风格：越接近 85% 增长越慢，制造「还在加载」的张力
+				const trickle = () => {
+					if (progress >= 0.85) {
+						rafId = 0;
+						return;
+					}
+					const remaining = 0.85 - progress;
+					progress += remaining * 0.025 + 0.0015;
+					apply();
+					rafId = requestAnimationFrame(trickle);
+				};
+
+				const start = () => {
+					if (loading) return;
+					loading = true;
+					progress = 0;
+					apply();
+					bar.style.transition = 'none';
+					bar.style.opacity = '0';
+					clearTimeout(showTimer);
+					clearTimeout(hideTimer);
+					// 延迟显示：命中 prefetch 缓存的快导航（<120ms）不闪烁进度条
+					showTimer = window.setTimeout(() => {
+						if (!loading) return;
+						bar.style.transition = 'opacity 0.2s ease';
+						bar.style.opacity = '1';
+						if (reduce) {
+							progress = 0.8;
+							apply();
+						} else {
+							rafId = requestAnimationFrame(trickle);
+						}
+					}, 120);
+					clearTimeout(fallbackTimer);
+					// 兜底：导航异常久未完成时强制结束，避免进度条卡住
+					fallbackTimer = window.setTimeout(finish, 12000);
+				};
+
+				const finish = () => {
+					if (!loading) return;
+					loading = false;
+					clearTimeout(showTimer);
+					clearTimeout(hideTimer);
+					clearTimeout(fallbackTimer);
+					stopTrickle();
+					if (parseFloat(bar.style.opacity || '0') === 0) {
+						// 从未显示，静默复位
+						progress = 0;
+						apply();
+						return;
+					}
+					bar.style.transition =
+						'transform 0.2s ease, opacity 0.35s ease 0.15s';
+					progress = 1;
+					apply();
+					hideTimer = window.setTimeout(() => {
+						bar.style.opacity = '0';
+					}, 180);
+				};
+
+				document.addEventListener('astro:before-preparation', start);
+				document.addEventListener('astro:page-load', finish);
+				// swap 完成后快进到 95%，page-load 紧接 finish 推满
+				document.addEventListener('astro:after-swap', () => {
+					if (loading) {
+						stopTrickle();
+						progress = Math.max(progress, 0.95);
+						apply();
+					}
+				});
+			})();
+		</script>
 		<style
 			is:global
 			define:vars={{

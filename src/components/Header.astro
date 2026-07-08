@@ -33,6 +33,7 @@ const links = [
 				links.map((l) => (
 					<a
 						href={l.href}
+						data-astro-prefetch="viewport"
 						class:list={[
 							'-mb-px whitespace-nowrap border-b-4 px-1.5 py-2 transition-colors hover:text-white sm:px-2',
 							l.href === '/' && 'max-[420px]:hidden',
