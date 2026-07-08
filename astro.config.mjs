@@ -17,14 +17,15 @@ export default defineConfig({
 	},
 	prefetch: {
 		prefetchAll: true,
-		defaultStrategy: 'hover',
+		defaultStrategy: 'viewport',
 	},
 	integrations: [expressiveCode(), mdx(), sitemap()],
 	vite: {
 		plugins: [
 			tailwindcss(),
 			font.vite({
-				include: [/\.woff2$/i],
+				include: [/\.woff2(\?|$)/i],
+				scanFiles: ['src/**/*.{astro,ts,js,mdx,md}'],
 			}),
 		],
 	},
