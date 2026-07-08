@@ -1,5 +1,8 @@
 allowBuilds:
+  cn-font-split: true
   esbuild: true
+  koffi: true
+  protobufjs: true
   sharp: true
 minimumReleaseAgeExclude:
   - '@tailwindcss/node@4.3.2'
