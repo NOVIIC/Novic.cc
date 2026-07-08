@@ -1,6 +1,6 @@
 ---
 import Layout from '@/layouts/Layout.astro';
-import FormattedDate from '@/components/FormattedDate.astro';
+import ArticleCard from '@/components/ArticleCard.astro';
 import { getCollection } from 'astro:content';
 import { SITE_TITLE } from '@/consts';
 
@@ -45,18 +45,7 @@ const { tag, posts } = Astro.props;
 			{
 				posts.map((post) => (
 					<li class="not-prose">
-						<a
-							href={`/articles/${post.id}/`}
-							class="content-bg rounded-xl block p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-gray/70 hover:shadow-lg hover:shadow-black/20 active:scale-[0.99]"
-						>
-							<div class="flex items-center gap-2 text-xs text-gray">
-								<FormattedDate date={post.data.pubDate} />
-							</div>
-							<h3 class="mt-1 text-lg font-semibold text-white">
-								{post.data.title}
-							</h3>
-							<p class="mt-1 text-sm text-white/60">{post.data.description}</p>
-						</a>
+						<ArticleCard article={post} showTags={false} />
 					</li>
 				))
 			}

@@ -1,6 +1,7 @@
 ---
 import Layout from '@/layouts/Layout.astro';
-import FormattedDate from '@/components/FormattedDate.astro';
+import ArticleCard from '@/components/ArticleCard.astro';
+import TagCloud from '@/components/TagCloud.astro';
 import { getCollection } from 'astro:content';
 import { SITE_TITLE } from '@/consts';
 
@@ -16,9 +17,13 @@ for (const post of posts) {
 		tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
 	}
 }
-const tags = [...tagCounts.entries()].sort(
-	(a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
-);
+const tags = [...tagCounts.entries()]
+	.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+	.map(([tag, count]) => ({
+		tag,
+		count,
+		href: `/articles/tags/${tag}/`,
+	}));
 ---
 
 <Layout title={`Articles · ${SITE_TITLE}`} description="所有技术文章">
@@ -30,44 +35,14 @@ const tags = [...tagCounts.entries()].sort(
 			</p>
 		</section>
 
-		{
-			tags.length > 0 && (
-				<section class="not-prose mb-10">
-					<h2 class="mb-3 text-sm font-semibold text-white/50">标签</h2>
-					<div class="flex flex-wrap gap-2 text-sm">
-						{tags.map(([tag, count]) => (
-							<a
-								href={`/articles/tags/${tag}/`}
-								class="content-bg rounded-full px-3 py-1 text-white/75 transition-all duration-200 hover:scale-105 hover:border-gray hover:text-white active:scale-95"
-							>
-								#{tag} <span class="text-white/40">{count}</span>
-							</a>
-						))}
-					</div>
-				</section>
-			)
-		}
+		<TagCloud tags={tags} />
 
 		<h2 class="text-xl font-semibold text-white">最新文章</h2>
 		<ul class="mt-4 space-y-4">
 			{
 				posts.map((post) => (
 					<li class="not-prose">
-						<a
-							href={`/articles/${post.id}/`}
-							class="content-bg rounded-xl block p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-gray/70 hover:shadow-lg hover:shadow-black/20 active:scale-[0.99]"
-						>
-							<div class="flex items-center gap-2 text-xs text-gray">
-								<FormattedDate date={post.data.pubDate} />
-								{post.data.tags.length > 0 && (
-									<span>· {post.data.tags.join(' / ')}</span>
-								)}
-							</div>
-							<h3 class="mt-1 text-lg font-semibold text-white">
-								{post.data.title}
-							</h3>
-							<p class="mt-1 text-sm text-white/60">{post.data.description}</p>
-						</a>
+						<ArticleCard article={post} />
 					</li>
 				))
 			}
