@@ -21,5 +21,8 @@ export interface TreeNode {
 
 export const isMarkdown = (name: string): boolean => /\.(md|mdx)$/i.test(name);
 
+const IMAGE_EXT = /\.(png|jpe?g|gif|webp|avif|svg|bmp|ico)$/i;
+export const isImage = (name: string): boolean => IMAGE_EXT.test(name);
+
 export const isIntro = (name: string): boolean =>
 	/^intro\.(md|mdx)$/i.test(name);
