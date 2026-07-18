@@ -1,0 +1,169 @@
+---
+import '@/styles/global.css';
+import { css as atkinsonR } from '@/fonts/atkinson-regular.woff2';
+import '@/fonts/atkinson-bold.woff2';
+import { css as harmony } from '@/fonts/HarmonyOS_Sans_SC.woff2';
+import { css as mapleR } from '@/fonts/MapleMonoNormalNL-NF-CN-Regular.woff2';
+import '@/fonts/MapleMonoNormalNL-NF-CN-Bold.woff2';
+---
+
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<meta name="robots" content="noindex,nofollow" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" href="/favicon.ico" sizes="any" />
+		<title>内容编辑器 · Novic.cc</title>
+		<style
+			is:global
+			define:vars={{
+				'font-atkinson': atkinsonR.family,
+				'font-harmony': harmony.family,
+				'font-maple-mono': mapleR.family,
+			}}
+		></style>
+	</head>
+	<body
+		data-pagefind-ignore
+		class="flex h-dvh flex-col overflow-hidden font-sans antialiased"
+	>
+		<!-- 顶栏 -->
+		<header
+			class="z-20 flex h-12 shrink-0 items-center gap-3 border-b border-white/10 bg-black/30 px-3 backdrop-blur-md"
+		>
+			<a
+				href="/"
+				class="shrink-0 text-sm font-bold text-white/80 transition-colors hover:text-white"
+				>Novic<span class="text-accent">·</span>Editor</a
+			>
+			<div
+				id="file-info"
+				class="hidden min-w-0 flex-1 items-center gap-2 sm:flex"
+			>
+				<span id="file-path" class="truncate font-mono text-xs text-white/50"
+				></span>
+				<span
+					id="dirty-dot"
+					class="hidden h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
+					title="有未保存的修改"></span>
+			</div>
+			<div class="flex-1 sm:hidden"></div>
+			<button
+				id="btn-save"
+				class="hidden shrink-0 rounded-lg border border-white/10 px-2.5 py-1 text-xs text-white/70 transition-colors hover:border-accent hover:text-white disabled:opacity-40"
+				disabled>保存 <kbd class="opacity-60">Ctrl+S</kbd></button
+			>
+			<div
+				id="mode-toggle"
+				class="hidden shrink-0 overflow-hidden rounded-lg border border-white/10 text-xs"
+			>
+				<button
+					data-mode="edit"
+					class="mode-btn bg-accent/20 px-2.5 py-1 text-white">编辑</button
+				><button
+					data-mode="preview"
+					class="mode-btn px-2.5 py-1 text-white/60 transition-colors hover:text-white"
+					>预览</button
+				>
+			</div>
+		</header>
+
+		<div class="flex min-h-0 flex-1">
+			<!-- 侧栏：目录树 -->
+			<aside
+				class="flex w-64 shrink-0 flex-col border-r border-white/10 bg-black/20"
+			>
+				<div
+					class="flex shrink-0 items-center gap-1 border-b border-white/10 p-2"
+				>
+					<button
+						id="btn-open"
+						class="rounded-md px-2 py-1 text-xs text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+						title="打开本地目录">打开</button
+					>
+					<button
+						id="btn-refresh"
+						class="rounded-md px-2 py-1 text-xs text-white/70 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-40"
+						title="重新扫描目录"
+						disabled>刷新</button
+					>
+					<div class="flex-1"></div>
+					<button
+						id="btn-new-file"
+						class="rounded-md px-2 py-1 text-xs text-white/70 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-40"
+						title="新建文件"
+						disabled>+文件</button
+					>
+					<button
+						id="btn-new-folder"
+						class="rounded-md px-2 py-1 text-xs text-white/70 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-40"
+						title="新建文件夹"
+						disabled>+目录</button
+					>
+				</div>
+				<div id="tree" class="min-h-0 flex-1 overflow-auto p-1.5 text-sm"></div>
+			</aside>
+
+			<!-- 主区域 -->
+			<main class="relative min-w-0 flex-1">
+				<!-- 欢迎 / 引导 -->
+				<div
+					id="welcome"
+					class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-[#060912]/60 p-6 text-center"
+				>
+					<p class="text-white/70">
+						打开本地 <code
+							class="rounded bg-white/10 px-1.5 py-0.5 font-mono text-xs"
+							>src/content</code
+						> 目录开始写作
+					</p>
+					<button
+						id="btn-open-welcome"
+						class="rounded-xl border border-accent/50 bg-accent/20 px-4 py-2 text-sm text-white transition-all hover:scale-105 hover:bg-accent/30 active:scale-95"
+						>选择目录</button
+					>
+					<p id="restore-hint" class="hidden text-xs text-white/40">
+						已找到上次打开的目录，授权后将自动恢复
+					</p>
+				</div>
+
+				<!-- 不支持的设备 -->
+				<div
+					id="unsupported"
+					class="absolute inset-0 z-20 hidden flex-col items-center justify-center gap-3 bg-[#060912]/80 p-6 text-center"
+				>
+					<p class="text-lg font-semibold text-white">当前设备不支持</p>
+					<p class="max-w-md text-sm text-white/60">
+						本编辑器依赖 File System Access API（<code
+							class="rounded bg-white/10 px-1 font-mono text-xs"
+							>showDirectoryPicker</code
+						>）直接读写本地文件。请使用桌面版 Chrome / Edge 访问。
+					</p>
+				</div>
+
+				<!-- 编辑器 -->
+				<div id="cm-container" class="h-full overflow-hidden"></div>
+
+				<!-- 预览 -->
+				<div
+					id="preview-container"
+					class="absolute inset-0 hidden overflow-auto"
+				>
+				</div>
+			</main>
+		</div>
+
+		<div
+			id="toast"
+			class="popup-bg pointer-events-none fixed bottom-5 left-1/2 z-50 -translate-x-1/2 px-4 py-2 text-sm text-white opacity-0 transition-opacity duration-200"
+		>
+		</div>
+
+		<script>
+			import { init } from '@/editor/main';
+			init();
+		</script>
+	</body>
+</html>

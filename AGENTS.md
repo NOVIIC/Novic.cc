@@ -34,6 +34,7 @@ src/
 ├── content/        # 内容集合
 ├── content.config.ts
 ├── consts.ts       # 常量
+├── editor/         # 静态 MDX 编辑器
 ├── fonts/          # 字体文件
 ├── layouts/        # 布局组件
 ├── pages/          # 页面路由

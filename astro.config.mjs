@@ -19,7 +19,11 @@ export default defineConfig({
 		prefetchAll: true,
 		defaultStrategy: 'viewport',
 	},
-	integrations: [expressiveCode(), mdx(), sitemap()],
+	integrations: [
+		expressiveCode(),
+		mdx(),
+		sitemap({ filter: (page) => !page.includes('/editor') }),
+	],
 	vite: {
 		plugins: [
 			tailwindcss(),
