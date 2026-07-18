@@ -1,7 +1,7 @@
 import * as fs from './fs';
 import { createEditor, setDoc, type EditorCallbacks } from './cm';
 import { TreeView } from './tree';
-import { isMarkdown, type TreeNode } from './types';
+import { isImage, isMarkdown, type TreeNode } from './types';
 import { newFileTemplate } from './frontmatter';
 
 const $ = <T extends HTMLElement>(id: string): T => {
@@ -58,6 +58,7 @@ export function init() {
 	let mode: 'edit' | 'preview' = 'edit';
 	let previewTimer = 0;
 	let previewSeq = 0;
+	let imageBlobUrl = '';
 
 	/* ---------- 状态与渲染 ---------- */
 
@@ -170,12 +171,19 @@ export function init() {
 
 	async function openFile(node: TreeNode) {
 		if (node.kind !== 'file') return;
+		if (isImage(node.name)) {
+			await openImage(node);
+			return;
+		}
 		if (!isMarkdown(node.name)) {
 			toast('仅支持编辑 .md / .mdx 文件');
 			return;
 		}
 		if (current?.path === node.path) return;
 		if (!confirmDiscard()) return;
+		// 从图片预览切回编辑器时恢复视图
+		ui.cm.classList.remove('hidden');
+		ui.preview.classList.add('hidden');
 		try {
 			const content = await fs.readFile(node.handle as FileSystemFileHandle);
 			current = {
@@ -197,6 +205,34 @@ export function init() {
 		}
 	}
 
+	async function openImage(node: TreeNode) {
+		if (current?.path === node.path) return;
+		if (!confirmDiscard()) return;
+		try {
+			const blob = await (node.handle as FileSystemFileHandle).getFile();
+			if (imageBlobUrl) URL.revokeObjectURL(imageBlobUrl);
+			imageBlobUrl = URL.createObjectURL(blob);
+
+			current = {
+				handle: node.handle as FileSystemFileHandle,
+				path: node.path,
+				saved: '',
+			};
+			setDirty(false);
+			ui.filePath.textContent = node.path;
+			ui.fileInfo.classList.remove('hidden');
+			ui.fileInfo.classList.add('flex');
+			ui.btnSave.classList.add('hidden');
+			ui.modeToggle.classList.add('hidden');
+			ui.cm.classList.add('hidden');
+			ui.preview.classList.remove('hidden');
+			ui.preview.innerHTML = `<div class="flex h-full items-center justify-center p-4"><img src="${imageBlobUrl}" class="max-h-full max-w-full rounded-xl object-contain shadow-2xl" alt="${node.name}" /></div>`;
+			treeView.setActive(node.path);
+		} catch (e) {
+			toast(`打开失败：${errMsg(e)}`, 4000);
+		}
+	}
+
 	function closeCurrentFile() {
 		current = null;
 		setDirty(false);
@@ -206,8 +242,14 @@ export function init() {
 		ui.btnSave.classList.add('hidden');
 		ui.modeToggle.classList.add('hidden');
 		ui.preview.textContent = '';
+		if (imageBlobUrl) {
+			URL.revokeObjectURL(imageBlobUrl);
+			imageBlobUrl = '';
+		}
 		treeView.setActive(null);
 		setDoc(view, '', editorCallbacks);
+		// 恢复编辑模式
+		ui.cm.classList.remove('hidden');
 	}
 
 	async function createEntry(
