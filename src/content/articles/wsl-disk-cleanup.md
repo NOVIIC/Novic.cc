@@ -37,7 +37,7 @@ ncdu / --exclude /mnt --exclude /usr/lib/wsl/drivers
 
 ## 清理软件缓存
 
-下面列出部分软件~~（我用到了的）~~缓存的清理方法
+下面列出部分软件 ~~（我用到了的）~~ 缓存的清理方法
 
 ### OpenCode
 
