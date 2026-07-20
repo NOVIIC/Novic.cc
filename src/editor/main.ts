@@ -21,6 +21,9 @@ function toast(msg: string, ms = 2200) {
 
 const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
+type Mode = 'edit' | 'split' | 'preview';
+const MODE_ORDER: Mode[] = ['edit', 'split', 'preview'];
+
 export function init() {
 	if (!fs.isSupported()) {
 		$('unsupported').classList.remove('hidden');
@@ -45,6 +48,10 @@ export function init() {
 		btnNewFile: $('btn-new-file') as unknown as HTMLButtonElement,
 		btnNewFolder: $('btn-new-folder') as unknown as HTMLButtonElement,
 		modeToggle: $('mode-toggle'),
+		btnSidebar: $('btn-sidebar'),
+		sidebarWrap: $('sidebar-wrap'),
+		sidebarResizer: $('sidebar-resizer'),
+		sidebarBackdrop: $('sidebar-backdrop'),
 	};
 
 	let rootHandle: FileSystemDirectoryHandle | null = null;
@@ -55,10 +62,34 @@ export function init() {
 		saved: string;
 	} | null = null;
 	let dirty = false;
-	let mode: 'edit' | 'preview' = 'edit';
+	let mode: Mode = 'edit';
 	let previewTimer = 0;
 	let previewSeq = 0;
 	let imageBlobUrl = '';
+
+	const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+	/* ---------- 通用小工具 ---------- */
+
+	/** 面板入场动画（模式切换 / 从图片预览切回时）。 */
+	const animateIn = (el: HTMLElement) => {
+		if (reduceMotion.matches) return;
+		el.animate(
+			[
+				{ opacity: 0, transform: 'translateY(6px)' },
+				{ opacity: 1, transform: 'translateY(0)' },
+			],
+			{ duration: 220, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
+		);
+	};
+
+	const scrollRatioOf = (el: HTMLElement) => {
+		const max = el.scrollHeight - el.clientHeight;
+		return max > 0 ? el.scrollTop / max : 0;
+	};
+	const applyRatio = (el: HTMLElement, r: number) => {
+		el.scrollTop = r * Math.max(0, el.scrollHeight - el.clientHeight);
+	};
 
 	/* ---------- 状态与渲染 ---------- */
 
@@ -71,12 +102,21 @@ export function init() {
 	const confirmDiscard = () =>
 		!dirty || window.confirm('当前文件有未保存的修改，确定放弃吗？');
 
-	const renderPreviewNow = async () => {
+	/**
+	 * 渲染预览。
+	 * scroll：'preserve' 保持当前滚动位置（编辑触发的刷新）；
+	 *         'reset' 回到顶部（打开新文件）；
+	 *         数字则按比例定位（模式切换时保持阅读进度）。
+	 */
+	const renderPreviewNow = async (
+		scroll: 'preserve' | 'reset' | number = 'preserve',
+	) => {
 		const cur = current;
 		const root = rootHandle;
-		if (!cur || !root) return;
+		if (!cur || !root || isImage(cur.path)) return;
 		const seq = ++previewSeq;
 		const source = view.state.doc.toString();
+		const prevScrollTop = ui.preview.scrollTop;
 		try {
 			const { renderPreview } = await import('./preview');
 			if (seq !== previewSeq || current !== cur) return; // 期间已切换文件/关闭
@@ -87,6 +127,9 @@ export function init() {
 				root,
 				fileDir: cur.path.split('/').slice(0, -1).join('/'),
 			});
+			if (seq !== previewSeq || current !== cur) return;
+			if (typeof scroll === 'number') applyRatio(ui.preview, scroll);
+			else ui.preview.scrollTop = scroll === 'preserve' ? prevScrollTop : 0;
 		} catch (e) {
 			console.error(e);
 			toast(`预览加载失败：${errMsg(e)}`, 4000);
@@ -94,7 +137,7 @@ export function init() {
 	};
 
 	const schedulePreview = () => {
-		if (mode !== 'preview' || !current) return;
+		if (mode === 'edit' || !current) return;
 		clearTimeout(previewTimer);
 		previewTimer = window.setTimeout(() => void renderPreviewNow(), 400);
 	};
@@ -109,6 +152,7 @@ export function init() {
 	};
 
 	const view = createEditor(ui.cm, editorCallbacks);
+	const cmScroller = view.scrollDOM;
 
 	const treeView = new TreeView(ui.tree, {
 		onOpenFile: (node) => void openFile(node),
@@ -150,6 +194,113 @@ export function init() {
 		}
 	}
 
+	/* ---------- 面板布局与模式切换 ---------- */
+
+	const togglePane = (el: HTMLElement, show: boolean) => {
+		const wasHidden = el.classList.contains('hidden');
+		el.classList.toggle('hidden', !show);
+		if (show && wasHidden) animateIn(el);
+	};
+
+	/** 根据当前模式（及是否为图片）排布编辑/预览面板。 */
+	const layoutPanes = () => {
+		const image = current !== null && isImage(current.path);
+		const eff: Mode = image ? 'preview' : mode;
+		togglePane(ui.cm, eff !== 'preview');
+		togglePane(ui.preview, eff !== 'edit');
+	};
+
+	const showModeToggle = (v: boolean) => {
+		ui.modeToggle.classList.toggle('hidden', !v);
+		ui.modeToggle.classList.toggle('flex', v);
+	};
+
+	const setMode = (m: Mode) => {
+		if (m === mode) return;
+		// 记录当前可见面板的滚动比例，切换后恢复，保持阅读/编辑位置
+		const from =
+			mode === 'edit'
+				? cmScroller
+				: mode === 'preview'
+					? ui.preview
+					: m === 'edit'
+						? cmScroller
+						: ui.preview;
+		const ratio = scrollRatioOf(from);
+		mode = m;
+		document.body.dataset.editorMode = m;
+		ui.modeToggle.style.setProperty(
+			'--mode-idx',
+			String(MODE_ORDER.indexOf(m)),
+		);
+		ui.modeToggle
+			.querySelectorAll<HTMLButtonElement>('.mode-btn')
+			.forEach((b) => {
+				const active = b.dataset.mode === m;
+				b.classList.toggle('text-white', active);
+				b.classList.toggle('text-white/55', !active);
+			});
+		layoutPanes();
+		if (m !== 'preview')
+			requestAnimationFrame(() => applyRatio(cmScroller, ratio));
+		if (m !== 'edit') void renderPreviewNow(ratio);
+	};
+
+	/* ---------- 分屏滚动同步（按滚动进度比例） ---------- */
+
+	let syncLock = false;
+	const syncTo = (from: HTMLElement, to: HTMLElement) => {
+		if (mode !== 'split' || syncLock) return;
+		const ratio = scrollRatioOf(from);
+		syncLock = true;
+		requestAnimationFrame(() => {
+			applyRatio(to, ratio);
+			requestAnimationFrame(() => {
+				syncLock = false;
+			});
+		});
+	};
+	cmScroller.addEventListener('scroll', () => syncTo(cmScroller, ui.preview), {
+		passive: true,
+	});
+	ui.preview.addEventListener('scroll', () => syncTo(ui.preview, cmScroller), {
+		passive: true,
+	});
+
+	/* ---------- 目录栏：宽度 / 收起 / 响应式 ---------- */
+
+	const SB_MIN = 180;
+	const SB_MAX = 520;
+	const SB_DEFAULT = 256;
+	const mqMobile = window.matchMedia('(max-width: 767px)');
+	const storedW = Number(localStorage.getItem('editor:sidebar-w'));
+	let sidebarW =
+		Number.isFinite(storedW) && storedW >= SB_MIN
+			? Math.min(SB_MAX, storedW)
+			: SB_DEFAULT;
+	let sidebarCollapsed =
+		localStorage.getItem('editor:sidebar-collapsed') === '1' ||
+		(localStorage.getItem('editor:sidebar-collapsed') === null &&
+			mqMobile.matches);
+
+	const applySidebar = () => {
+		ui.sidebarWrap.style.setProperty('--sbw', `${sidebarW}px`);
+		ui.sidebarWrap.classList.toggle('collapsed', sidebarCollapsed);
+		const showBackdrop = !sidebarCollapsed && mqMobile.matches;
+		ui.sidebarBackdrop.classList.toggle('hidden', !showBackdrop);
+		if (showBackdrop && !reduceMotion.matches)
+			ui.sidebarBackdrop.animate([{ opacity: 0 }, { opacity: 1 }], {
+				duration: 180,
+			});
+	};
+
+	const setSidebarCollapsed = (v: boolean) => {
+		if (sidebarCollapsed === v) return;
+		sidebarCollapsed = v;
+		localStorage.setItem('editor:sidebar-collapsed', v ? '1' : '0');
+		applySidebar();
+	};
+
 	/* ---------- 文件操作 ---------- */
 
 	let saving = false;
@@ -181,9 +332,6 @@ export function init() {
 		}
 		if (current?.path === node.path) return;
 		if (!confirmDiscard()) return;
-		// 从图片预览切回编辑器时恢复视图
-		ui.cm.classList.remove('hidden');
-		ui.preview.classList.add('hidden');
 		try {
 			const content = await fs.readFile(node.handle as FileSystemFileHandle);
 			current = {
@@ -197,9 +345,11 @@ export function init() {
 			ui.fileInfo.classList.remove('hidden');
 			ui.fileInfo.classList.add('flex');
 			ui.btnSave.classList.remove('hidden');
-			ui.modeToggle.classList.remove('hidden');
+			showModeToggle(true);
 			treeView.setActive(node.path);
-			if (mode === 'preview') void renderPreviewNow();
+			layoutPanes();
+			if (mode !== 'edit') void renderPreviewNow('reset');
+			if (mqMobile.matches) setSidebarCollapsed(true);
 		} catch (e) {
 			toast(`打开失败：${errMsg(e)}`, 4000);
 		}
@@ -223,11 +373,11 @@ export function init() {
 			ui.fileInfo.classList.remove('hidden');
 			ui.fileInfo.classList.add('flex');
 			ui.btnSave.classList.add('hidden');
-			ui.modeToggle.classList.add('hidden');
-			ui.cm.classList.add('hidden');
-			ui.preview.classList.remove('hidden');
+			showModeToggle(false);
 			ui.preview.innerHTML = `<div class="flex h-full items-center justify-center p-4"><img src="${imageBlobUrl}" class="max-h-full max-w-full rounded-xl object-contain shadow-2xl" alt="${node.name}" /></div>`;
+			layoutPanes();
 			treeView.setActive(node.path);
+			if (mqMobile.matches) setSidebarCollapsed(true);
 		} catch (e) {
 			toast(`打开失败：${errMsg(e)}`, 4000);
 		}
@@ -240,7 +390,7 @@ export function init() {
 		ui.fileInfo.classList.add('hidden');
 		ui.fileInfo.classList.remove('flex');
 		ui.btnSave.classList.add('hidden');
-		ui.modeToggle.classList.add('hidden');
+		showModeToggle(false);
 		ui.preview.textContent = '';
 		if (imageBlobUrl) {
 			URL.revokeObjectURL(imageBlobUrl);
@@ -249,7 +399,8 @@ export function init() {
 		treeView.setActive(null);
 		setDoc(view, '', editorCallbacks);
 		// 恢复编辑模式
-		ui.cm.classList.remove('hidden');
+		setMode('edit');
+		layoutPanes();
 	}
 
 	async function createEntry(
@@ -372,25 +523,6 @@ export function init() {
 		if (handle) await openRoot(handle);
 	}
 
-	/* ---------- 模式切换 ---------- */
-
-	const toggle = {
-		setMode(m: 'edit' | 'preview') {
-			mode = m;
-			ui.modeToggle
-				.querySelectorAll<HTMLButtonElement>('.mode-btn')
-				.forEach((b) => {
-					const active = b.dataset.mode === m;
-					b.classList.toggle('bg-accent/20', active);
-					b.classList.toggle('text-white', active);
-					b.classList.toggle('text-white/60', !active);
-				});
-			ui.cm.classList.toggle('hidden', m === 'preview');
-			ui.preview.classList.toggle('hidden', m !== 'preview');
-			if (m === 'preview') void renderPreviewNow();
-		},
-	};
-
 	/* ---------- 事件绑定 ---------- */
 
 	ui.btnOpen.addEventListener('click', () => void pickAndOpen());
@@ -416,10 +548,43 @@ export function init() {
 	ui.modeToggle
 		.querySelectorAll<HTMLButtonElement>('.mode-btn')
 		.forEach((b) =>
-			b.addEventListener('click', () =>
-				toggle.setMode(b.dataset.mode as 'edit' | 'preview'),
-			),
+			b.addEventListener('click', () => setMode(b.dataset.mode as Mode)),
 		);
+
+	ui.btnSidebar.addEventListener('click', () =>
+		setSidebarCollapsed(!sidebarCollapsed),
+	);
+	ui.sidebarBackdrop.addEventListener('click', () => setSidebarCollapsed(true));
+	mqMobile.addEventListener('change', applySidebar);
+
+	ui.sidebarResizer.addEventListener('pointerdown', (e) => {
+		e.preventDefault();
+		const left = ui.sidebarWrap.getBoundingClientRect().left;
+		ui.sidebarWrap.classList.add('resizing');
+		ui.sidebarResizer.classList.add('bg-accent/60');
+		const move = (ev: PointerEvent) => {
+			sidebarW = Math.min(
+				SB_MAX,
+				Math.max(SB_MIN, Math.round(ev.clientX - left)),
+			);
+			ui.sidebarWrap.style.setProperty('--sbw', `${sidebarW}px`);
+		};
+		const up = () => {
+			ui.sidebarWrap.classList.remove('resizing');
+			ui.sidebarResizer.classList.remove('bg-accent/60');
+			localStorage.setItem('editor:sidebar-w', String(sidebarW));
+			window.removeEventListener('pointermove', move);
+			window.removeEventListener('pointerup', up);
+		};
+		window.addEventListener('pointermove', move);
+		window.addEventListener('pointerup', up);
+	});
+	ui.sidebarResizer.addEventListener('dblclick', () => {
+		sidebarW = SB_DEFAULT;
+		localStorage.setItem('editor:sidebar-w', String(sidebarW));
+		applySidebar();
+	});
+	applySidebar();
 
 	document.addEventListener('keydown', (e) => {
 		if ((e.ctrlKey || e.metaKey) && e.key === 's') {

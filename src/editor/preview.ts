@@ -129,7 +129,10 @@ async function resolveImages(
 			const src = img.getAttribute('src');
 			if (!src || /^(https?:|data:|blob:|\/)/.test(src)) continue;
 			try {
-				const parts = [...fileDir.split('/').filter(Boolean), ...src.split('/')];
+				const parts = [
+					...fileDir.split('/').filter(Boolean),
+					...src.split('/'),
+				];
 				const stack: string[] = [];
 				for (const p of parts) {
 					if (p === '.') continue;
@@ -163,7 +166,12 @@ export interface PreviewOptions {
 	fileDir: string;
 }
 
-/** 渲染预览：与 ContentLayout 相同的 prose 容器与文章头部。 */
+/**
+ * 渲染预览。
+ * frontmatter 同时含 title 和 pubDate 的文件视为本站内容，套用与
+ * ContentLayout 相同的窄栏卡片样式与文章头部；其余 md/mdx 文件按
+ * 通用格式左右占满渲染（仅保留 prose 排版）。
+ */
 export async function renderPreview(opts: PreviewOptions): Promise<void> {
 	const { source, isMdx, container } = opts;
 	let body: string;
@@ -176,6 +184,9 @@ export async function renderPreview(opts: PreviewOptions): Promise<void> {
 		)}</div></div>`;
 		return;
 	}
-	container.innerHTML = `<article class="prose prose-invert max-w-none prose-headings:scroll-mt-32 prose-pre:bg-transparent prose-pre:p-0"><div class="mx-auto max-w-3xl"><div class="content-bg min-w-0 px-2 py-6 sm:p-7">${headerHtml(fm)}<div>${body}</div></div></div></article>`;
+	const isSiteContent = Boolean(fm.title && fm.pubDate);
+	container.innerHTML = isSiteContent
+		? `<article class="prose prose-invert max-w-none prose-headings:scroll-mt-32 prose-pre:bg-transparent prose-pre:p-0"><div class="mx-auto max-w-3xl"><div class="content-bg min-w-0 px-2 py-6 sm:p-7">${headerHtml(fm)}<div>${body}</div></div></div></article>`
+		: `<article class="prose prose-invert max-w-none prose-headings:scroll-mt-8 prose-pre:bg-transparent prose-pre:p-0"><div class="bg-black/15 backdrop-blur-[2px] rounded-2xl px-4 py-6 sm:px-7">${body}</div></article>`;
 	await resolveImages(container, opts.root, opts.fileDir);
 }
