@@ -13,6 +13,7 @@ import '@/fonts/MapleMonoNormalNL-NF-CN-Bold.woff2';
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width,initial-scale=1" />
 		<meta name="robots" content="noindex,nofollow" />
+		<link rel="manifest" href="/manifest-editor.json" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" href="/favicon.ico" sizes="any" />
 		<title>Editor</title>
@@ -291,6 +292,11 @@ import '@/fonts/MapleMonoNormalNL-NF-CN-Bold.woff2';
 
 		<script>
 			import { init } from '@/editor/main';
+
+			if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+				navigator.serviceWorker.register('/editor/sw.js').catch(() => {});
+			}
+
 			init();
 		</script>
 	</body>
