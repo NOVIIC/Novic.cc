@@ -27,6 +27,9 @@ import '@/fonts/MapleMonoNormalNL-NF-CN-Bold.woff2';
 		></style>
 		<style is:global>
 			/* ===== 编辑器布局：目录栏宽度 / 收起 / 响应式 ===== */
+			:root {
+				--editor-header-h: 3rem;
+			}
 			#sidebar-wrap {
 				--sbw: 256px;
 				width: var(--sbw);
@@ -53,7 +56,7 @@ import '@/fonts/MapleMonoNormalNL-NF-CN-Bold.woff2';
 			@media (max-width: 767px) {
 				#sidebar-wrap {
 					position: fixed;
-					top: 3rem;
+					top: var(--editor-header-h);
 					bottom: 0;
 					left: 0;
 					z-index: 30;
@@ -137,11 +140,7 @@ import '@/fonts/MapleMonoNormalNL-NF-CN-Bold.woff2';
 						d="M6 2.5v11"></path></svg
 				>
 			</button>
-			<a
-				href="/"
-				class="shrink-0 text-sm font-bold text-white/80 transition-colors hover:text-white"
-				>Editor</a
-			>
+			<span class="shrink-0 text-sm font-bold text-white/80">Editor</span>
 			<div
 				id="file-info"
 				class="hidden min-w-0 flex-1 items-center gap-2 sm:flex"
@@ -180,7 +179,7 @@ import '@/fonts/MapleMonoNormalNL-NF-CN-Bold.woff2';
 			</div>
 		</header>
 
-		<div class="flex min-h-0 flex-1">
+		<div class="flex min-h-0 flex-1 overflow-hidden">
 			<!-- 侧栏：目录树（宽度可调、可收起；移动端为抽屉） -->
 			<div id="sidebar-wrap">
 				<aside
