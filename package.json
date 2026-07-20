@@ -16,9 +16,9 @@
 		"astro": "astro"
 	},
 	"dependencies": {
-		"@astrojs/markdown-remark": "^7.2.0",
-		"@astrojs/mdx": "^7.0.0",
-		"@astrojs/rss": "^4.0.18",
+		"@astrojs/markdown-remark": "^7.2.1",
+		"@astrojs/mdx": "^7.0.3",
+		"@astrojs/rss": "^4.0.19",
 		"@astrojs/sitemap": "^3.7.3",
 		"@codemirror/commands": "^6.10.4",
 		"@codemirror/lang-markdown": "^6.5.1",
@@ -32,8 +32,8 @@
 		"@lezer/markdown": "^1.7.2",
 		"@mdx-js/mdx": "^3.1.1",
 		"@tailwindcss/typography": "^0.5.20",
-		"@tailwindcss/vite": "^4.3.2",
-		"astro": "^7.0.3",
+		"@tailwindcss/vite": "^4.3.3",
+		"astro": "^7.1.1",
 		"astro-expressive-code": "^0.44.0",
 		"js-yaml": "^5.2.1",
 		"preact": "^10.29.7",
@@ -49,7 +49,7 @@
 		"remark-rehype": "^11.1.2",
 		"remark-smartypants": "^3.0.2",
 		"sharp": "^0.35.3",
-		"tailwindcss": "^4.3.2",
+		"tailwindcss": "^4.3.3",
 		"unified": "^11.0.5"
 	},
 	"patchedDependencies": {
@@ -60,7 +60,7 @@
 		"@types/js-yaml": "^4.0.9",
 		"@types/wicg-file-system-access": "^2023.10.7",
 		"pagefind": "^1.5.2",
-		"prettier": "^3.9.4",
+		"prettier": "^3.9.5",
 		"prettier-plugin-astro": "^0.14.1",
 		"remark-cli": "^12.0.1",
 		"remark-lint": "^10.0.1",
