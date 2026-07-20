@@ -217,15 +217,10 @@ export function init() {
 
 	const setMode = (m: Mode) => {
 		if (m === mode) return;
-		// 记录当前可见面板的滚动比例，切换后恢复，保持阅读/编辑位置
-		const from =
-			mode === 'edit'
-				? cmScroller
-				: mode === 'preview'
-					? ui.preview
-					: m === 'edit'
-						? cmScroller
-						: ui.preview;
+		let from: HTMLElement;
+		if (mode === 'edit') from = cmScroller;
+		else if (mode === 'preview') from = ui.preview;
+		else from = m === 'edit' ? cmScroller : ui.preview;
 		const ratio = scrollRatioOf(from);
 		mode = m;
 		document.body.dataset.editorMode = m;
@@ -374,7 +369,15 @@ export function init() {
 			ui.fileInfo.classList.add('flex');
 			ui.btnSave.classList.add('hidden');
 			showModeToggle(false);
-			ui.preview.innerHTML = `<div class="flex h-full items-center justify-center p-4"><img src="${imageBlobUrl}" class="max-h-full max-w-full rounded-xl object-contain shadow-2xl" alt="${node.name}" /></div>`;
+			const wrap = document.createElement('div');
+			wrap.className = 'flex h-full items-center justify-center p-4';
+			const img = document.createElement('img');
+			img.src = imageBlobUrl;
+			img.className =
+				'max-h-full max-w-full rounded-xl object-contain shadow-2xl';
+			img.alt = node.name;
+			wrap.appendChild(img);
+			ui.preview.replaceChildren(wrap);
 			layoutPanes();
 			treeView.setActive(node.path);
 			if (mqMobile.matches) setSidebarCollapsed(true);
