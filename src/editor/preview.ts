@@ -12,8 +12,37 @@ import rehypeExpressiveCode, {
 	type RehypeExpressiveCodeOptions,
 } from 'rehype-expressive-code';
 import { pluginLineNumbers } from '@expressive-code/plugin-line-numbers';
+import { visit } from 'unist-util-visit';
+import type { Root, Element } from 'hast';
 import { parseFrontmatter } from './frontmatter';
 import type { Frontmatter } from './types';
+
+/**
+ * rehype 插件：给每个带 position 的元素打 data-line（0-based 起始行）+ src-line class，
+ * 用于预览侧的源码行号 ↔ 像素位置映射（见 scroll-sync.ts）。
+ *
+ * 移植自 VSCode markdown-language-features 的 pluginSourceMap（markdown-it 版），
+ * 改写为 hast 版。注册位置应在 rehype-slug/autolink-headings/expressive-code 之前，
+ * 这样后继插件替换/重建节点时如果保留 position，data-line 仍可继承；
+ * expressive-code 会把 <pre><code> 替换为 <figure>，data-line 会随之丢失，
+ * 此 v1 接受该退化（代码块回退为两侧 tagged 段落间的间隙插值）。
+ */
+const rehypeSourceLines = () => (tree: Root) => {
+	visit(tree, 'element', (node: Element) => {
+		const pos = node.position;
+		if (!pos || !pos.start) return;
+		const props = (node.properties ??= {});
+		const existingClass = props.className;
+		const cls = Array.isArray(existingClass)
+			? existingClass
+			: typeof existingClass === 'string' && existingClass
+				? [existingClass]
+				: [];
+		if (!cls.includes('src-line')) cls.push('src-line');
+		props.className = cls;
+		props.dataLine = String(pos.start.line - 1);
+	});
+};
 
 /* 与站点 astro.config.mjs / ec.config.mjs 对齐的插件配置 */
 const autolinkOptions = {
@@ -40,6 +69,7 @@ const remarkPlugins: PluggableList = [
 ];
 
 const rehypePlugins: PluggableList = [
+	rehypeSourceLines,
 	rehypeSlug,
 	[rehypeAutolinkHeadings, autolinkOptions],
 	[rehypeExpressiveCode, ecOptions],
@@ -185,8 +215,11 @@ export async function renderPreview(opts: PreviewOptions): Promise<void> {
 		return;
 	}
 	const isSiteContent = Boolean(fm.title && fm.pubDate);
+	// 末尾哨兵：data-line = 源码总行数（1-based 计数，即"最后一个 0-based 行号 + 1"），
+	// 保证滚动到文档末尾时仍有 target，与 VSCode 做法一致（见 scroll-sync.ts）。
+	const sentinel = `<div class="src-line" data-line="${source.split('\n').length}"></div>`;
 	container.innerHTML = isSiteContent
-		? `<article class="prose prose-invert max-w-none prose-headings:scroll-mt-32 prose-pre:bg-transparent prose-pre:p-0"><div class="mx-auto max-w-3xl"><div class="content-bg min-w-0 px-2 py-6 sm:p-7">${headerHtml(fm)}<div>${body}</div></div></div></article>`
-		: `<article class="prose prose-invert max-w-none prose-headings:scroll-mt-8 prose-pre:bg-transparent prose-pre:p-0"><div class="bg-black/15 backdrop-blur-[2px] rounded-2xl px-4 py-6 sm:px-7">${body}</div></article>`;
+		? `<article class="prose prose-invert max-w-none prose-headings:scroll-mt-32 prose-pre:bg-transparent prose-pre:p-0"><div class="mx-auto max-w-3xl"><div class="content-bg min-w-0 px-2 py-6 sm:p-7">${headerHtml(fm)}<div>${body}${sentinel}</div></div></div></article>`
+		: `<article class="prose prose-invert max-w-none prose-headings:scroll-mt-8 prose-pre:bg-transparent prose-pre:p-0"><div class="bg-black/15 backdrop-blur-[2px] rounded-2xl px-4 py-6 sm:px-7">${body}${sentinel}</div></article>`;
 	await resolveImages(container, opts.root, opts.fileDir);
 }

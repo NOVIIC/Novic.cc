@@ -116,10 +116,16 @@ importers:
       unified:
         specifier: ^11.0.5
         version: 11.0.5
+      unist-util-visit:
+        specifier: ^5.0.0
+        version: 5.1.0
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.9
         version: 0.9.9(prettier-plugin-astro@0.14.1)(prettier@3.9.5)(typescript@6.0.3)
+      '@types/hast':
+        specifier: ^3.0.0
+        version: 3.0.5
       '@types/js-yaml':
         specifier: ^4.0.9
         version: 4.0.9
