@@ -3,6 +3,11 @@ import { createEditor, setDoc, type EditorCallbacks } from './cm';
 import { TreeView } from './tree';
 import { isImage, isMarkdown, type TreeNode } from './types';
 import { newFileTemplate } from './frontmatter';
+import {
+	scrollToRevealSourceLine,
+	getEditorLineNumberForPageOffset,
+	invalidateCodeLineElements,
+} from './scroll-sync';
 
 const $ = <T extends HTMLElement>(id: string): T => {
 	const el = document.getElementById(id) as T | null;
@@ -65,6 +70,8 @@ export function init() {
 	let mode: Mode = 'edit';
 	let previewTimer = 0;
 	let previewSeq = 0;
+	/** 预览 DOM 版本：每次 renderPreviewNow 成功后自增，作为 scroll-sync 缓存键 */
+	let previewVersion = 0;
 	let imageBlobUrl = '';
 
 	const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -83,12 +90,33 @@ export function init() {
 		);
 	};
 
-	const scrollRatioOf = (el: HTMLElement) => {
-		const max = el.scrollHeight - el.clientHeight;
-		return max > 0 ? el.scrollTop / max : 0;
+	/**
+	 * 编辑器顶部对应的源码行号（0-based，可为分数）。
+	 * 移植自 VSCode topmostLineMonitor.getVisibleLine：分数部分由
+	 * (scrollTop - block.top) / block.height 给出（支持折行长行）。
+	 */
+	const getTopmostLine = (): number => {
+		const doc = view.state.doc;
+		if (doc.lines === 0) return 0;
+		const scrollTop = cmScroller.scrollTop;
+		const block = view.lineBlockAtHeight(scrollTop);
+		const lineNumber = doc.lineAt(block.from).number - 1;
+		const frac =
+			block.height > 0
+				? Math.min(1, Math.max(0, (scrollTop - block.top) / block.height))
+				: 0;
+		return Math.max(0, lineNumber + frac);
 	};
-	const applyRatio = (el: HTMLElement, r: number) => {
-		el.scrollTop = r * Math.max(0, el.scrollHeight - el.clientHeight);
+
+	/** 把编辑器滚动到源码行 `line`（0-based，可为分数）顶部。 */
+	const scrollEditorToLine = (line: number) => {
+		const doc = view.state.doc;
+		if (!Number.isFinite(line) || doc.lines === 0) return;
+		const n = Math.min(doc.lines - 1, Math.max(0, Math.floor(line)));
+		const lineObj = doc.line(n + 1);
+		const block = view.lineBlockAt(lineObj.from);
+		const frac = Math.min(1, Math.max(0, line - n));
+		cmScroller.scrollTop = block.top + frac * block.height;
 	};
 
 	/* ---------- 状态与渲染 ---------- */
@@ -104,9 +132,9 @@ export function init() {
 
 	/**
 	 * 渲染预览。
-	 * scroll：'preserve' 保持当前滚动位置（编辑触发的刷新）；
+	 * scroll：'preserve' 保持当前阅读位置对应的源码行（编辑触发的刷新）；
 	 *         'reset' 回到顶部（打开新文件）；
-	 *         数字则按比例定位（模式切换时保持阅读进度）。
+	 *         数字则滚动到该源码行（模式切换时保持阅读进度）。
 	 */
 	const renderPreviewNow = async (
 		scroll: 'preserve' | 'reset' | number = 'preserve',
@@ -116,7 +144,15 @@ export function init() {
 		if (!cur || !root || isImage(cur.path)) return;
 		const seq = ++previewSeq;
 		const source = view.state.doc.toString();
-		const prevScrollTop = ui.preview.scrollTop;
+		// 渲染前记录预览当前对应的源码行号（仅 'preserve' 需要；预览为空时记 0）
+		const preserveLine =
+			scroll === 'preserve' && ui.preview.firstElementChild
+				? getEditorLineNumberForPageOffset(
+						ui.preview.scrollTop,
+						ui.preview,
+						previewVersion,
+					)
+				: 0;
 		try {
 			const { renderPreview } = await import('./preview');
 			if (seq !== previewSeq || current !== cur) return; // 期间已切换文件/关闭
@@ -128,8 +164,14 @@ export function init() {
 				fileDir: cur.path.split('/').slice(0, -1).join('/'),
 			});
 			if (seq !== previewSeq || current !== cur) return;
-			if (typeof scroll === 'number') applyRatio(ui.preview, scroll);
-			else ui.preview.scrollTop = scroll === 'preserve' ? prevScrollTop : 0;
+			// innerHTML 整体重建，必须失效 CodeLineElement 缓存并 bump 版本
+			invalidateCodeLineElements();
+			previewVersion++;
+			if (typeof scroll === 'number')
+				scrollToRevealSourceLine(scroll, ui.preview, previewVersion);
+			else if (scroll === 'preserve')
+				scrollToRevealSourceLine(preserveLine, ui.preview, previewVersion);
+			else ui.preview.scrollTop = 0;
 		} catch (e) {
 			console.error(e);
 			toast(`预览加载失败：${errMsg(e)}`, 4000);
@@ -221,7 +263,15 @@ export function init() {
 		if (mode === 'edit') from = cmScroller;
 		else if (mode === 'preview') from = ui.preview;
 		else from = m === 'edit' ? cmScroller : ui.preview;
-		const ratio = scrollRatioOf(from);
+		// 计算离开面板对应的源码行号（保持阅读进度，按行而非按比例）
+		const line =
+			from === cmScroller
+				? getTopmostLine()
+				: getEditorLineNumberForPageOffset(
+						ui.preview.scrollTop,
+						ui.preview,
+						previewVersion,
+					);
 		mode = m;
 		document.body.dataset.editorMode = m;
 		ui.modeToggle.style.setProperty(
@@ -236,31 +286,55 @@ export function init() {
 				b.classList.toggle('text-white/55', !active);
 			});
 		layoutPanes();
-		if (m !== 'preview')
-			requestAnimationFrame(() => applyRatio(cmScroller, ratio));
-		if (m !== 'edit') void renderPreviewNow(ratio);
+		if (m !== 'preview') requestAnimationFrame(() => scrollEditorToLine(line));
+		if (m !== 'edit') void renderPreviewNow(line);
 	};
 
-	/* ---------- 分屏滚动同步（按滚动进度比例） ---------- */
+	/* ---------- 分屏滚动同步（按源码行号对齐，移植自 VSCode Markdown 预览） ---------- */
 
-	let syncLock = false;
-	const syncTo = (from: HTMLElement, to: HTMLElement) => {
-		if (mode !== 'split' || syncLock) return;
-		const ratio = scrollRatioOf(from);
-		syncLock = true;
-		requestAnimationFrame(() => {
-			applyRatio(to, ratio);
-			requestAnimationFrame(() => {
-				syncLock = false;
+	const SYNC_ECHO_GUARD = 120; // 反向回声抑制窗口（ms，需覆盖一帧 + scroll 事件传播）
+	let syncLockEditor = false; // true 时忽略编辑器滚动（我们刚程序性滚动了编辑器）
+	let syncLockPreview = false; // true 时忽略预览滚动（我们刚程序性滚动了预览）
+	// rAF 合帧：每帧最多同步一次（~16ms），既实时跟随又不忙循环。
+	// 相比 VSCode 的 50ms throttle，rAF 更平滑；trailing-edge throttle 在连续滚动时
+	// 永不触发，只有停止后才同步——那不是"实时跟随"。
+	let editorScrollRaf = 0;
+	let previewScrollRaf = 0;
+
+	cmScroller.addEventListener(
+		'scroll',
+		() => {
+			if (mode !== 'split' || syncLockEditor || editorScrollRaf) return;
+			editorScrollRaf = requestAnimationFrame(() => {
+				editorScrollRaf = 0;
+				if (mode !== 'split' || syncLockEditor) return;
+				const line = getTopmostLine();
+				syncLockPreview = true;
+				scrollToRevealSourceLine(line, ui.preview, previewVersion);
+				window.setTimeout(() => (syncLockPreview = false), SYNC_ECHO_GUARD);
 			});
-		});
-	};
-	cmScroller.addEventListener('scroll', () => syncTo(cmScroller, ui.preview), {
-		passive: true,
-	});
-	ui.preview.addEventListener('scroll', () => syncTo(ui.preview, cmScroller), {
-		passive: true,
-	});
+		},
+		{ passive: true },
+	);
+	ui.preview.addEventListener(
+		'scroll',
+		() => {
+			if (mode !== 'split' || syncLockPreview || previewScrollRaf) return;
+			previewScrollRaf = requestAnimationFrame(() => {
+				previewScrollRaf = 0;
+				if (mode !== 'split' || syncLockPreview) return;
+				const line = getEditorLineNumberForPageOffset(
+					ui.preview.scrollTop,
+					ui.preview,
+					previewVersion,
+				);
+				syncLockEditor = true;
+				scrollEditorToLine(line);
+				window.setTimeout(() => (syncLockEditor = false), SYNC_ECHO_GUARD);
+			});
+		},
+		{ passive: true },
+	);
 
 	/* ---------- 目录栏：宽度 / 收起 / 响应式 ---------- */
 
