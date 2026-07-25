@@ -240,7 +240,7 @@ Node.js 是一个 JavaScript 运行时环境，如今大部分网站技术栈都
 
 直接在 [官方网站](https://nodejs.org/zh-cn/download) 下载最新的 Windows 安装程序(.msi) 并安装即可。
 
-![](../images/first-post/nodejs-win.png)
+![](../images/2026/nodejs-win.png)
 
 #### Debian
 
@@ -395,7 +395,7 @@ pnpm run preview            # 启动网页服务器预览构建产物
 
 然后在 `Projects` 页面选择 `Add new project` 来新建网站
 
-![Netlify 的新建网站页面](../images/first-post/netlify-deploy.png)
+![Netlify 的新建网站页面](../images/2026/netlify-deploy.png)
 
 可以看到，下面有一个 `Upload your project files` ，可以直接从本地上传
 
