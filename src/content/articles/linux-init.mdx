@@ -1,0 +1,52 @@
+---
+title: '初始化 Linux 服务器'
+description: ''
+pubDate: 2026-07-25
+tags: ['Linux', '小技巧']
+---
+
+### 安全配置
+
+#### 更改 ssh 端口
+
+#### 配置仅密钥登录并禁用 root
+
+### shell 配置
+
+#### 安装 zsh
+
+切换默认 shell
+
+```bash
+chsh -s $(which zsh)
+```
+
+配置文件
+
+```sh title=".zshrc"
+autoload -Uz compinit && compinit
+autoload -U colors && colors
+
+PROMPT='%F{green}%n@%m%f:%F{blue}%1~%f %# '
+
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+
+source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+zstyle ':completion:*' menu select
+bindkey '^I' complete-word
+
+bindkey '^[[A' history-search-backward
+bindkey '^[[B' history-search-forward
+
+HISTFILE=~/.zsh_history
+HISTSIZE=100
+SAVEHIST=100
+
+setopt APPEND_HISTORY
+setopt INC_APPEND_HISTORY
+setopt SHARE_HISTORY
+setopt HIST_IGNORE_ALL_DUPS
+```

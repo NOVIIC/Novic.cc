@@ -2,26 +2,42 @@
 title: '隐私优先的日用浏览器选择与设置'
 description: '在不影响日常浏览网页体验下最大化保护浏览器指纹等个人信息'
 pubDate: 2026-07-22
+updatedDate: 2026-07-25
 tags: ['Web', '小技巧']
-draft: true
 ---
-
-最近在考虑换浏览器，于是顺带着研究了一下隐私保护设置
-
-## Brave
 
 还记得当年 Microsoft Edge 换了 Chromium 内核，我一用，发现竟如此舒适，于是便换掉了 Chrome，这么多年来一直都使用 Edge 。几个月前我开始研究 Web 隐私防护相关的东西，了解到 Brave 浏览器，自带 Shield 功能，做了不少隐私方面的优化。于是便换过去试了试。
 
-但是，几个月用下来， Brave 主要遇到了两个痛点：
+## Brave
+
+### 配置
+
+Brave 浏览器是 Chromium 阵营做得比较好的隐私保护浏览器。
+
+直接打开 Shield (设置-屏蔽) 中 _拦截脚本_ 以外的所有屏蔽功能，基本不会影响网页的正常功能。
+
+然后再到 **隐私与安全** 中，把那俩自动重定向、语言指纹识别防护、 DNT 头打开。然后把底下的**遥测信息**都关了。 **安全** 中的 _管理 JavaScript 优化和安全性_ 也可以调一下。  
+如果你尝试使用一些技术来隐藏自己的真实 IP ，那么把 **WebRTC IP 处理政策**改为 _禁用无代理的 UDP_ 来避免 WebRTC 泄漏。并在 安全 设置中打开 **使用安全 DNS** 以避免 DNS 泄漏。  
+以及如果你的伪装 IP 与真实 IP 不在一个时区，那么可以使用 [Spoof Timezone 扩展](https://chromewebstore.google.com/detail/spoof-timezone/kcabmhnajflfolhelachlflngdbfhboe) 来改变浏览器的时区。
+
+还可以视情况安装 NoScript 扩展来达到更加严格的防护。但这个需要手动维护信任白名单，有些繁琐。 Chrome Web Store 中的是 MV3 的版本，而 Brave 自托管了 MV2 的版本，可能保护能力更强。
+
+然后就可以正常使用了。
+
+### 缺点
+
+几个月用下来， Brave 主要遇到了两个痛点：
 
 1. 网页消息推送依赖 Google Service ，如果禁用就完全收不到消息通知了。这应该也是所有 Chromium 的通病（除了 Edge 有微软自家的推送服务）
 2. Brave 的 Container 功能还刚推出没多久，相比 Firefox 还是略显逊色。
 
-于是考虑换到 Firefox 系
+于是乎，我又研究上了 Firefox 系
 
 选择了 LibreWolf
 
 ## LibreWolf
+
+（ LibreWolf 对 Firefox 进行了一些默认设置的调节和遥测功能的删除。因此直接使用 Firefox 也可以达到比较近似的防护等级，只不过你得手动关闭一些功能）
 
 ### 安装方式
 
@@ -36,10 +52,20 @@ draft: true
 
 简单来说就是没法优雅地固定到任务栏。
 
-并且 Portable 版在每次关闭后会清理掉一些缓存文件，而这实际上会延迟下次加载所需的时间。
+并且 Portable 版在每次关闭后会清理掉一些缓存文件，而这实际上会增加下次加载所需的时间。
 
 所以如果是作为主力浏览器，不要用 scoop 装。
 
 令我惊喜的是 LibreWolf 有 Microsoft Store 版本。这个很不错。我不需要在电脑上多运行一个软件的更新检查器了。
+
+### 配置
+
+首先，第一次启动便会提示你更改语言设置为 English 。不过如果不常访问英文网站，大抵是没必要开的。
+
+然后来到设置。如果要使用浏览器同步功能，可以打开 Firefox 同步。 LibreWolf 没有额外提供自己的同步服务。
+
+接下来到 **隐私与安全** 。 LibreWolf 的默认设置是把隐私设置拉满的，而这可能会影响使用体验。所以，取消勾选 _在 LibreWolf 关闭时清除历史记录_ 。以及关闭 _启用 ResistFingerprinting_ 。我们接下来将细调指纹防护的设置。
+
+在地址栏输入 `about:config` 进入高级首选项，搜索
 
 ## To Be Continued
