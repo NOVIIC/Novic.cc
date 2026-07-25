@@ -6,10 +6,10 @@
 
 博客内容分为两个集合，分别对应不同路由：
 
-| 集合                     | 目录                         | 路由                                                          | 列表顺序                     |
-| :----------------------- | :--------------------------- | :------------------------------------------------------------ | :--------------------------- |
-| **Articles**（技术文章） | `src/content/articles/`      | `/articles/`、`/articles/tags/[tag]/`、`/articles/[...slug]/` | 按创建时间倒序（最新在上）   |
-| **Notes**（学习笔记）    | `src/content/notes/<topic>/` | `/notes/`、`/notes/[topic]/`、`/notes/[topic]/[...slug]/`     | 主题内按时间正序（从旧到新） |
+| 集合                     | 目录                         | 路由                                                            | 列表顺序                     |
+| :----------------------- | :--------------------------- | :-------------------------------------------------------------- | :--------------------------- |
+| **Articles**（技术文章） | `src/content/articles/<年>/` | `/articles/`、`/articles/tags/[tag]/`、`/articles/<年>/<slug>/` | 按创建时间倒序（最新在上）   |
+| **Notes**（学习笔记）    | `src/content/notes/<topic>/` | `/notes/`、`/notes/[topic]/`、`/notes/[topic]/[...slug]/`       | 主题内按时间正序（从旧到新） |
 
 - **Articles** 顶部列出所有 tag（带计数），点击进入该 tag 的独立文章列表页。
 - **Notes** 按主题分目录存放（目录名即英文 slug），首页展示主题卡片，点击进入主题内笔记列表。主题元数据定义在 `src/consts.ts` 的 `NOTES_TOPICS`。
@@ -62,7 +62,7 @@ Markdown 处理器使用 `@astrojs/markdown-remark` 的 `unified()`（见 `astro
 │   │   ├── FormattedDate.astro
 │   │   └── Toc.astro             # 侧边目录
 │   ├── content/
-│   │   ├── articles/             # 技术文章（.md / .mdx）
+│   │   ├── articles/             # 技术文章（.md / .mdx），按年份分子目录
 │   │   └── notes/                # 学习笔记，按主题分子目录
 │   │       ├── single-variable-calculus/
 │   │       └── multivariable-integration/
@@ -112,7 +112,7 @@ Markdown 处理器使用 `@astrojs/markdown-remark` 的 `unified()`（见 `astro
 
 ## 写文章 / 笔记
 
-**Articles** 在 `src/content/articles/` 下新建 `.md` 或 `.mdx`：
+**Articles** 在 `src/content/articles/<年>/` 下新建 `.md` 或 `.mdx`（目录名即四位年份，如 `2026/`；文章 URL 自动为 `/articles/<年>/<slug>/`）：
 
 ```yaml
 ---
