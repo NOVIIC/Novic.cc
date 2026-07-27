@@ -2,7 +2,7 @@
 title: '隐私优先的日用浏览器选择与设置'
 description: '在不影响日常浏览网页体验下最大化保护浏览器指纹等个人信息'
 pubDate: 2026-07-22
-updatedDate: 2026-07-26
+updatedDate: 2026-07-27
 tags: ['Web', '小技巧']
 ---
 
@@ -95,3 +95,9 @@ LibreWolf 会自动帮你安装 uBlock Origin 扩展，其它 Firefox 系需手�
 1. Firefox 的指纹防护措施与 Brave 相比是更为强力的，但这也意味着影响日常浏览体验的可能性更高，需要根据遇到的情况手动调节这些防护措施（或者适应这些不便）。如果想要开箱即用的体验，可以只使用 FPP 的默认设置（即不调节 `privacy.fingerprintingProtection.overrides` ）。
 2. 市场主流毕竟还是 Chromium ，因此 Firefox 系可能会有兼容性问题。但我在日常浏览中目前没有遇到过问题，只在测试自己开发的 WebGPU 项目时发现 Firefox 的 WebGPU 支持不完整，运行不了。
 3. Firefox 系不支持 PWA ，如果你要使用 PWA ，那只能 Chromium 了。
+
+## 其它
+
+在 https://coveryourtracks.eff.org/ 可以了解到浏览器的基本防护信息和相关知识
+
+Edge 和 Chrome 这些浏览器的隐私防护能力肯定是排不上号的。如果真的要用这几个浏览器，推荐在隐私设置里把相关防护拉到最严，并安装 uBlock Origin Lite 、 Canvas Blocker 扩展，以及可选 NoScript。
