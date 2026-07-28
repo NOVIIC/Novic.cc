@@ -23,6 +23,8 @@ tags: ['AI', 'Web', '开发', 'Linux']
 
 御三家的模型大抵是不好整的。思索之后，决定开个 OpenCode GO 尝试一下 GLM5.2 ，顺便试试 OpenCode 。
 
+（如果你也想买 Opencode GO ，可以通过[我的邀请链接](https://opencode.ai/go?ref=5H7CYN7QV9)注册，双方都能多 5$ 额度）
+
 ### 开发环境搭建
 
 （_详细步骤详见 [后文](#完整的环境配置和开发部署流程)_ ）
