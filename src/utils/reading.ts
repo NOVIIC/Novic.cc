@@ -2,18 +2,13 @@ import type { CollectionEntry } from 'astro:content';
 
 /**
  * 统计文章正文字数（中文字符数 + 英文单词数）。
- * 会先剥离代码块、图片、链接、HTML 与 Markdown 标记符号，使结果更贴近实际阅读量。
+ * 会先剥离图片、链接、HTML 与 Markdown 标记符号，使结果更贴近实际阅读量。
  */
 export function countWords(
 	entry: CollectionEntry<'articles' | 'notes'>,
 ): number {
 	const body = entry.body ?? '';
 	const text = body
-		// 围栏代码块（``` 或 ~~~）
-		.replace(/```[\s\S]*?```/g, '')
-		.replace(/~~~[\s\S]*?~~~/g, '')
-		// 行内代码
-		.replace(/`[^`]*`/g, '')
 		// 图片
 		.replace(/!\[[^\]]*\]\([^)]*\)/g, '')
 		// 链接：保留链接文本
