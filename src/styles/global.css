@@ -19,6 +19,13 @@
 	background-color: rgb(0 0 0 / 0.2);
 }
 
+@utility pad-x {
+	padding-inline: 0.75rem;
+	@media (width >= 40rem) {
+		padding-inline: 0;
+	}
+}
+
 @utility popup-bg {
 	border-radius: var(--radius-xl);
 	border: 1px solid rgb(255 255 255 / 0.1);
