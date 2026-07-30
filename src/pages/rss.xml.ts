@@ -8,7 +8,9 @@ export async function GET(context: APIContext) {
 	const filter = ({ data }: { data: { draft: boolean } }) => !data.draft;
 
 	const articles = (await getCollection('articles', filter)).sort(
-		(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+		(a, b) =>
+			b.data.pubDate.valueOf() - a.data.pubDate.valueOf() ||
+			a.id.localeCompare(b.id),
 	);
 	const notesTopics = await getNotesTree();
 	const validTopicSlugs = new Set(notesTopics.map((t) => t.slug));
@@ -18,10 +20,15 @@ export async function GET(context: APIContext) {
 	const notes = (await getCollection('notes', filter))
 		.filter((n) => validTopicSlugs.has(n.id.split('/')[0]))
 		.filter((n) => n.id.split('/').slice(1).join('/') !== 'intro')
-		.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+		.sort(
+			(a, b) =>
+				b.data.pubDate.valueOf() - a.data.pubDate.valueOf() ||
+				a.id.localeCompare(b.id),
+		);
 
 	const items = [
 		...articles.map((post) => ({
+			id: post.id,
 			title: post.data.title,
 			description: post.data.description,
 			pubDate: post.data.pubDate,
@@ -33,6 +40,7 @@ export async function GET(context: APIContext) {
 			// 标题前缀主题名，让 RSS 阅读器中能直接看到「主题 · 文章」层级关系；
 			// categories 同时保留主题，便于按主题聚合订阅。
 			return {
+				id: note.id,
 				title: topicTitle
 					? `${topicTitle} · ${note.data.title}`
 					: note.data.title,
@@ -42,7 +50,10 @@ export async function GET(context: APIContext) {
 				categories: [topicTitle].filter(Boolean) as string[],
 			};
 		}),
-	].sort((a, b) => b.pubDate.valueOf() - a.pubDate.valueOf());
+	].sort(
+		(a, b) =>
+			b.pubDate.valueOf() - a.pubDate.valueOf() || a.id.localeCompare(b.id),
+	);
 
 	return rss({
 		title: SITE_TITLE,

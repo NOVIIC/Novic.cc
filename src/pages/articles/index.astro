@@ -9,7 +9,11 @@ const posts = (
 	await getCollection('articles', ({ data }) =>
 		import.meta.env.PROD ? !data.draft : true,
 	)
-).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+).sort(
+	(a, b) =>
+		b.data.pubDate.valueOf() - a.data.pubDate.valueOf() ||
+		a.id.localeCompare(b.id),
+);
 
 const tagCounts = new Map<string, number>();
 for (const post of posts) {

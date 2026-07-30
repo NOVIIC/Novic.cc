@@ -19,7 +19,11 @@ export async function getStaticPaths() {
 			tag,
 			posts: posts
 				.filter((p) => p.data.tags.includes(tag))
-				.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()),
+				.sort(
+					(a, b) =>
+						b.data.pubDate.valueOf() - a.data.pubDate.valueOf() ||
+						a.id.localeCompare(b.id),
+				),
 		},
 	}));
 }
