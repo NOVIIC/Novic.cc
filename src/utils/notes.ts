@@ -32,7 +32,11 @@ export async function getNotesTree(): Promise<NotesTopic[]> {
 		const articles = items
 			.filter((n) => !isIntro(n))
 			.filter((n) => (isProd ? !n.data.draft : true))
-			.sort((a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf());
+			.sort(
+				(a, b) =>
+					a.data.pubDate.valueOf() - b.data.pubDate.valueOf() ||
+					a.id.localeCompare(b.id),
+			);
 		topics.push({
 			slug,
 			intro,
@@ -46,7 +50,7 @@ export async function getNotesTree(): Promise<NotesTopic[]> {
 	topics.sort(
 		(a, b) =>
 			(a.intro?.data.pubDate.valueOf() ?? 0) -
-			(b.intro?.data.pubDate.valueOf() ?? 0),
+				(b.intro?.data.pubDate.valueOf() ?? 0) || a.slug.localeCompare(b.slug),
 	);
 	return topics;
 }
