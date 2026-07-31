@@ -255,7 +255,7 @@ function getLongString() {
 
 [Collapsible Sections](https://expressive-code.com/plugins/collapsible-sections/)
 
-```js collapse={1-5, 12-14, 21-24}
+```js collapseStyle="collapsible-auto" collapse={1-5, 12-14, 21-24}
 // All this boilerplate setup code will be collapsed
 import { someBoilerplateEngine } from '@example/some-boilerplate'
 import { evenMoreBoilerplate } from '@example/even-more-boilerplate'

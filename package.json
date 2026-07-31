@@ -58,6 +58,7 @@
 	},
 	"devDependencies": {
 		"@astrojs/check": "^0.9.9",
+		"@expressive-code/plugin-collapsible-sections": "^0.44.1",
 		"@types/hast": "^3.0.0",
 		"@types/js-yaml": "^4.0.9",
 		"@types/wicg-file-system-access": "^2023.10.7",
