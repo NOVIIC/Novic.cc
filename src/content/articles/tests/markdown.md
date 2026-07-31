@@ -71,14 +71,14 @@ Now a nested list:
 
 1. First, get these ingredients:
 
-    - carrots
-    - celery
-    - lentils
+   - carrots
+   - celery
+   - lentils
 
 2. Boil some water.
 
 3. Dump everything in the pot and follow
-    this algorithm:
+   this algorithm:
 
         find wooden spoon
         uncover pot
@@ -88,7 +88,7 @@ Now a nested list:
         wait 10 minutes
         goto first step (or shut off burner when done)
 
-    Do not bump wooden spoon or it will fall.
+   Do not bump wooden spoon or it will fall.
 
 Notice again how text always lines up on 4-space indents (including
 that last line which continues item 3 above).
@@ -106,7 +106,9 @@ A horizontal rule follows.
 Inline math equations go in like so: $\omega = d\phi / dt$. Display
 math should get its own line and be put in in double-dollarsigns:
 
-$$I = \int \rho R^{2} dV$$
+$$
+I = \int \rho R^{2} dV
+$$
 
 $$
 \begin{equation*}
