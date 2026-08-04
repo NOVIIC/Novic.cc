@@ -55,11 +55,9 @@ const autolinkOptions = {
 };
 
 const ecOptions: RehypeExpressiveCodeOptions = {
+	// 与站点 ec.config.mjs 对齐：锁定单一深色主题，避免双主题跟随系统偏好
+	themes: ['slack-dark'],
 	plugins: [pluginLineNumbers()],
-	styleOverrides: {
-		// 与 ec.config.mjs 对齐（codeBorder 在 EC 0.44 中已是无效键，站点实际生效的只有 codeBackground）
-		codeBackground: '#0b1020',
-	},
 };
 
 const remarkPlugins: PluggableList = [

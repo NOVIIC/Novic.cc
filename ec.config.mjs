@@ -3,9 +3,7 @@ import { pluginCollapsibleSections } from '@expressive-code/plugin-collapsible-s
 import { pluginLineNumbers } from '@expressive-code/plugin-line-numbers';
 
 export default defineEcConfig({
+	// 锁定为深色主题
+	themes: ['slack-dark'],
 	plugins: [pluginLineNumbers(), pluginCollapsibleSections()],
-	styleOverrides: {
-		codeBackground: '#0b1020',
-		codeBorder: '#1e293b',
-	},
 });
