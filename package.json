@@ -11,6 +11,7 @@
 		"build": "astro build && pagefind --site dist",
 		"preview": "astro preview",
 		"check": "astro check && remark src/content --ext md,mdx --frail",
+		"icons": "node scripts/generate-icons.mjs",
 		"format": "prettier --write .",
 		"md": "prettier --write . && remark src/content --ext md,mdx --frail",
 		"astro": "astro"
