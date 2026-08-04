@@ -41,8 +41,10 @@ Here's a numbered list:
 Note again how the actual text starts at 4 columns in (4 characters
 from the left side). Here's a code sample:
 
-    # Let me re-iterate ...
-    for i in 1 .. 10 { do-something(i) }
+```text
+# Let me re-iterate ...
+for i in 1 .. 10 { do-something(i) }
+```
 
 As you probably guessed, indented 4 spaces. By the way, instead of
 indenting the block, you can use delimited blocks, if you like:
@@ -94,7 +96,7 @@ Notice again how text always lines up on 4-space indents (including
 that last line which continues item 3 above).
 
 Here's a link to [a website](http://foo.bar), to a [local
-doc](local-doc.html), and to a [section heading in the current
+doc](mdx-demo.mdx), and to a [section heading in the current
 doc](#an-h2-header). Here's a footnote [^1].
 
 [^1]: Footnote text goes here.
