@@ -23,3 +23,5 @@ minimumReleaseAgeExclude:
   - tailwindcss@4.3.2
 patchedDependencies:
   hast-util-to-estree@3.1.3: patches/hast-util-to-estree@3.1.3.patch
+overrides:
+  mdast-util-to-markdown: ^2.1.0
