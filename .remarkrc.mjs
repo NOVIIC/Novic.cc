@@ -1,5 +1,6 @@
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
 import remarkMdx from 'remark-mdx';
 import remarkLint from 'remark-lint';
 import remarkLintNoUndefinedReferences from 'remark-lint-no-undefined-references';
@@ -10,6 +11,7 @@ const config = {
 	plugins: [
 		[remarkFrontmatter],
 		[remarkGfm],
+		[remarkMath],
 		[remarkMdx],
 		[remarkLint],
 		[remarkLintNoUndefinedReferences, { allowShortcutLink: true }],
