@@ -51,8 +51,10 @@ Markdown 处理器使用 `@astrojs/markdown-remark` 的 `unified()`（见 `astro
 /
 ├── public/
 │   ├── background.jpg            # 站点背景图
-│   ├── favicon.svg
-│   ├── favicon.ico
+│   ├── favicon.svg               # editor 页面图标（主站已改用 PNG）
+│   ├── favicon.ico               # 16/32/48 多尺寸 ICO
+│   ├── favicon-16x16.png / favicon-32x32.png
+│   ├── apple-touch-icon.png      # 180x180，源图在 brand/logo.png
 │   └── fonts/                    # Atkinson woff 字体
 ├── src/
 │   ├── components/
