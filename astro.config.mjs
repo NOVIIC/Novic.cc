@@ -5,7 +5,6 @@ import sitemap from '@astrojs/sitemap';
 import expressiveCode from 'astro-expressive-code';
 import tailwindcss from '@tailwindcss/vite';
 import font from 'vite-plugin-font';
-import { unified } from '@astrojs/markdown-remark';
 import remarkMath from 'remark-math';
 import rehypeSlug from 'rehype-slug';
 import rehypeKatex from 'rehype-katex';
@@ -36,23 +35,21 @@ export default defineConfig({
 		],
 	},
 	markdown: {
-		processor: unified({
-			remarkPlugins: [remarkMath],
-			rehypePlugins: [
-				rehypeSlug,
-				rehypeKatex,
-				[
-					rehypeAutolinkHeadings,
-					{
-						behavior: 'append',
-						properties: {
-							className: ['heading-anchor'],
-							ariaHidden: 'true',
-							tabIndex: -1,
-						},
+		remarkPlugins: [remarkMath],
+		rehypePlugins: [
+			rehypeSlug,
+			rehypeKatex,
+			[
+				rehypeAutolinkHeadings,
+				{
+					behavior: 'append',
+					properties: {
+						className: ['heading-anchor'],
+						ariaHidden: 'true',
+						tabIndex: -1,
 					},
-				],
+				},
 			],
-		}),
+		],
 	},
 });
