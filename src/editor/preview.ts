@@ -1,19 +1,17 @@
 import { unified, type PluggableList } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkFrontmatter from 'remark-frontmatter';
-import remarkGfm from 'remark-gfm';
-import remarkSmartypants from 'remark-smartypants';
 import remarkRehype from 'remark-rehype';
 import rehypeRaw from 'rehype-raw';
-import rehypeSlug from 'rehype-slug';
-import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypeStringify from 'rehype-stringify';
-import rehypeExpressiveCode, {
-	type RehypeExpressiveCodeOptions,
-} from 'rehype-expressive-code';
-import { pluginLineNumbers } from '@expressive-code/plugin-line-numbers';
+import rehypeExpressiveCode from 'rehype-expressive-code';
 import { visit } from 'unist-util-visit';
 import type { Root, Element } from 'hast';
+import {
+	remarkPlugins as sharedRemarkPlugins,
+	rehypePlugins as sharedRehypePlugins,
+	ecOptions,
+} from '../utils/render-config.mjs';
 import { parseFrontmatter } from './frontmatter';
 import type { Frontmatter } from './types';
 
@@ -44,32 +42,18 @@ const rehypeSourceLines = () => (tree: Root) => {
 	});
 };
 
-/* 与站点 astro.config.mjs / ec.config.mjs 对齐的插件配置 */
-const autolinkOptions = {
-	behavior: 'append' as const,
-	properties: {
-		className: ['heading-anchor'],
-		ariaHidden: 'true',
-		tabIndex: -1,
-	},
-};
-
-const ecOptions: RehypeExpressiveCodeOptions = {
-	// 与站点 ec.config.mjs 对齐：锁定单一深色主题，避免双主题跟随系统偏好
-	themes: ['slack-dark'],
-	plugins: [pluginLineNumbers()],
-};
-
+/* remark/rehype/expressive-code 配置与站点 astro.config.mjs / ec.config.mjs 同源
+   （src/utils/render-config.mjs），预览在此基础上叠加本环境需要的管道插件：
+   remarkFrontmatter 跳过 frontmatter（主站由内容集合剥离）、rehypeSourceLines
+   给元素打源码行号用于滚动同步。 */
 const remarkPlugins: PluggableList = [
 	remarkFrontmatter,
-	remarkGfm,
-	remarkSmartypants,
+	...sharedRemarkPlugins,
 ];
 
 const rehypePlugins: PluggableList = [
 	rehypeSourceLines,
-	rehypeSlug,
-	[rehypeAutolinkHeadings, autolinkOptions],
+	...sharedRehypePlugins,
 	[rehypeExpressiveCode, ecOptions],
 ];
 
@@ -79,8 +63,14 @@ async function renderMd(source: string): Promise<string> {
 		.use(remarkParse)
 		.use(remarkPlugins)
 		.use(remarkRehype, { allowDangerousHtml: true })
-		.use(rehypeRaw)
+		// rehypeRaw 排在 rehype 插件之后，与站点 createMarkdownProcessor 的固定顺序
+		// （rehypeRaw 始终最后）保持一致。原因：rehype-raw 会用 HTML 字符串往返
+		// 重建节点，丢弃 code.data.meta（代码块语言 meta，供 expressive-code 的
+		// collapsible/行号等读取），必须先让插件消费完。
+		// 代价：.md 里原生 HTML 块（如 <div><h3>…）内的元素不经过 slug/autolink/
+		// sourceLines 处理——与站点行为一致，如需调整两处必须同步。
 		.use(rehypePlugins)
+		.use(rehypeRaw)
 		.use(rehypeStringify)
 		.process(source);
 	return String(file);
