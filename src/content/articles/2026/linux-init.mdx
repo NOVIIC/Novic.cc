@@ -2,51 +2,127 @@
 title: '初始化 Linux 服务器'
 description: ''
 pubDate: 2026-07-25
+updatedDate: 2026-08-13
 tags: ['Linux', '小技巧']
 ---
 
-### 安全配置
+## 安全配置
+
+### 创建普通用户并配置 sudo
+
+具体过程就不写了，直接问 AI 就行
+
+### ssh 配置
+
+通过编辑 `/etc/ssh/sshd_config` 来修改配置
+
+这个文件里默认列出的很多选项是被注释掉的状态，取消注释（删掉对应的`#`）并修改值即可
+
+如: `#Port 22` 改为 `Port 12345`
+
+下面的各项都是此文件内的设置项
 
 #### 更改 ssh 端口
 
-#### 配置仅密钥登录并禁用 root
+**非常重要**，默认端口绝对会被扫
 
-### shell 配置
+```ssh-config
+Port 25565 # 修改成任意非常用端口
+```
 
-#### 安装 zsh
+#### 禁用 root 登录
 
-切换默认 shell
+```ssh-config
+PermitRootLogin no
+```
+
+#### 配置仅密钥登录
+
+先启用密钥登录
+
+```ssh-config
+PubkeyAuthentication yes
+```
+
+在本地生成 SSH 密钥对并上传到服务器，测试确认密钥登录正常
+
+然后关闭密码登录，**非常重要**，防止被爆破
+
+```ssh-config
+PasswordAuthentication no
+```
+
+### 配置防火墙
+
+这个也可以直接问 AI
+
+要点为：
+
+- 只开放需要用到的几个端口
+- 未开放端口的响应策略设置为 `DROP`
+
+注意很多云服务器厂商还会需要去网页控制台调节安全组
+
+### 其他
+
+可以设置系统自动更新  
+如 Debian 使用 `unattended-upgrades`
+
+可以使用 **fail2ban** 防爆破
+
+## shell 配置
+
+个人偏好 zsh ，同时不使用 oh my zsh 以减少资源占用
+
+如果服务器内存捉襟见肘，可以尝试 [ble.sh](https://github.com/akinomyoga/ble.sh)
+
+#### 安装 zsh 和有用的 zsh 插件
+
+插件我用到了两个，下面配置文件中有提到
+
+#### 切换默认 shell
 
 ```bash
 chsh -s $(which zsh)
 ```
 
-配置文件
+#### 配置 zsh
 
-```sh title=".zshrc"
-autoload -Uz compinit && compinit
-autoload -U colors && colors
+```zsh title=".zshrc"
+# 加载需要的函数
+autoload -Uz compinit && compinit # Tab 补全
+autoload -U colors && colors # 提供颜色定义变量，下面会用到
 
-PROMPT='%F{green}%n@%m%f:%F{blue}%1~%f %# '
+# 设置提示符格式
+PROMPT='%F{green}%n@%m%f:%F{blue}%~%f %# '
 
+# 设置彩色输出
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 
-source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+# 第三方插件（需要先安装才能在此导入）
+# zsh-syntax-highlighting 命令语法高亮
+[[ -f /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && \
+    source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+# zsh-autosuggestions 根据历史记录提供补全建议
+[[ -f /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && \
+    source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 
-zstyle ':completion:*' menu select
-bindkey '^I' complete-word
+# Tab 补全配置
+zstyle ':completion:*' menu select # 按 Tab 时显示候选项列表，可用方向键选择
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' # 大小写模糊
 
+# 上下箭头替换成前缀搜索而不只滚动显示历史
 bindkey '^[[A' history-search-backward
 bindkey '^[[B' history-search-forward
 
-HISTFILE=~/.zsh_history
-HISTSIZE=100
-SAVEHIST=100
-
-setopt APPEND_HISTORY
-setopt INC_APPEND_HISTORY
-setopt SHARE_HISTORY
-setopt HIST_IGNORE_ALL_DUPS
+# 历史记录相关设置
+HISTFILE=~/.zsh_history # 命令历史保存位置
+HISTSIZE=1000 # 内存中保存的条数
+SAVEHIST=1000 # 文件中保存的条数
+setopt SHARE_HISTORY # 实时与文件同步历史
+setopt HIST_IGNORE_ALL_DUPS # 如果新记录与历史中某命令完全相同，则丢弃旧记录
+setopt EXTENDED_HISTORY # 在历史中记录命令的执行时间戳
+setopt HIST_EXPIRE_DUPS_FIRST # 清理历史时优先删除重复条目
+setopt HIST_FIND_NO_DUPS # 历史搜索时不重复显示连续的相同条目
 ```
