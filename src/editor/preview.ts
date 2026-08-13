@@ -76,6 +76,37 @@ async function renderMd(source: string): Promise<string> {
 	return String(file);
 }
 
+/**
+ * 还原 raw-text 元素（<style>/<script>）内容里的 HTML 实体。
+ * preact-render-to-string 会把这类元素的内容当作普通文本转义
+ * （" → &quot;、& → &amp;…），而浏览器解析 raw-text 元素时不会还原实体，
+ * 导致 expressive-code 内联的 url("data:…")、mask、&& 等 CSS/JS 损坏
+ * （具体症状：.mdx 预览复制按钮图标变成实色方块）。正文与属性保持不变。
+ */
+function decodeRawTextEntities(html: string): string {
+	return html.replace(
+		/(<style(?:\s[^>]*)?>)([\s\S]*?)(<\/style>)|(<script(?:\s[^>]*)?>)([\s\S]*?)(<\/script>)/gi,
+		(
+			_,
+			styleOpen,
+			styleBody,
+			styleClose,
+			scriptOpen,
+			scriptBody,
+			scriptClose,
+		) => {
+			const body = (styleBody ?? scriptBody)
+				.replace(/&quot;/g, '"')
+				.replace(/&amp;/g, '&')
+				.replace(/&lt;/g, '<')
+				.replace(/&gt;/g, '>')
+				.replace(/&#39;/g, "'")
+				.replace(/&#x27;/g, "'");
+			return (styleOpen ?? scriptOpen) + body + (styleClose ?? scriptClose);
+		},
+	);
+}
+
 /** .mdx：MDX 运行时编译（evaluate + preact），再序列化为 HTML 字符串。 */
 async function renderMdx(source: string): Promise<string> {
 	const [{ evaluate }, runtime, { createElement }, { renderToString }] =
@@ -92,7 +123,7 @@ async function renderMdx(source: string): Promise<string> {
 		rehypePlugins,
 	});
 	const Content = mod.default as Parameters<typeof createElement>[0];
-	return renderToString(createElement(Content, {}));
+	return decodeRawTextEntities(renderToString(createElement(Content, {})));
 }
 
 const fmtDate = (t: number) =>
@@ -104,6 +135,25 @@ const fmtDate = (t: number) =>
 
 const esc = (s: string) =>
 	s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/** innerHTML 注入的 <script> 不会自动执行（HTML 规范），而 expressive-code
+ * 的复制按钮逻辑正是以内联 module 脚本形式内嵌在代码块 HTML 里，必须手动
+ * 重建节点才会触发执行，否则预览的复制按钮点了没反应。
+ * 脚本内容每次渲染相同，按内容去重只执行一次——脚本内部用 MutationObserver
+ * 监听 body，后续 innerHTML 重建的新代码块会自动挂上点击处理。 */
+const executedPreviewScripts = new Set<string>();
+
+function runInlineScripts(container: HTMLElement): void {
+	for (const old of container.querySelectorAll<HTMLScriptElement>('script')) {
+		const text = old.textContent ?? '';
+		if (executedPreviewScripts.has(text)) continue;
+		executedPreviewScripts.add(text);
+		const fresh = document.createElement('script');
+		fresh.type = old.type || 'module';
+		fresh.textContent = text;
+		old.replaceWith(fresh);
+	}
+}
 
 function headerHtml(fm: Frontmatter): string {
 	if (!fm.title && !fm.pubDate) return '';
@@ -209,5 +259,6 @@ export async function renderPreview(opts: PreviewOptions): Promise<void> {
 	container.innerHTML = isSiteContent
 		? `<article class="prose prose-invert max-w-none prose-headings:scroll-mt-32 prose-pre:bg-transparent prose-pre:p-0"><div class="mx-auto max-w-3xl"><div class="content-bg min-w-0 px-2 py-6 sm:p-7">${headerHtml(fm)}<div>${body}${sentinel}</div></div></div></article>`
 		: `<article class="prose prose-invert max-w-none prose-headings:scroll-mt-8 prose-pre:bg-transparent prose-pre:p-0"><div class="bg-black/15 backdrop-blur-[2px] rounded-2xl px-4 py-6 sm:px-7">${body}${sentinel}</div></article>`;
+	runInlineScripts(container);
 	await resolveImages(container, opts.root, opts.fileDir);
 }
