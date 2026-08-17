@@ -1,10 +1,14 @@
 ---
-title: '初始化 Linux 服务器'
-description: ''
+title: 'Linux 初始配置'
+description: '为 Linux 系统进行必要的安全配置和一些体验优化'
 pubDate: 2026-07-25
-updatedDate: 2026-08-13
+updatedDate: 2026-08-17
 tags: ['Linux', '小技巧']
 ---
+
+此文主要针对 Linux 服务器的配置
+
+但对于 WSL 甚至 Linux 桌面系统，Shell 配置部分大抵也是可以参考的
 
 ## 安全配置
 
@@ -70,7 +74,7 @@ PasswordAuthentication no
 
 可以使用 **fail2ban** 防爆破
 
-## shell 配置
+## Shell 配置
 
 个人偏好 zsh ，同时不使用 oh my zsh 以减少资源占用
 
@@ -97,19 +101,21 @@ autoload -U colors && colors # 提供颜色定义变量，下面会用到
 PROMPT='%F{green}%n@%m%f:%F{blue}%~%f %# '
 
 # 设置彩色输出
-alias ls='ls --color=auto'
-alias grep='grep --color=auto'
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    alias grep='grep --color=auto'
+fi
 
-# 第三方插件（需要先安装才能在此导入）
+# 第三方插件
 # zsh-syntax-highlighting 命令语法高亮
-[[ -f /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && \
-    source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source /安装目录/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 # zsh-autosuggestions 根据历史记录提供补全建议
-[[ -f /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && \
-    source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+source /安装目录/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 # Tab 补全配置
 zstyle ':completion:*' menu select # 按 Tab 时显示候选项列表，可用方向键选择
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS} # 候选项使用 ls 同款颜色方案
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' # 大小写模糊
 
 # 上下箭头替换成前缀搜索而不只滚动显示历史
@@ -125,4 +131,14 @@ setopt HIST_IGNORE_ALL_DUPS # 如果新记录与历史中某命令完全相同�
 setopt EXTENDED_HISTORY # 在历史中记录命令的执行时间戳
 setopt HIST_EXPIRE_DUPS_FIRST # 清理历史时优先删除重复条目
 setopt HIST_FIND_NO_DUPS # 历史搜索时不重复显示连续的相同条目
+
+# 其它参数
+setopt AUTO_CD # 可以省略 cd ，直接输入目录名进入目录
+setopt NO_BEEP # 关闭错误提示音
+
+export LANG=en_US.UTF-8
+export EDITOR=vim # 默认编辑器，根据个人喜好调整，如 wsl 可以用 'code --wait'
+export VISUAL=vim # 一般与上一行保持一致即可
+
+# 下面再根据你的 .bashrc 加上 PATH 等其它参数
 ```
