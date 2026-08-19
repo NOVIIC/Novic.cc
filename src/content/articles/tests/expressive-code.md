@@ -307,3 +307,17 @@ console.log('Sorry, do you know what line I am on?');
 console.log('Greetings from line 5!');
 console.log('I am on line 6');
 ```
+
+## Title Links
+
+标题中使用 `[文字](URL)` 语法可渲染为超链接（自定义插件 `ec-plugin-title-links.mjs`）。
+
+```js title="[示例来源](https://example.com)"
+console.log('Hello from a linked title!');
+```
+
+站内链接（同一标签页打开）与纯文本混排：
+
+```js title="改动见 [配置文档](/docs/config) 与注释"
+console.log('Mixed text and link');
+```
