@@ -3,7 +3,7 @@ title: '隐私优先的日用浏览器选择与设置'
 description: '在不影响日常浏览网页体验下最大化保护浏览器指纹等个人信息'
 pubDate: 2026-07-22
 updatedDate: 2026-07-27
-tags: ['Web', '小技巧']
+tags: ['Web', '小技巧', '安全']
 ---
 
 还记得当年 Microsoft Edge 换了 Chromium 内核，我一用，发现竟如此舒适，于是便换掉了 Chrome，这么多年来一直都使用 Edge 。几个月前我开始研究 Web 隐私防护相关的东西，了解到 Brave 浏览器，自带 Shield 功能，做了不少隐私方面的优化。于是便换过去试了试。
