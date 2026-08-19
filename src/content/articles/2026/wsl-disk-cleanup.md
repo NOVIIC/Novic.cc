@@ -59,7 +59,7 @@ ocgc vacuum
 ## 压缩 WSL 虚拟磁盘
 
 ```powershell
-# 关闭WSL
+# 关闭 WSL
 wsl --shutdown
 
 # 使用 HyperV 套件中的功能压缩磁盘（需要启用相关 Windows 功能）
