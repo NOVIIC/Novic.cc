@@ -17,7 +17,7 @@ tags: ['Web', '安全']
 
 ### 根证书
 
-其实我一开始翻源代码是担心自签证书的问题。如果它使用的是统一发放的证书，那么开发者甚至其他用户，只要能拿到我的流量数据（当然本地反代的情况下一般来说是拿不到的），就能解密得到所有原始数据。我觉得这多少是个风险点，应该检查一下源码是怎么实现的。检查发现它的证书是在本地随机生成密钥，并不是统一发放。所有这方面是没有什么问题的。
+其实我一开始翻源代码是担心自签证书的问题。如果它使用的是统一发放的证书，那么开发者甚至其他用户，只要能拿到我的流量数据（当然本地反代的情况下一般来说是拿不到的），就能解密得到所有原始数据。我觉得这多少是个风险点，应该检查一下源码是怎么实现的。检查发现它的证书是在本地随机生成密钥，并不是统一发放。所以这方面是没有什么问题的。
 
 但是，得到了意外“收获”。
 
@@ -33,7 +33,7 @@ AI 给我翻出了一个 `ProxyType.ServerAccelerate` 类型，说有这种类�
 
 我赶紧去详细研究了一下它这代码是怎么写的
 
-**下面部分内容我还没有彻底清楚，审计脚本还没完全人工复核，结论不一定完全正确。之后会再次更新这篇文章**
+**下面部分内容我还没有彻底研究清楚，审计脚本还没完全人工复核，结论不一定完全正确。之后会再次更新这篇文章**
 
 ### 目前的结论
 
@@ -70,7 +70,7 @@ public enum ProxyType : byte
 }
 ```
 
-### 加速项 DTO 字段
+#### 加速项 DTO 字段
 
 `ForwardDomainNames=key3`、`IgnoreSSLCertVerification=key4`、`FakeServerName=key5`、`ProxyType=key6`：
 
@@ -101,7 +101,7 @@ public enum ProxyType : byte
     public ProxyType ProxyType { get; set; }
 ```
 
-### ProxyType 与连接行为
+#### ProxyType 与连接行为
 
 `ProxyType` 到 `IsServerSideProxy`、`IPAddress`、`ForwardDestination`、`Destination` 等连接行为属性的投影：
 
@@ -178,7 +178,7 @@ partial class AccelerateProjectDTO : IDomainConfig
     bool IDomainConfig.TlsIgnoreNameMismatch => IgnoreSSLCertVerification;
 ```
 
-### 证书校验回调
+#### 证书校验回调
 
 当 `TlsIgnoreNameMismatch=true` 时直接放行证书主机名不匹配：
 
@@ -202,7 +202,7 @@ partial class AccelerateProjectDTO : IDomainConfig
     }
 ```
 
-### 服务器加速转发
+#### 服务器加速转发
 
 转发层判断 `ServerAccelerate`（`IsServerSideProxy` 为真时添加 `X-Watt-*` 头并使用 HTTP/3）：
 
@@ -238,7 +238,7 @@ partial class AccelerateProjectDTO : IDomainConfig
     }
 ```
 
-### 加速列表与 Token 申请
+#### 加速列表与 Token 申请
 
 客户端实际拉取加速列表的端点：
 
@@ -262,7 +262,7 @@ partial class AccelerateProjectDTO : IDomainConfig
             await TryRequestServerSideProxyToken() : null;
 ```
 
-### 旧版兼容模型
+#### 旧版兼容模型
 
 旧端点中 `key3=转发域名`、`key4=转发IP`、`key5=伪装SNI` 的兼容模型：
 
