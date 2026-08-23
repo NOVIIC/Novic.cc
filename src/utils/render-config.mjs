@@ -7,6 +7,7 @@ import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import { pluginLineNumbers } from '@expressive-code/plugin-line-numbers';
 import { pluginCollapsibleSections } from '@expressive-code/plugin-collapsible-sections';
 import { pluginTitleLinks } from './ec-plugin-title-links.mjs';
+import { remarkArticleLinks } from './remark-article-links.mjs';
 
 /**
  * 主站（astro.config.mjs / ec.config.mjs）与编辑器预览（src/editor/preview.ts）
@@ -30,7 +31,12 @@ const autolinkHeadingsOptions = {
  * remark 插件
  * @type {import('unified').PluggableList}
  */
-export const remarkPlugins = [remarkGfm, remarkMath, remarkSmartypants];
+export const remarkPlugins = [
+	remarkGfm,
+	remarkMath,
+	remarkSmartypants,
+	remarkArticleLinks,
+];
 
 /**
  * rehype 插件
