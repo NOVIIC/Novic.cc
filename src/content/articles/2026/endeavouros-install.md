@@ -2,6 +2,7 @@
 title: '安装 EndeavourOS 桌面系统'
 description: '安装并配置 EndeavourOS + KDE 桌面系统'
 pubDate: 2026-08-23
+updatedDate: 2026-08-24
 tags: ['Linux']
 ---
 
@@ -49,6 +50,19 @@ yay --answerclean=None --answerdiff=All --answeredit=None --save
 `answeredit` 设为 `None` 则是不修改 PKGBUILD ，一般来说确实不会需要修改
 
 使用 `yay -Pg` 可以查看当前设置
+
+还可以安装 aur-scanner
+
+```zsh
+yay -S aur-scanner
+```
+
+可以用来扫描 PKGBUILD （静态规则，可能误伤也可能遗漏，不能代替人工审查）
+
+```zsh
+aur-scan check <包名>      # 装之前检查
+aur-scan system            # 扫描已装的 AUR 包
+```
 
 ### zram
 
@@ -105,3 +119,46 @@ sudo systemctl enable --now grub-btrfsd
 ```zsh
 sudo snapper -c home create-config /home
 ```
+
+### 输入法
+
+安装 Fcitx 5 、 GTK/Qt 支持、Rime 引擎和图形配置工具：
+
+```zsh
+sudo pacman -S fcitx5 fcitx5-gtk fcitx5-qt fcitx5-rime fcitx5-configtool
+```
+
+打开 KDE 系统设置 - 键盘 - 虚拟键盘，选择 Fcitx 5
+
+然后到 系统设置 - 输入法 里确认 Rime （中州韵）是启用的
+
+并在下面 配置附加组件 - 经典用户界面 设置 跟随系统浅色/深色设置
+
+然后就可以使用了
+
+默认使用 <kbd>Ctrl</kbd> + <kbd>Space</kbd> 切换中英文
+
+<kbd>Ctrl</kbd> + <kbd>`</kbd> 可以切换拼音方案和简繁体什么的
+
+### Grub
+
+**目前会遇上 GRUB 写入 grubenv 与 CoW 的 btrfs 冲突的问题，暂未解决**
+
+将 Grub 的默认启动项会设置为上次使用的选项
+
+编辑 `/etc/default/grub`的设置
+
+```ini
+GRUB_DEFAULT='saved'
+GRUB_SAVEDEFAULT=true
+```
+
+然后：
+
+```zsh
+sudo grub-mkconfig -o /boot/grub/grub.cfg
+```
+
+### 其它设置
+
+关闭 系统设置 - 显示和监视器 - 显示器配置 - 允许在全屏窗口中发生画面撕裂
