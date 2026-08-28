@@ -113,6 +113,54 @@ export async function loadTabs(): Promise<PersistedTabs | null> {
 	}
 }
 
+/* ---------- IndexedDB：目录树展开状态（仅对当前目录有效） ---------- */
+
+interface PersistedTreeExpanded {
+	root: FileSystemDirectoryHandle;
+	expanded: string[];
+}
+
+export async function saveTreeExpanded(
+	root: FileSystemDirectoryHandle,
+	expanded: string[],
+): Promise<void> {
+	try {
+		const db = await openDb();
+		await new Promise<void>((resolve, reject) => {
+			const tx = db.transaction(STORE, 'readwrite');
+			tx.objectStore(STORE).put({ root, expanded }, 'treeExpanded');
+			tx.oncomplete = () => resolve();
+			tx.onerror = () => reject(tx.error);
+		});
+	} catch {
+		// 持久化失败不影响使用
+	}
+}
+
+/** 读取展开状态；句柄与当前目录不同（换了目录）则返回 null（即默认全折叠）。 */
+export async function loadTreeExpanded(
+	root: FileSystemDirectoryHandle,
+): Promise<string[] | null> {
+	try {
+		const db = await openDb();
+		const data = await new Promise<PersistedTreeExpanded | null>(
+			(resolve, reject) => {
+				const req = db
+					.transaction(STORE)
+					.objectStore(STORE)
+					.get('treeExpanded');
+				req.onsuccess = () =>
+					resolve((req.result as PersistedTreeExpanded) ?? null);
+				req.onerror = () => reject(req.error);
+			},
+		);
+		if (!data) return null;
+		return (await data.root.isSameEntry(root)) ? data.expanded : null;
+	} catch {
+		return null;
+	}
+}
+
 /* ---------- 目录扫描 ---------- */
 
 /** 读取文件头部，提取 frontmatter（只取前 16KB，避免读取大文件全文）。 */
