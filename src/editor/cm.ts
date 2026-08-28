@@ -201,11 +201,13 @@ export function createEditor(
 	});
 }
 
-/** 载入新文档（重建 state，同时清空撤销历史，避免撤销串到上一个文件）。 */
-export function setDoc(
-	view: EditorView,
+/**
+ * 由文档内容构建新 state（新建标签 / 重置空状态用）。
+ * 每个标签持有独立 state，撤销历史随标签保留。
+ */
+export function createState(
 	doc: string,
 	callbacks: EditorCallbacks,
-) {
-	view.setState(buildState(doc, callbacks));
+): EditorState {
+	return buildState(doc, callbacks);
 }

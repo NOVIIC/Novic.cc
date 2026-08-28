@@ -1,8 +1,10 @@
 import * as fs from './fs';
-import { createEditor, setDoc, type EditorCallbacks } from './cm';
+import { createEditor, createState, type EditorCallbacks } from './cm';
 import { TreeView } from './tree';
+import { TabBar } from './tabs';
 import { isImage, isMarkdown, type TreeNode } from './types';
 import { newFileTemplate } from './frontmatter';
+import type { EditorState } from '@codemirror/state';
 import {
 	scrollToRevealSourceLine,
 	getEditorLineNumberForPageOffset,
@@ -29,6 +31,27 @@ const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 type Mode = 'edit' | 'split' | 'preview';
 const MODE_ORDER: Mode[] = ['edit', 'split', 'preview'];
 
+/** 最多同时打开的标签数 */
+const MAX_TABS = 4;
+
+interface Tab {
+	handle: FileSystemFileHandle;
+	path: string;
+	/** 磁盘上已保存的内容（图片标签为 ''） */
+	saved: string;
+	/** Markdown 标签的 CodeMirror state（含撤销历史）；图片为 null */
+	state: EditorState | null;
+	/** 编辑器滚动位置 */
+	scrollTop: number;
+	/** 预览滚动位置 */
+	previewTop: number;
+	/** 图片标签的 blob URL */
+	imageUrl: string | null;
+	dirty: boolean;
+	/** 最近一次激活时间（LRU 淘汰依据） */
+	lastUsed: number;
+}
+
 export function init() {
 	if (!fs.isSupported()) {
 		$('unsupported').classList.remove('hidden');
@@ -43,9 +66,7 @@ export function init() {
 		tree: $('tree'),
 		cm: $('cm-container'),
 		preview: $('preview-container'),
-		fileInfo: $('file-info'),
-		filePath: $('file-path'),
-		dirtyDot: $('dirty-dot'),
+		tabBar: $('tab-bar'),
 		btnSave: $('btn-save') as unknown as HTMLButtonElement,
 		btnOpen: $('btn-open'),
 		btnOpenWelcome: $('btn-open-welcome'),
@@ -61,20 +82,20 @@ export function init() {
 
 	let rootHandle: FileSystemDirectoryHandle | null = null;
 	let lastTree: TreeNode | null = null;
-	let current: {
-		handle: FileSystemFileHandle;
-		path: string;
-		saved: string;
-	} | null = null;
-	let dirty = false;
+	const tabs: Tab[] = [];
+	let activeIdx = -1;
 	let mode: Mode = 'edit';
 	let previewTimer = 0;
 	let previewSeq = 0;
 	/** 预览 DOM 版本：每次 renderPreviewNow 成功后自增，作为 scroll-sync 缓存键 */
 	let previewVersion = 0;
-	let imageBlobUrl = '';
 
 	const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+	const activeTab = (): Tab | null => tabs[activeIdx] ?? null;
+	const tabName = (t: Tab) => t.path.split('/').pop() ?? t.path;
+	const tabItems = () =>
+		tabs.map((t) => ({ name: tabName(t), path: t.path, dirty: t.dirty }));
 
 	/* ---------- 通用小工具 ---------- */
 
@@ -119,29 +140,40 @@ export function init() {
 		cmScroller.scrollTop = block.top + frac * block.height;
 	};
 
-	/* ---------- 状态与渲染 ---------- */
+	/* ---------- 标签状态与渲染 ---------- */
 
-	const setDirty = (v: boolean) => {
-		dirty = v;
-		ui.dirtyDot.classList.toggle('hidden', !v);
-		ui.btnSave.disabled = !v;
+	const syncSaveButton = () => {
+		ui.btnSave.disabled = !activeTab()?.dirty;
 	};
 
-	const confirmDiscard = () =>
-		!dirty || window.confirm('当前文件有未保存的修改，确定放弃吗？');
+	/** 顶栏整体刷新：标签条 + 保存按钮 + 模式开关 + 目录树高亮。 */
+	const syncChrome = () => {
+		const tab = activeTab();
+		tabBar.render(tabItems(), activeIdx);
+		const isMd = !!tab && !tab.imageUrl;
+		ui.btnSave.classList.toggle('hidden', !isMd);
+		syncSaveButton();
+		showModeToggle(isMd);
+		treeView.setActive(tab?.path ?? null);
+	};
+
+	const confirmCloseTab = (tab: Tab) =>
+		!tab.dirty ||
+		window.confirm(`「${tab.path}」有未保存的修改，确定关闭标签吗？`);
 
 	/**
 	 * 渲染预览。
 	 * scroll：'preserve' 保持当前阅读位置对应的源码行（编辑触发的刷新）；
-	 *         'reset' 回到顶部（打开新文件）；
-	 *         数字则滚动到该源码行（模式切换时保持阅读进度）。
+	 *         'reset' 回到顶部（新建标签）；
+	 *         数字则滚动到该源码行（模式切换时保持阅读进度）；
+	 *         { top } 直接恢复预览 scrollTop（标签切换时恢复阅读位置）。
 	 */
 	const renderPreviewNow = async (
-		scroll: 'preserve' | 'reset' | number = 'preserve',
+		scroll: 'preserve' | 'reset' | number | { top: number } = 'preserve',
 	) => {
-		const cur = current;
+		const cur = activeTab();
 		const root = rootHandle;
-		if (!cur || !root || isImage(cur.path)) return;
+		if (!cur || !root || cur.imageUrl) return;
 		const seq = ++previewSeq;
 		const source = view.state.doc.toString();
 		// 渲染前记录预览当前对应的源码行号（仅 'preserve' 需要；预览为空时记 0）
@@ -155,7 +187,7 @@ export function init() {
 				: 0;
 		try {
 			const { renderPreview } = await import('./preview');
-			if (seq !== previewSeq || current !== cur) return; // 期间已切换文件/关闭
+			if (seq !== previewSeq || activeTab() !== cur) return; // 期间已切换标签/关闭
 			await renderPreview({
 				source,
 				isMdx: /\.mdx$/i.test(cur.path),
@@ -163,12 +195,13 @@ export function init() {
 				root,
 				fileDir: cur.path.split('/').slice(0, -1).join('/'),
 			});
-			if (seq !== previewSeq || current !== cur) return;
+			if (seq !== previewSeq || activeTab() !== cur) return;
 			// innerHTML 整体重建，必须失效 CodeLineElement 缓存并 bump 版本
 			invalidateCodeLineElements();
 			previewVersion++;
 			if (typeof scroll === 'number')
 				scrollToRevealSourceLine(scroll, ui.preview, previewVersion);
+			else if (typeof scroll === 'object') ui.preview.scrollTop = scroll.top;
 			else if (scroll === 'preserve')
 				scrollToRevealSourceLine(preserveLine, ui.preview, previewVersion);
 			else ui.preview.scrollTop = 0;
@@ -179,22 +212,32 @@ export function init() {
 	};
 
 	const schedulePreview = () => {
-		if (mode === 'edit' || !current) return;
+		if (mode === 'edit' || !activeTab()) return;
 		clearTimeout(previewTimer);
 		previewTimer = window.setTimeout(() => void renderPreviewNow(), 400);
 	};
 
 	const editorCallbacks: EditorCallbacks = {
 		onDocChanged: (doc) => {
-			if (!current) return;
-			setDirty(doc !== current.saved);
+			const tab = activeTab();
+			if (!tab) return;
+			const wasDirty = tab.dirty;
+			tab.dirty = doc !== tab.saved;
+			if (tab.dirty !== wasDirty) tabBar.render(tabItems(), activeIdx);
+			syncSaveButton();
 			schedulePreview();
+			schedulePersist();
 		},
 		onSave: () => void save(),
 	};
 
 	const view = createEditor(ui.cm, editorCallbacks);
 	const cmScroller = view.scrollDOM;
+
+	const tabBar = new TabBar(ui.tabBar, {
+		onActivate: (i) => activateTab(i),
+		onClose: (i) => closeTab(i),
+	});
 
 	const treeView = new TreeView(ui.tree, {
 		onOpenFile: (node) => void openFile(node),
@@ -244,9 +287,9 @@ export function init() {
 		if (show && wasHidden) animateIn(el);
 	};
 
-	/** 根据当前模式（及是否为图片）排布编辑/预览面板。 */
+	/** 根据当前模式（及激活标签是否为图片）排布编辑/预览面板。 */
 	const layoutPanes = () => {
-		const image = current !== null && isImage(current.path);
+		const image = !!activeTab()?.imageUrl;
 		const eff: Mode = image ? 'preview' : mode;
 		togglePane(ui.cm, eff !== 'preview');
 		togglePane(ui.preview, eff !== 'edit');
@@ -336,6 +379,191 @@ export function init() {
 		{ passive: true },
 	);
 
+	/* ---------- 标签页管理 ---------- */
+
+	const showImagePreview = (url: string, name: string) => {
+		const wrap = document.createElement('div');
+		wrap.className = 'flex h-full items-center justify-center p-4';
+		const img = document.createElement('img');
+		img.src = url;
+		img.className =
+			'max-h-full max-w-full rounded-xl object-contain shadow-2xl';
+		img.alt = name;
+		wrap.appendChild(img);
+		ui.preview.replaceChildren(wrap);
+	};
+
+	/** 把激活标签的编辑器 state / 滚动位置收进 Tab 对象（切换、持久化前调用）。 */
+	const stashActive = () => {
+		const cur = activeTab();
+		if (!cur) return;
+		if (cur.state) {
+			cur.state = view.state;
+			// display:none 时 scrollTop 读数为 0，面板隐藏时不覆盖已存位置
+			if (!ui.cm.classList.contains('hidden'))
+				cur.scrollTop = cmScroller.scrollTop;
+		}
+		if (!ui.preview.classList.contains('hidden'))
+			cur.previewTop = ui.preview.scrollTop;
+	};
+
+	function activateTab(i: number) {
+		if (mqMobile.matches) setSidebarCollapsed(true);
+		if (i === activeIdx || !tabs[i]) return;
+		stashActive();
+		activeIdx = i;
+		const tab = tabs[i];
+		tab.lastUsed = Date.now();
+		if (tab.state) {
+			view.setState(tab.state);
+			requestAnimationFrame(() => {
+				cmScroller.scrollTop = tab.scrollTop;
+			});
+		} else if (tab.imageUrl) {
+			showImagePreview(tab.imageUrl, tabName(tab));
+		}
+		layoutPanes();
+		if (!tab.imageUrl && mode !== 'edit')
+			void renderPreviewNow({ top: tab.previewTop });
+		syncChrome();
+		schedulePersist();
+	}
+
+	/** 移除标签（不确认）；若移除的是激活标签则切到相邻标签。 */
+	function removeTab(i: number) {
+		const [tab] = tabs.splice(i, 1);
+		if (!tab) return;
+		if (tab.imageUrl) URL.revokeObjectURL(tab.imageUrl);
+		if (!tabs.length) {
+			activeIdx = -1;
+			showEmptyState();
+			schedulePersist();
+			return;
+		}
+		if (i < activeIdx) {
+			activeIdx--;
+			tabBar.render(tabItems(), activeIdx);
+			schedulePersist();
+		} else if (i === activeIdx) {
+			activeIdx = -1; // 让 activateTab 走完整切换流程
+			activateTab(Math.min(i, tabs.length - 1));
+		} else {
+			tabBar.render(tabItems(), activeIdx);
+			schedulePersist();
+		}
+	}
+
+	function closeTab(i: number) {
+		const tab = tabs[i];
+		if (!tab || !confirmCloseTab(tab)) return;
+		removeTab(i);
+	}
+
+	/** 标签已满时淘汰最久未用的干净标签；全是脏标签则失败。 */
+	function evictLruTab(): boolean {
+		let idx = -1;
+		tabs.forEach((t, i) => {
+			if (!t.dirty && (idx < 0 || t.lastUsed < tabs[idx].lastUsed)) idx = i;
+		});
+		if (idx < 0) {
+			toast(
+				`最多同时打开 ${MAX_TABS} 个标签，且都有未保存的修改，请先保存或关闭`,
+				3500,
+			);
+			return false;
+		}
+		const name = tabName(tabs[idx]);
+		removeTab(idx);
+		toast(`已达 ${MAX_TABS} 个标签上限，自动关闭了未修改的「${name}」`, 3000);
+		return true;
+	}
+
+	function showEmptyState() {
+		view.setState(createState('', editorCallbacks));
+		setMode('edit');
+		ui.preview.textContent = '';
+		layoutPanes();
+		syncChrome();
+	}
+
+	/* ---------- 标签持久化（刷新后恢复，含未保存内容） ---------- */
+
+	let persistTimer = 0;
+	const schedulePersist = () => {
+		clearTimeout(persistTimer);
+		persistTimer = window.setTimeout(() => void persistTabs(), 400);
+	};
+
+	async function persistTabs() {
+		clearTimeout(persistTimer);
+		stashActive();
+		await fs.saveTabs({
+			active: activeIdx,
+			tabs: tabs.map((t) => ({
+				handle: t.handle,
+				path: t.path,
+				saved: t.saved,
+				doc: t.state ? t.state.doc.toString() : '',
+				scrollTop: t.scrollTop,
+			})),
+		});
+	}
+
+	async function restoreTabs() {
+		const root = rootHandle;
+		const data = await fs.loadTabs();
+		if (!root || !data?.tabs?.length) return;
+		// resolve() 校验句柄属于当前根目录（换了目录则跳过）
+		const resolveRel = (
+			root as FileSystemDirectoryHandle & {
+				resolve?: (h: FileSystemHandle) => Promise<string[] | null>;
+			}
+		).resolve?.bind(root);
+		for (const pt of data.tabs.slice(0, MAX_TABS)) {
+			try {
+				let path = pt.path;
+				if (resolveRel) {
+					const segs = await resolveRel(pt.handle);
+					if (!segs) continue;
+					path = segs.join('/');
+				}
+				if (isImage(path)) {
+					const blob = await pt.handle.getFile();
+					tabs.push({
+						handle: pt.handle,
+						path,
+						saved: '',
+						state: null,
+						scrollTop: 0,
+						previewTop: 0,
+						imageUrl: URL.createObjectURL(blob),
+						dirty: false,
+						lastUsed: 0,
+					});
+				} else if (isMarkdown(path)) {
+					const disk = await fs.readFile(pt.handle);
+					// 上次有未保存修改则恢复编辑中的内容，否则用磁盘最新内容
+					const doc = pt.doc !== pt.saved ? pt.doc : disk;
+					tabs.push({
+						handle: pt.handle,
+						path,
+						saved: disk,
+						state: createState(doc, editorCallbacks),
+						scrollTop: pt.scrollTop ?? 0,
+						previewTop: 0,
+						imageUrl: null,
+						dirty: doc !== disk,
+						lastUsed: 0,
+					});
+				}
+			} catch {
+				// 文件已删除或句柄失效，跳过该标签
+			}
+		}
+		if (tabs.length)
+			activateTab(Math.min(Math.max(0, data.active), tabs.length - 1));
+	}
+
 	/* ---------- 目录栏：宽度 / 收起 / 响应式 ---------- */
 
 	const SB_MIN = 180;
@@ -374,14 +602,18 @@ export function init() {
 
 	let saving = false;
 	async function save() {
-		if (!current || !dirty || saving) return;
+		const tab = activeTab();
+		if (!tab || tab.imageUrl || !tab.dirty || saving) return;
 		saving = true;
 		try {
 			const doc = view.state.doc.toString();
-			await fs.writeFile(current.handle, doc);
-			current.saved = doc;
-			setDirty(false);
-			toast(`已保存 ${current.path}`);
+			await fs.writeFile(tab.handle, doc);
+			tab.saved = doc;
+			tab.dirty = false;
+			tabBar.render(tabItems(), activeIdx);
+			syncSaveButton();
+			schedulePersist();
+			toast(`已保存 ${tab.path}`);
 		} catch (e) {
 			toast(`保存失败：${errMsg(e)}`, 4000);
 		} finally {
@@ -399,85 +631,55 @@ export function init() {
 			toast('仅支持编辑 .md / .mdx 文件');
 			return;
 		}
-		if (current?.path === node.path) return;
-		if (!confirmDiscard()) return;
+		const existing = tabs.findIndex((t) => t.path === node.path);
+		if (existing >= 0) {
+			activateTab(existing);
+			return;
+		}
+		if (tabs.length >= MAX_TABS && !evictLruTab()) return;
 		try {
 			const content = await fs.readFile(node.handle as FileSystemFileHandle);
-			current = {
+			tabs.push({
 				handle: node.handle as FileSystemFileHandle,
 				path: node.path,
 				saved: content,
-			};
-			setDoc(view, content, editorCallbacks);
-			setDirty(false);
-			ui.filePath.textContent = node.path;
-			ui.fileInfo.classList.remove('hidden');
-			ui.fileInfo.classList.add('flex');
-			ui.btnSave.classList.remove('hidden');
-			showModeToggle(true);
-			treeView.setActive(node.path);
-			layoutPanes();
-			if (mode !== 'edit') void renderPreviewNow('reset');
-			if (mqMobile.matches) setSidebarCollapsed(true);
+				state: createState(content, editorCallbacks),
+				scrollTop: 0,
+				previewTop: 0,
+				imageUrl: null,
+				dirty: false,
+				lastUsed: 0,
+			});
+			activateTab(tabs.length - 1);
 		} catch (e) {
 			toast(`打开失败：${errMsg(e)}`, 4000);
 		}
 	}
 
 	async function openImage(node: TreeNode) {
-		if (current?.path === node.path) return;
-		if (!confirmDiscard()) return;
+		const existing = tabs.findIndex((t) => t.path === node.path);
+		if (existing >= 0) {
+			activateTab(existing);
+			return;
+		}
+		if (tabs.length >= MAX_TABS && !evictLruTab()) return;
 		try {
 			const blob = await (node.handle as FileSystemFileHandle).getFile();
-			if (imageBlobUrl) URL.revokeObjectURL(imageBlobUrl);
-			imageBlobUrl = URL.createObjectURL(blob);
-
-			current = {
+			tabs.push({
 				handle: node.handle as FileSystemFileHandle,
 				path: node.path,
 				saved: '',
-			};
-			setDirty(false);
-			ui.filePath.textContent = node.path;
-			ui.fileInfo.classList.remove('hidden');
-			ui.fileInfo.classList.add('flex');
-			ui.btnSave.classList.add('hidden');
-			showModeToggle(false);
-			const wrap = document.createElement('div');
-			wrap.className = 'flex h-full items-center justify-center p-4';
-			const img = document.createElement('img');
-			img.src = imageBlobUrl;
-			img.className =
-				'max-h-full max-w-full rounded-xl object-contain shadow-2xl';
-			img.alt = node.name;
-			wrap.appendChild(img);
-			ui.preview.replaceChildren(wrap);
-			layoutPanes();
-			treeView.setActive(node.path);
-			if (mqMobile.matches) setSidebarCollapsed(true);
+				state: null,
+				scrollTop: 0,
+				previewTop: 0,
+				imageUrl: URL.createObjectURL(blob),
+				dirty: false,
+				lastUsed: 0,
+			});
+			activateTab(tabs.length - 1);
 		} catch (e) {
 			toast(`打开失败：${errMsg(e)}`, 4000);
 		}
-	}
-
-	function closeCurrentFile() {
-		current = null;
-		setDirty(false);
-		ui.filePath.textContent = '';
-		ui.fileInfo.classList.add('hidden');
-		ui.fileInfo.classList.remove('flex');
-		ui.btnSave.classList.add('hidden');
-		showModeToggle(false);
-		ui.preview.textContent = '';
-		if (imageBlobUrl) {
-			URL.revokeObjectURL(imageBlobUrl);
-			imageBlobUrl = '';
-		}
-		treeView.setActive(null);
-		setDoc(view, '', editorCallbacks);
-		// 恢复编辑模式
-		setMode('edit');
-		layoutPanes();
 	}
 
 	async function createEntry(
@@ -538,20 +740,23 @@ export function init() {
 				toast('当前浏览器不支持重命名，请使用较新的 Chrome/Edge', 4000);
 				return;
 			}
-			if (current) {
+			if (tabs.length) {
 				const dir = node.path.split('/').slice(0, -1).join('/');
 				const newPath = dir ? `${dir}/${newName}` : newName;
-				if (current.path === node.path) {
-					current.path = newPath;
-					ui.filePath.textContent = current.path;
-				} else if (
-					node.kind === 'directory' &&
-					current.path.startsWith(node.path + '/')
-				) {
-					// 重命名了当前文件的父目录：同步前缀
-					current.path = newPath + current.path.slice(node.path.length);
-					ui.filePath.textContent = current.path;
+				for (const tab of tabs) {
+					if (tab.path === node.path) {
+						tab.path = newPath;
+					} else if (
+						node.kind === 'directory' &&
+						tab.path.startsWith(node.path + '/')
+					) {
+						// 重命名了标签文件的父目录：同步前缀
+						tab.path = newPath + tab.path.slice(node.path.length);
+					}
 				}
+				tabBar.render(tabItems(), activeIdx);
+				treeView.setActive(activeTab()?.path ?? null);
+				schedulePersist();
 			}
 			await refreshTree();
 			toast(`已重命名为 ${newName}`);
@@ -569,11 +774,10 @@ export function init() {
 		try {
 			const parent = await parentDirOf(node.path);
 			await fs.removeEntry(parent, node.name, node.kind === 'directory');
-			if (
-				current &&
-				(current.path === node.path || current.path.startsWith(node.path + '/'))
-			) {
-				closeCurrentFile();
+			// 文件已不存在，直接关闭对应标签（不再询问未保存修改）
+			for (let i = tabs.length - 1; i >= 0; i--) {
+				const p = tabs[i].path;
+				if (p === node.path || p.startsWith(node.path + '/')) removeTab(i);
 			}
 			await refreshTree();
 			toast(`已删除 ${node.name}`);
@@ -592,6 +796,7 @@ export function init() {
 		ui.btnNewFile.disabled = false;
 		ui.btnNewFolder.disabled = false;
 		await refreshTree();
+		await restoreTabs();
 		toast(`已打开 ${handle.name}/`);
 	}
 
@@ -664,15 +869,24 @@ export function init() {
 	applySidebar();
 
 	document.addEventListener('keydown', (e) => {
-		if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+		if (!(e.ctrlKey || e.metaKey)) return;
+		const key = e.key.toLowerCase();
+		if (key === 's') {
 			if (ui.cm.contains(document.activeElement)) return;
 			e.preventDefault();
 			void save();
+		} else if (key === 'w') {
+			if (treeView.isEditing) return;
+			e.preventDefault();
+			if (activeIdx >= 0) closeTab(activeIdx);
 		}
 	});
 
-	window.addEventListener('beforeunload', (e) => {
-		if (dirty) e.preventDefault();
+	// 标签内容已持久化，离开页面前尽力落盘一次（不阻塞卸载）
+	const flushPersist = () => void persistTabs();
+	window.addEventListener('pagehide', flushPersist);
+	document.addEventListener('visibilitychange', () => {
+		if (document.visibilityState === 'hidden') flushPersist();
 	});
 
 	// 尝试静默恢复上次目录（已授权则直接进入）
