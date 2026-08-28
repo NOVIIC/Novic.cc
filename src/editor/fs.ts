@@ -67,6 +67,52 @@ export async function loadRootHandle(): Promise<FileSystemDirectoryHandle | null
 	}
 }
 
+/* ---------- IndexedDB：记住打开的标签页（含未保存内容） ---------- */
+
+export interface PersistedTab {
+	/** 文件句柄（FileSystemHandle 可结构化克隆存入 IDB） */
+	handle: FileSystemFileHandle;
+	path: string;
+	/** 关闭时的磁盘内容（用于判断是否有未保存修改） */
+	saved: string;
+	/** 编辑器当前内容（图片标签为 ''） */
+	doc: string;
+	/** 编辑器滚动位置 */
+	scrollTop: number;
+}
+
+export interface PersistedTabs {
+	tabs: PersistedTab[];
+	active: number;
+}
+
+export async function saveTabs(data: PersistedTabs): Promise<void> {
+	try {
+		const db = await openDb();
+		await new Promise<void>((resolve, reject) => {
+			const tx = db.transaction(STORE, 'readwrite');
+			tx.objectStore(STORE).put(data, 'tabs');
+			tx.oncomplete = () => resolve();
+			tx.onerror = () => reject(tx.error);
+		});
+	} catch {
+		// 持久化失败不影响编辑
+	}
+}
+
+export async function loadTabs(): Promise<PersistedTabs | null> {
+	try {
+		const db = await openDb();
+		return await new Promise((resolve, reject) => {
+			const req = db.transaction(STORE).objectStore(STORE).get('tabs');
+			req.onsuccess = () => resolve((req.result as PersistedTabs) ?? null);
+			req.onerror = () => reject(req.error);
+		});
+	} catch {
+		return null;
+	}
+}
+
 /* ---------- 目录扫描 ---------- */
 
 /** 读取文件头部，提取 frontmatter（只取前 16KB，避免读取大文件全文）。 */
