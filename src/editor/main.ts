@@ -244,6 +244,9 @@ export function init() {
 		onCreate: (dirNode, kind, name) => void createEntry(dirNode, kind, name),
 		onRename: (node, newName) => void renameEntry(node, newName),
 		onDelete: (node) => void deleteEntry(node),
+		onToggle: (expanded) => {
+			if (rootHandle) void fs.saveTreeExpanded(rootHandle, expanded);
+		},
 	});
 
 	function findNode(path: string): TreeNode | null {
@@ -795,6 +798,8 @@ export function init() {
 		ui.btnRefresh.disabled = false;
 		ui.btnNewFile.disabled = false;
 		ui.btnNewFolder.disabled = false;
+		// 恢复该目录的展开状态（别的目录的记录会被忽略，默认全折叠）
+		treeView.setExpanded((await fs.loadTreeExpanded(handle)) ?? []);
 		await refreshTree();
 		await restoreTabs();
 		toast(`已打开 ${handle.name}/`);

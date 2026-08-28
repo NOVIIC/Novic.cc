@@ -9,6 +9,8 @@ export interface TreeEvents {
 	) => void;
 	onRename: (node: TreeNode, newName: string) => void;
 	onDelete: (node: TreeNode) => void;
+	/** 目录展开/收起后触发（参数为当前展开的路径列表，用于持久化） */
+	onToggle?: (expanded: string[]) => void;
 }
 
 const ICONS = {
@@ -27,9 +29,9 @@ const icon = (svg: string, cls: string) => {
 	return s;
 };
 
-/** 目录树视图：渲染 + 折叠状态 + 行内新建/重命名。 */
+/** 目录树视图：渲染 + 展开状态（默认折叠） + 行内新建/重命名。 */
 export class TreeView {
-	private collapsed = new Set<string>();
+	private expanded = new Set<string>();
 	private activePath: string | null = null;
 	private editing = false;
 
@@ -37,6 +39,11 @@ export class TreeView {
 		private container: HTMLElement,
 		private events: TreeEvents,
 	) {}
+
+	/** 恢复展开状态（需在 render 前调用）。 */
+	setExpanded(paths: string[]) {
+		this.expanded = new Set(paths);
+	}
 
 	setActive(path: string | null) {
 		this.activePath = path;
@@ -163,17 +170,18 @@ export class TreeView {
 
 		if (node.kind === 'directory') {
 			row.addEventListener('click', () => {
-				if (this.collapsed.has(node.path)) this.collapsed.delete(node.path);
-				else this.collapsed.add(node.path);
+				if (this.expanded.has(node.path)) this.expanded.delete(node.path);
+				else this.expanded.add(node.path);
 				childWrap.classList.toggle('hidden');
 				caret.classList.toggle('rotate-90');
+				this.events.onToggle?.([...this.expanded]);
 			});
 			const childWrap = document.createElement('ul');
 			childWrap.className = 'space-y-px';
 			for (const c of node.children ?? [])
 				childWrap.appendChild(this.renderNode(c, depth + 1));
-			if (this.collapsed.has(node.path)) childWrap.classList.add('hidden');
-			else caret.classList.add('rotate-90');
+			if (this.expanded.has(node.path)) caret.classList.add('rotate-90');
+			else childWrap.classList.add('hidden');
 			li.appendChild(childWrap);
 		} else {
 			row.addEventListener('click', () => this.events.onOpenFile(node));
@@ -200,7 +208,8 @@ export class TreeView {
 		let wrap: Element;
 		if (li) {
 			// 确保目录展开
-			this.collapsed.delete(dirNode.path);
+			this.expanded.add(dirNode.path);
+			this.events.onToggle?.([...this.expanded]);
 			li.querySelector(':scope > ul')?.classList.remove('hidden');
 			li.querySelector(':scope > .tree-row > span:first-child')?.classList.add(
 				'rotate-90',
