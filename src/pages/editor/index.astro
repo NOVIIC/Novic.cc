@@ -130,58 +130,63 @@ import '@/fonts/MapleMonoNormalNL-NF-CN-Bold.woff2';
 		data-pagefind-ignore
 		class="flex h-dvh flex-col overflow-hidden font-sans antialiased"
 	>
-		<!-- 顶栏 -->
+		<!-- 顶栏：三列网格，保证标签条相对整个顶栏居中 -->
 		<header
-			class="z-20 flex h-12 shrink-0 items-center gap-1.5 border-b border-white/10 bg-black/30 px-2 backdrop-blur-md sm:gap-3 sm:px-3"
+			class="z-20 grid h-12 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-1.5 border-b border-white/10 bg-black/30 px-2 backdrop-blur-md sm:gap-3 sm:px-3"
 		>
-			<button
-				id="btn-sidebar"
-				class="shrink-0 rounded-md p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
-				title="收起 / 展开目录栏"
-				aria-label="收起 / 展开目录栏"
-			>
-				<svg
-					viewBox="0 0 16 16"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="1.5"
-					class="h-4 w-4"
-					><rect x="1.5" y="2.5" width="13" height="11" rx="2"></rect><path
-						d="M6 2.5v11"></path></svg
+			<div class="flex min-w-0 items-center gap-1.5 sm:gap-3">
+				<button
+					id="btn-sidebar"
+					class="shrink-0 rounded-md p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+					title="收起 / 展开目录栏"
+					aria-label="收起 / 展开目录栏"
 				>
-			</button>
-			<span class="shrink-0 text-sm font-bold text-white/80 max-sm:hidden"
-				>Editor</span
-			>
+					<svg
+						viewBox="0 0 16 16"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.5"
+						class="h-4 w-4"
+						><rect x="1.5" y="2.5" width="13" height="11" rx="2"></rect><path
+							d="M6 2.5v11"></path></svg
+					>
+				</button>
+				<span class="shrink-0 text-sm font-bold text-white/80 max-sm:hidden"
+					>Editor</span
+				>
+			</div>
 			<!-- 标签页条（最多 4 个，JS 动态渲染） -->
 			<div
 				id="tab-bar"
-				class="hidden min-w-0 flex-1 items-center gap-1 overflow-x-auto px-1"
+				class="hidden min-w-0 max-w-full items-center justify-center gap-1 overflow-x-auto px-1"
 			>
 			</div>
-			<button
-				id="btn-save"
-				class="hidden shrink-0 rounded-lg border border-white/10 px-2.5 py-1 text-xs text-white/70 transition-colors hover:border-accent hover:text-white disabled:opacity-40"
-				disabled>保存 <kbd class="opacity-60 max-sm:hidden">Ctrl+S</kbd></button
-			>
-			<div
-				id="mode-toggle"
-				class="relative hidden shrink-0 rounded-lg border border-white/10 p-0.5 text-xs"
-			>
-				<span id="mode-indicator" aria-hidden="true"></span>
+			<div class="flex min-w-0 items-center justify-end gap-1.5 sm:gap-3">
 				<button
-					data-mode="edit"
-					class="mode-btn relative z-10 w-11 py-1 text-center text-white transition-colors"
-					title="仅编辑">编辑</button
-				><button
-					data-mode="split"
-					class="mode-btn relative z-10 w-11 py-1 text-center text-white/55 transition-colors hover:text-white/85"
-					title="左编辑右预览，滚动进度同步">分屏</button
-				><button
-					data-mode="preview"
-					class="mode-btn relative z-10 w-11 py-1 text-center text-white/55 transition-colors hover:text-white/85"
-					title="仅预览">预览</button
+					id="btn-save"
+					class="hidden shrink-0 rounded-lg border border-white/10 px-2.5 py-1 text-xs text-white/70 transition-colors hover:border-accent hover:text-white disabled:opacity-40"
+					disabled
+					>保存 <kbd class="opacity-60 max-sm:hidden">Ctrl+S</kbd></button
 				>
+				<div
+					id="mode-toggle"
+					class="relative hidden shrink-0 rounded-lg border border-white/10 p-0.5 text-xs"
+				>
+					<span id="mode-indicator" aria-hidden="true"></span>
+					<button
+						data-mode="edit"
+						class="mode-btn relative z-10 w-11 py-1 text-center text-white transition-colors"
+						title="仅编辑">编辑</button
+					><button
+						data-mode="split"
+						class="mode-btn relative z-10 w-11 py-1 text-center text-white/55 transition-colors hover:text-white/85"
+						title="左编辑右预览，滚动进度同步">分屏</button
+					><button
+						data-mode="preview"
+						class="mode-btn relative z-10 w-11 py-1 text-center text-white/55 transition-colors hover:text-white/85"
+						title="仅预览">预览</button
+					>
+				</div>
 			</div>
 		</header>
 
