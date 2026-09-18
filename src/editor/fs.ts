@@ -32,13 +32,26 @@ export async function verifyPermission(
 const DB_NAME = 'novic-editor';
 const STORE = 'kv';
 
+let dbPromise: Promise<IDBDatabase> | null = null;
+
 function openDb(): Promise<IDBDatabase> {
-	return new Promise((resolve, reject) => {
-		const req = indexedDB.open(DB_NAME, 1);
-		req.onupgradeneeded = () => req.result.createObjectStore(STORE);
-		req.onsuccess = () => resolve(req.result);
-		req.onerror = () => reject(req.error);
-	});
+	// 复用同一连接：避免每次操作新开连接且从不关闭（在途连接越积越多，
+	// 页面拆除时还在 open/读写是 Chromium 已知的崩溃诱因之一）
+	if (!dbPromise) {
+		dbPromise = new Promise((resolve, reject) => {
+			const req = indexedDB.open(DB_NAME, 1);
+			req.onupgradeneeded = () => req.result.createObjectStore(STORE);
+			req.onsuccess = () => resolve(req.result);
+			req.onerror = () => reject(req.error);
+		});
+		dbPromise.then(
+			(db) => {
+				db.onclose = () => (dbPromise = null);
+			},
+			() => (dbPromise = null),
+		);
+	}
+	return dbPromise;
 }
 
 export async function saveRootHandle(
