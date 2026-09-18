@@ -887,12 +887,10 @@ export function init() {
 		}
 	});
 
-	// 标签内容已持久化，离开页面前尽力落盘一次（不阻塞卸载）
-	const flushPersist = () => void persistTabs();
-	window.addEventListener('pagehide', flushPersist);
-	document.addEventListener('visibilitychange', () => {
-		if (document.visibilityState === 'hidden') flushPersist();
-	});
+	// 注意：不要在 pagehide / visibilitychange(hidden) 里写 IndexedDB——
+	// 关闭标签页时序列化 FileSystemHandle 会与页面拆除竞争，直接让浏览器崩溃；
+	// 且卸载时的事件本身也不保证触发/完成。标签状态已通过 400ms 防抖在每次
+	// 变更时实时落盘，无需卸载时补写。
 
 	// 尝试静默恢复上次目录（已授权则直接进入）
 	void (async () => {
