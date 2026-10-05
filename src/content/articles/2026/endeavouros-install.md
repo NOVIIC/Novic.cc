@@ -2,7 +2,7 @@
 title: '安装 EndeavourOS 桌面系统'
 description: '安装并配置 EndeavourOS + KDE 桌面系统'
 pubDate: 2026-08-23
-updatedDate: 2026-08-24
+updatedDate: 2026-10-05
 tags: ['Linux']
 ---
 
@@ -140,9 +140,11 @@ sudo pacman -S fcitx5 fcitx5-gtk fcitx5-qt fcitx5-rime fcitx5-configtool
 
 <kbd>Ctrl</kbd> + <kbd>`</kbd> 可以切换拼音方案和简繁体什么的
 
+**注意到在 QQ 中依然使用不了输入法，暂时还没研究解决**
+
 ### Grub
 
-**目前会遇上 GRUB 写入 grubenv 与 CoW 的 btrfs 冲突的问题，暂未解决**
+_旧版本 GRUB 写入 grubenv 会出现与 btrfs 的 CoW 的冲突问题，以及 Arch 打包出来 `DEFAULT_ENVBLK_PATH` 是 `//boot/grub/grubenv` 双斜杠导致一些命令可能不能正常运行。实测 2.16 版本可以正常使用_
 
 将 Grub 的默认启动项会设置为上次使用的选项
 
@@ -153,12 +155,46 @@ GRUB_DEFAULT='saved'
 GRUB_SAVEDEFAULT=true
 ```
 
-然后：
+接下来还要注意一个问题：
+
+EOS 的默认情况下， Grub 的 _默认启动上次选择的条目_ 没办法对 Windows 的条目生效。  
+因为 Grub 的 Windows 条目是由 EOS 特供的安装器生成，不走 os-prober ，而这个安装器安装的 Windows menuentry 体内没有 `savedefault` 指令，因此选择这个条目时不会刷新 `saved_entry` 变量
+
+因此，如果你使用 Windows ，需要编辑 `/etc/grub.d/45_eos_windows` ，在 Windows menuentry 开头的 `{` 之后加一行 `savedefault`
+
+[相关的论坛帖子](https://forum.endeavouros.com/t/grub-not-remebering-last-choice/38300)
+
+最后：
 
 ```zsh
 sudo grub-mkconfig -o /boot/grub/grub.cfg
 ```
 
+生成 grub 的配置文件即可
+
+验证：
+
+```zsh
+sudo grep -A8 "menuentry 'Windows" /boot/grub/grub.cfg   # 确认条目里出现 savedefault 行
+sudo grub-editenv /boot/grub/grubenv list # 应该出现 env_block=512+1 ，并且在重启后会有 saved_entry
+```
+
 ### 其它设置
 
 关闭 系统设置 - 显示和监视器 - 显示器配置 - 允许在全屏窗口中发生画面撕裂
+
+### 其它问题
+
+发现 `/etc/vconsole.conf` 中错误地被设置了：
+
+```ini
+KEYMAP=cn
+```
+
+使用
+
+```zsh
+sudo localectl set-keymap us
+```
+
+但是调完以后终端信息也变成英文了，很奇怪
