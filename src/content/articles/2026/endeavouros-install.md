@@ -144,16 +144,20 @@ sudo pacman -S fcitx5 fcitx5-gtk fcitx5-qt fcitx5-rime fcitx5-configtool
 
 ### Grub
 
-_旧版本 GRUB 写入 grubenv 会出现与 btrfs 的 CoW 的冲突问题，以及 Arch 打包出来 `DEFAULT_ENVBLK_PATH` 是 `//boot/grub/grubenv` 双斜杠导致一些命令可能不能正常运行。实测 2.16 版本可以正常使用_
-
-将 Grub 的默认启动项会设置为上次使用的选项
-
 编辑 `/etc/default/grub`的设置
 
 ```ini
+# 将 Grub 的默认启动项设置为上次使用的选项
 GRUB_DEFAULT='saved'
 GRUB_SAVEDEFAULT=true
+
+# 不生成 EFI BootNext 条目（即 UEFI 固件中的启动项）
+GRUB_DISABLE_BOOTNEXT=true
 ```
+
+_`GRUB_DEFAULT='saved'` 会需要写入 grubenv 变量，而旧版本 GRUB 写入 grubenv 会出现与 btrfs 的 CoW 的冲突问题，以及 Arch 打包出来 `DEFAULT_ENVBLK_PATH` 是 `//boot/grub/grubenv` 双斜杠匹配导致单斜杠 `/boot` 命令不能正常运行。实测 2.16 版本可以正常使用_
+
+_EFI BOOTNEXT 条目也是 2.16 版本新增的功能_
 
 接下来还要注意一个问题：
 
