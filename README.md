@@ -4,21 +4,21 @@
 
 ## 技术栈
 
-| 类别   | 选型                                    | 说明                                                                                    |
-| :----- | :-------------------------------------- | :-------------------------------------------------------------------------------------- |
-| 框架   | Astro 7                                 | 岛屿架构，默认纯静态输出                                                                |
-| 内容   | Content Collections + Glob Loader       | 本地 Markdown/MDX，带类型校验与查询；`articles` 与 `notes` 两个集合                     |
-| 排版   | MDX                                     | 支持在文章中嵌入组件                                                                    |
-| 样式   | Tailwind CSS v4 + Typography            | 通过 `@tailwindcss/vite` 接入，`@plugin` 引入排版                                       |
-| 字体   | Atkinson / HarmonyOS Sans SC / Maple Mono | `src/fonts/` 下 woff2 文件，由 `vite-plugin-font` 扫描引用并注入                        |
-| 代码块 | Expressive Code                         | 行号、折叠段、标题链接等插件（配置集中在 `src/utils/render-config.mjs`）                |
-| 数学   | remark-math + rehype-katex              | KaTeX 渲染行内/块级公式                                                                 |
-| 锚点   | rehype-slug + rehype-autolink-headings  | 标题自动加 id 与 `#` 锚点链接                                                           |
-| 目录   | `render()` 返回的 headings              | 文章与笔记均带侧边 TOC（移动端为 MobileToc）                                            |
-| 订阅   | @astrojs/rss                            | `/rss.xml`，同时输出 articles 与 notes                                                  |
-| SEO    | @astrojs/sitemap                        | `sitemap-index.xml`（`/editor` 已过滤）                                                 |
-| 搜索   | Pagefind + Component UI                 | 构建期生成索引，搜索入口在导航栏右侧（按钮 + `⌘K` / `Ctrl+K` 模态弹窗）                 |
-| 编辑器 | CodeMirror + Preact                     | `/editor/` 静态 MDX 编辑器（`src/editor/`），文件系统访问 API，noindex                  |
+| 类别   | 选型                                      | 说明                                                                     |
+| :----- | :---------------------------------------- | :----------------------------------------------------------------------- |
+| 框架   | Astro 7                                   | 岛屿架构，默认纯静态输出                                                 |
+| 内容   | Content Collections + Glob Loader         | 本地 Markdown/MDX，带类型校验与查询；`articles` 与 `notes` 两个集合      |
+| 排版   | MDX                                       | 支持在文章中嵌入组件                                                     |
+| 样式   | Tailwind CSS v4 + Typography              | 通过 `@tailwindcss/vite` 接入，`@plugin` 引入排版                        |
+| 字体   | Atkinson / HarmonyOS Sans SC / Maple Mono | `src/fonts/` 下 woff2 文件，由 `vite-plugin-font` 扫描引用并注入         |
+| 代码块 | Expressive Code                           | 行号、折叠段、标题链接等插件（配置集中在 `src/utils/render-config.mjs`） |
+| 数学   | remark-math + rehype-katex                | KaTeX 渲染行内/块级公式                                                  |
+| 锚点   | rehype-slug + rehype-autolink-headings    | 标题自动加 id 与 `#` 锚点链接                                            |
+| 目录   | `render()` 返回的 headings                | 文章与笔记均带侧边 TOC（移动端为 MobileToc）                             |
+| 订阅   | @astrojs/rss                              | `/rss.xml`，同时输出 articles 与 notes                                   |
+| SEO    | @astrojs/sitemap                          | `sitemap-index.xml`（`/editor` 已过滤）                                  |
+| 搜索   | Pagefind + Component UI                   | 构建期生成索引，搜索入口在导航栏右侧（按钮 + `⌘K` / `Ctrl+K` 模态弹窗）  |
+| 编辑器 | CodeMirror + Preact                       | `/editor/` 静态 MDX 编辑器（`src/editor/`），文件系统访问 API，noindex   |
 
 Markdown 处理器使用 `@astrojs/markdown-remark` 的 `unified()`（见 `astro.config.mjs`），remark/rehype 插件列表与编辑器预览共用同一份配置 `src/utils/render-config.mjs`，GFM 与智能标点已收进共享列表（故 `astro.config.mjs` 中 `gfm: false`、`smartypants: false`）。
 
@@ -96,17 +96,17 @@ Markdown 处理器使用 `@astrojs/markdown-remark` 的 `unified()`（见 `astro
 
 所有命令在项目根目录执行：
 
-| 命令             | 作用                                                            |
-| :--------------- | :-------------------------------------------------------------- |
-| `pnpm install`   | 安装依赖（会自动应用 `patches/` 下的补丁）                      |
-| `pnpm dev`       | 启动开发服务器（`localhost:4321`）                              |
-| `pnpm check`     | Astro 类型检查 + remark lint 内容校验（`--frail`）              |
-| `pnpm build`     | 构建生产站点到 `./dist/`，并运行 Pagefind 生成搜索索引          |
-| `pnpm preview`   | 本地预览构建产物（搜索在此时可用）                              |
-| `pnpm format`    | Prettier 格式化全仓库                                           |
-| `pnpm md`        | Prettier 格式化 + remark 校验内容                               |
-| `pnpm icons`     | 从 `brand/logo.png` 重新生成 favicon / PWA 图标                 |
-| `pnpm astro ...` | 运行 Astro CLI，如 `astro add`、`astro check`                   |
+| 命令             | 作用                                                   |
+| :--------------- | :----------------------------------------------------- |
+| `pnpm install`   | 安装依赖（会自动应用 `patches/` 下的补丁）             |
+| `pnpm dev`       | 启动开发服务器（`localhost:4321`）                     |
+| `pnpm check`     | Astro 类型检查 + remark lint 内容校验（`--frail`）     |
+| `pnpm build`     | 构建生产站点到 `./dist/`，并运行 Pagefind 生成搜索索引 |
+| `pnpm preview`   | 本地预览构建产物（搜索在此时可用）                     |
+| `pnpm format`    | Prettier 格式化全仓库                                  |
+| `pnpm md`        | Prettier 格式化 + remark 校验内容                      |
+| `pnpm icons`     | 从 `brand/logo.png` 重新生成 favicon / PWA 图标        |
+| `pnpm astro ...` | 运行 Astro CLI，如 `astro add`、`astro check`          |
 
 > 注意：Pagefind 索引在 `pnpm build` 时生成，因此搜索功能仅在 `pnpm preview` 或部署后可用
 
