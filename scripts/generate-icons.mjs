@@ -13,7 +13,7 @@ const render = (size) =>
 await mkdir(outDir, { recursive: true });
 
 // 仅生成主站图标；主站非 PWA，无需 192/512
-// editor 保持原 favicon.svg + editor-icons，不纳入此脚本
+// editor 使用 favicon.ico + editor-icons，不纳入此脚本
 const pngs = [
 	['favicon-16x16.png', 16],
 	['favicon-32x32.png', 32],

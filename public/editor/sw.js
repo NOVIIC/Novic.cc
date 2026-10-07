@@ -9,7 +9,6 @@ self.addEventListener('install', (event) => {
 					[
 						'/editor/',
 						'/manifest-editor.json',
-						'/favicon.svg',
 						'/favicon.ico',
 						'/editor-icons/icon-192.png',
 						'/editor-icons/icon-512.png',

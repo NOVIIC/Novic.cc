@@ -1,49 +1,26 @@
 # Novic.cc
 
-基于 Astro 7 的个人博客，静态输出、运行时几乎零 JS。
-
-## 内容结构
-
-博客内容分为两个集合，分别对应不同路由：
-
-| 集合                     | 目录                         | 路由                                                            | 列表顺序                     |
-| :----------------------- | :--------------------------- | :-------------------------------------------------------------- | :--------------------------- |
-| **Articles**（技术文章） | `src/content/articles/<年>/` | `/articles/`、`/articles/tags/[tag]/`、`/articles/<年>/<slug>/` | 按创建时间倒序（最新在上）   |
-| **Notes**（学习笔记）    | `src/content/notes/<topic>/` | `/notes/`、`/notes/[topic]/`、`/notes/[topic]/[...slug]/`       | 主题内按时间正序（从旧到新） |
-
-- **Articles** 顶部列出所有 tag（带计数），点击进入该 tag 的独立文章列表页。
-- **Notes** 按主题分目录存放（目录名即英文 slug），首页展示主题卡片，点击进入主题内笔记列表。主题元数据定义在 `src/consts.ts` 的 `NOTES_TOPICS`。
-
-首页仅保留一个左对齐的大号 `Welcome!` 标题与一行 `Still working on`。
+基于 Astro 7 的静态博客网站
 
 ## 技术栈
 
-| 类别   | 选型                                   | 说明                                                                    |
-| :----- | :------------------------------------- | :---------------------------------------------------------------------- |
-| 框架   | Astro 7                                | 岛屿架构，默认纯静态输出                                                |
-| 内容   | Content Collections + Glob Loader      | 本地 Markdown/MDX，带类型校验与查询；`articles` 与 `notes` 两个集合     |
-| 排版   | MDX                                    | 支持在文章中嵌入组件                                                    |
-| 样式   | Tailwind CSS v4 + Typography           | 通过 `@tailwindcss/vite` 接入，`@plugin` 引入排版                       |
-| 字体   | Atkinson                               | `public/fonts/` 下 woff 文件，`global.css` 中 `@font-face`              |
-| 代码块 | Expressive Code + 行号插件             | 语法高亮、行号、复制、行高亮、diff                                      |
-| 锚点   | rehype-slug + rehype-autolink-headings | 标题自动加 id 与 `#` 锚点链接                                           |
-| 目录   | `render()` 返回的 headings             | 文章与笔记均带侧边 TOC                                                  |
-| 订阅   | @astrojs/rss                           | `/rss.xml`，同时输出 articles 与 notes                                  |
-| SEO    | @astrojs/sitemap                       | `sitemap-index.xml`                                                     |
-| 搜索   | Pagefind + Component UI                | 构建期生成索引，搜索入口在导航栏右侧（按钮 + `⌘K` / `Ctrl+K` 模态弹窗） |
+| 类别   | 选型                                    | 说明                                                                                    |
+| :----- | :-------------------------------------- | :-------------------------------------------------------------------------------------- |
+| 框架   | Astro 7                                 | 岛屿架构，默认纯静态输出                                                                |
+| 内容   | Content Collections + Glob Loader       | 本地 Markdown/MDX，带类型校验与查询；`articles` 与 `notes` 两个集合                     |
+| 排版   | MDX                                     | 支持在文章中嵌入组件                                                                    |
+| 样式   | Tailwind CSS v4 + Typography            | 通过 `@tailwindcss/vite` 接入，`@plugin` 引入排版                                       |
+| 字体   | Atkinson / HarmonyOS Sans SC / Maple Mono | `src/fonts/` 下 woff2 文件，由 `vite-plugin-font` 扫描引用并注入                        |
+| 代码块 | Expressive Code                         | 行号、折叠段、标题链接等插件（配置集中在 `src/utils/render-config.mjs`）                |
+| 数学   | remark-math + rehype-katex              | KaTeX 渲染行内/块级公式                                                                 |
+| 锚点   | rehype-slug + rehype-autolink-headings  | 标题自动加 id 与 `#` 锚点链接                                                           |
+| 目录   | `render()` 返回的 headings              | 文章与笔记均带侧边 TOC（移动端为 MobileToc）                                            |
+| 订阅   | @astrojs/rss                            | `/rss.xml`，同时输出 articles 与 notes                                                  |
+| SEO    | @astrojs/sitemap                        | `sitemap-index.xml`（`/editor` 已过滤）                                                 |
+| 搜索   | Pagefind + Component UI                 | 构建期生成索引，搜索入口在导航栏右侧（按钮 + `⌘K` / `Ctrl+K` 模态弹窗）                 |
+| 编辑器 | CodeMirror + Preact                     | `/editor/` 静态 MDX 编辑器（`src/editor/`），文件系统访问 API，noindex                  |
 
-Markdown 处理器使用 `@astrojs/markdown-remark` 的 `unified()`（见 `astro.config.mjs`），以支持上述 rehype 插件。
-
-## 视觉
-
-导航栏采用透明背景 + 毛玻璃（`bg-transparent backdrop-blur-md`），中间三个按钮 `Home / Articles / Notes` 采用 legacy-2024 风格：选中项加粗并带 accent 色下划线，按 URL 前缀匹配高亮。右侧依次为搜索按钮（触发 `<dialog>` 模态）与 RSS 图标（SVG）。
-
-色板复刻 legacy-2024，定义在 `src/styles/global.css` 的 `:root`：
-
-- `--white: 240, 237, 230`（标题）
-- `--gray: 159, 140, 96`（暗金，正文辅助色、Footer "All rights reserved"）
-- `--gray-light: 229, 233, 240`（正文）
-- `--accent: #8a23ff`
+Markdown 处理器使用 `@astrojs/markdown-remark` 的 `unified()`（见 `astro.config.mjs`），remark/rehype 插件列表与编辑器预览共用同一份配置 `src/utils/render-config.mjs`，GFM 与智能标点已收进共享列表（故 `astro.config.mjs` 中 `gfm: false`、`smartypants: false`）。
 
 ## 项目结构
 
@@ -51,48 +28,66 @@ Markdown 处理器使用 `@astrojs/markdown-remark` 的 `unified()`（见 `astro
 /
 ├── public/
 │   ├── background.jpg            # 站点背景图
-│   ├── favicon.svg               # editor 页面图标（主站已改用 PNG）
-│   ├── favicon.ico               # 16/32/48 多尺寸 ICO
+│   ├── favicon.ico               # 16/32/48 多尺寸 ICO（主站与 editor 共用）
 │   ├── favicon-16x16.png / favicon-32x32.png
 │   ├── apple-touch-icon.png      # 180x180，源图在 brand/logo.png
-│   └── fonts/                    # Atkinson woff 字体
+│   ├── editor/                   # editor 的 Service Worker
+│   ├── editor-icons/             # editor PWA 图标（192/512）
+│   └── manifest-editor.json      # editor PWA manifest
 ├── src/
+│   ├── assets/icons/             # 图标资源
 │   ├── components/
 │   │   ├── BaseHead.astro        # <head> 元信息、OG/Twitter、canonical
-│   │   ├── Header.astro          # 透明导航栏 + 中间按钮 + 搜索模态 + RSS 图标
-│   │   ├── Footer.astro          # 暗金 "All rights reserved"
-│   │   ├── FormattedDate.astro
-│   │   └── Toc.astro             # 侧边目录
+│   │   ├── Header.astro          # 透明导航栏 + 搜索模态 + RSS 图标
+│   │   ├── Footer.astro
+│   │   ├── ContentLayout.astro   # 内容页布局骨架（侧边栏插槽等）
+│   │   ├── ArticleCard.astro     # 文章卡片（含字数统计）
+│   │   ├── TopicCard.astro       # Notes 主题卡片
+│   │   ├── CardLink.astro        # 卡片链接基件
+│   │   ├── TagCloud.astro        # 标签云
+│   │   ├── Toc.astro / MobileToc.astro   # 侧边目录 / 移动端目录
+│   │   ├── NotesNav.astro / NotesNavMobile.astro / NotesTree.astro  # Notes 导航树
+│   │   ├── BackButton.astro      # 返回按钮
+│   │   └── FormattedDate.astro
 │   ├── content/
 │   │   ├── articles/             # 技术文章（.md / .mdx），按年份分子目录
-│   │   └── notes/                # 学习笔记，按主题分子目录
-│   │       ├── single-variable-calculus/
-│   │       └── multivariable-integration/
+│   │   └── notes/                # 学习笔记，按主题分子目录（每个主题含 intro.md(x)）
+│   ├── editor/                   # /editor 静态 MDX 编辑器（CodeMirror、预览、滚动同步等）
+│   ├── fonts/                    # woff2 字体（Atkinson / HarmonyOS Sans SC / Maple Mono）
 │   ├── layouts/
 │   │   ├── Layout.astro          # 基础布局
 │   │   ├── ArticleLayout.astro   # 文章布局（prose + 目录 + tags）
-│   │   └── NoteLayout.astro      # 笔记布局（prose + 目录 + 主题回链）
+│   │   └── NoteLayout.astro      # 笔记布局（prose + 目录 + 主题导航）
 │   ├── pages/
 │   │   ├── index.astro           # 首页（Welcome! + Still working on）
 │   │   ├── 404.astro
 │   │   ├── rss.xml.ts            # 同时输出 articles + notes
+│   │   ├── editor/index.astro    # 静态 MDX 编辑器（noindex）
 │   │   ├── articles/
 │   │   │   ├── index.astro       # 文章列表 + tag 云
 │   │   │   ├── [...slug].astro   # 单篇文章
 │   │   │   └── tags/[tag].astro  # 标签独立页
 │   │   └── notes/
 │   │       ├── index.astro       # 主题卡片
+│   │       ├── tags/[tag].astro  # 按标签聚合的主题列表
 │   │       └── [topic]/
 │   │           ├── index.astro   # 主题内笔记列表（从旧到新）
 │   │           └── [...slug].astro
 │   ├── styles/
-│   │   └── global.css            # Tailwind 入口 + Atkinson 字体 + legacy 色板 + 背景图
-│   ├── consts.ts                 # SITE 信息 + NOTES_TOPICS 主题元数据
+│   │   └── global.css            # Tailwind 入口 + 字体变量 + 背景图
+│   ├── utils/
+│   │   ├── notes.ts              # Notes 主题树 / 标签聚合 / 路径解析
+│   │   ├── reading.ts            # 正文字数统计（中文 + 英文单词）
+│   │   └── render-config.mjs     # 主站与编辑器预览共用的 remark/rehype/EC 配置
+│   ├── consts.ts                 # SITE 信息
 │   └── content.config.ts         # articles / notes 集合定义与 schema
+├── scripts/
+│   └── generate-icons.mjs        # pnpm icons：从 brand/logo.png 生成各类图标
+├── brand/logo.png                # 站点 Logo 源图
 ├── astro.config.mjs
-├── ec.config.mjs                 # Expressive Code 配置（行号插件等）
-├── patches/                      # pnpm patch 补丁（见下方"已知工具链修复"）
-├── pnpm-workspace.yaml           # 含 patchedDependencies
+├── ec.config.mjs                 # Expressive Code 配置（消费 render-config.mjs 的 ecOptions）
+├── patches/                      # pnpm patch 补丁（见下方"工具链修复"）
+├── pnpm-workspace.yaml           # 含 patchedDependencies / overrides
 ├── tsconfig.json
 └── package.json
 ```
@@ -101,18 +96,21 @@ Markdown 处理器使用 `@astrojs/markdown-remark` 的 `unified()`（见 `astro
 
 所有命令在项目根目录执行：
 
-| 命令             | 作用                                                   |
-| :--------------- | :----------------------------------------------------- |
-| `pnpm install`   | 安装依赖（会自动应用 `patches/` 下的补丁）             |
-| `pnpm dev`       | 启动开发服务器（`localhost:4321`）                     |
-| `pnpm check`     | TypeScript / Astro 类型检查                            |
-| `pnpm build`     | 构建生产站点到 `./dist/`，并运行 Pagefind 生成搜索索引 |
-| `pnpm preview`   | 本地预览构建产物（搜索在此时可用）                     |
-| `pnpm astro ...` | 运行 Astro CLI，如 `astro add`、`astro check`          |
+| 命令             | 作用                                                            |
+| :--------------- | :-------------------------------------------------------------- |
+| `pnpm install`   | 安装依赖（会自动应用 `patches/` 下的补丁）                      |
+| `pnpm dev`       | 启动开发服务器（`localhost:4321`）                              |
+| `pnpm check`     | Astro 类型检查 + remark lint 内容校验（`--frail`）              |
+| `pnpm build`     | 构建生产站点到 `./dist/`，并运行 Pagefind 生成搜索索引          |
+| `pnpm preview`   | 本地预览构建产物（搜索在此时可用）                              |
+| `pnpm format`    | Prettier 格式化全仓库                                           |
+| `pnpm md`        | Prettier 格式化 + remark 校验内容                               |
+| `pnpm icons`     | 从 `brand/logo.png` 重新生成 favicon / PWA 图标                 |
+| `pnpm astro ...` | 运行 Astro CLI，如 `astro add`、`astro check`                   |
 
-> 注意：Pagefind 索引在 `pnpm build` 时生成，因此搜索功能仅在 `pnpm preview` 或部署后可用，开发模式下会显示提示。
+> 注意：Pagefind 索引在 `pnpm build` 时生成，因此搜索功能仅在 `pnpm preview` 或部署后可用
 
-## 写文章 / 笔记
+## 写文章
 
 **Articles** 在 `src/content/articles/<年>/` 下新建 `.md` 或 `.mdx`（目录名即四位年份，如 `2026/`；文章 URL 自动为 `/articles/<年>/<slug>/`）：
 
@@ -128,7 +126,7 @@ heroImage: '/path/to/img' # 可选，OG/Twitter 分享图
 ---
 ```
 
-**Notes** 在 `src/content/notes/<topic>/` 下新建 `.md` 或 `.mdx`（`<topic>` 须为 `NOTES_TOPICS` 中已定义的 slug）：
+**Notes** 在 `src/content/notes/<topic>/` 下新建 `.md` 或 `.mdx`（`<topic>` 为英文 slug，即主题目录名）：
 
 ```yaml
 ---
@@ -136,20 +134,20 @@ title: '笔记标题'
 description: '摘要'
 pubDate: 2025-06-10
 updatedDate: 2025-06-12 # 可选
+tags: ['数学'] # 可选，默认 []
 draft: false # 可选
 ---
 ```
 
-新增 Notes 主题时，在 `src/consts.ts` 的 `NOTES_TOPICS` 中追加 `{ slug, title, description }`，并建立对应的内容子目录。
-
-代码块由 Expressive Code 渲染，支持 `showLineNumbers`、`{2,4}` 行高亮、`title="..."` 标题等语法。
+新增 Notes 主题时，直接建立 `src/content/notes/<topic>/` 目录，并在其中放一个 `intro.md(x)` 作为主题介绍——主题的标题、描述与 tags 均取自它的 frontmatter（主题卡片排序按 intro 的 `pubDate` 正序）。没有 intro 的主题会退化为以目录名作为标题。生产构建会排除 `draft: true` 的主题（以 intro 为准）与笔记。
 
 ## 配置
 
 - **站点地址**：`astro.config.mjs` 中的 `site` 字段（当前为 `https://novic.cc`），RSS / sitemap / canonical 均依赖它，部署前请确认。
-- **站点信息**：`src/consts.ts` 中的标题、描述、作者，以及 Notes 主题元数据。
+- **站点信息**：`src/consts.ts` 中的标题、描述、作者。
+- **渲染行为**：remark/rehype/Expressive Code 配置集中在 `src/utils/render-config.mjs`，主站构建与编辑器预览共用，调整渲染只改这一份。
 
-## 已知工具链修复：MDX 代码块 inline style 解析失败
+## 工具链修复：MDX 代码块 inline style 解析失败
 
 ### 现象
 
@@ -194,13 +192,6 @@ const styleToJs = /** @type {any} */ (
 );
 ```
 
-补丁文件：`patches/hast-util-to-estree@3.1.3.patch`；声明在 `pnpm-workspace.yaml` 的 `patchedDependencies`。`pnpm install` 会自动应用，无需手动操作。
+补丁文件：`patches/hast-util-to-estree@3.1.3.patch`；声明在 `package.json` 与 `pnpm-workspace.yaml` 的 `patchedDependencies`。`pnpm install` 会自动应用，无需手动操作。
 
 > 该补丁仅影响 MDX 编译期的 style 解析，不改变运行时产物，对纯 `.md` 文章无副作用。若上游 `hast-util-to-estree` 或 rolldown 修复了 interop，可移除该补丁。
-
-## 了解更多
-
-- Astro 文档：<https://docs.astro.build>
-- Tailwind CSS v4：<https://tailwindcss.com>
-- Expressive Code：<https://expressive-code.com>
-- Pagefind：<https://pagefind.app>
