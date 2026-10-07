@@ -162,33 +162,39 @@ import '@/fonts/MapleMonoNormalNL-NF-CN-Bold.woff2';
 				id="sidebar"
 				class="flex h-full w-full flex-col border-r border-white/10 bg-black/20 backdrop-blur-[2px]"
 			>
-				<div
-					class="flex h-12 shrink-0 items-center gap-1 border-b border-white/10 p-2"
-				>
+				<div class="flex h-12 shrink-0 items-center gap-1 border-b border-white/10 p-2">
 					<button
 						id="btn-open"
 						class="rounded-md px-2 py-1 text-xs text-white/70 transition-colors hover:bg-white/10 hover:text-white"
-						title="打开本地目录">打开</button
+						title="打开本地目录"
 					>
+						打开
+					</button>
 					<button
 						id="btn-refresh"
 						class="rounded-md px-2 py-1 text-xs text-white/70 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-40"
 						title="重新扫描目录"
-						disabled>刷新</button
+						disabled
 					>
+						刷新
+					</button>
 					<div class="flex-1"></div>
 					<button
 						id="btn-new-file"
 						class="rounded-md px-2 py-1 text-xs text-white/70 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-40"
 						title="新建文件"
-						disabled>+文件</button
+						disabled
 					>
+						+文件
+					</button>
 					<button
 						id="btn-new-folder"
 						class="rounded-md px-2 py-1 text-xs text-white/70 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-40"
 						title="新建文件夹"
-						disabled>+目录</button
+						disabled
 					>
+						+目录
+					</button>
 				</div>
 				<div id="tree" class="min-h-0 flex-1 overflow-auto p-1.5 text-sm"></div>
 			</aside>
@@ -197,20 +203,16 @@ import '@/fonts/MapleMonoNormalNL-NF-CN-Bold.woff2';
 			id="sidebar-resizer"
 			class="relative z-10 -ml-1.5 w-1.5 shrink-0 cursor-col-resize transition-colors hover:bg-accent/40"
 			title="拖动调整目录栏宽度 · 双击恢复默认"
-		>
-		</div>
+		></div>
 		<div
 			id="sidebar-backdrop"
 			class="fixed inset-0 z-20 hidden bg-black/50 backdrop-blur-[2px] md:hidden"
-		>
-		</div>
+		></div>
 
 		<!-- 右侧：顶栏 + 主区域 -->
 		<div class="flex min-w-0 flex-1 flex-col">
 			<!-- 顶栏：三列网格，保证标签条相对整个顶栏居中 -->
-			<header
-				class="z-20 grid h-12 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-1.5 border-b border-white/10 bg-black/30 px-2 sm:gap-3 sm:px-3"
-			>
+			<header class="z-20 grid h-12 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-1.5 border-b border-white/10 bg-black/30 px-2 sm:gap-3 sm:px-3">
 				<div class="flex min-w-0 items-center gap-1.5 sm:gap-3">
 					<button
 						id="btn-sidebar"
@@ -224,24 +226,25 @@ import '@/fonts/MapleMonoNormalNL-NF-CN-Bold.woff2';
 							stroke="currentColor"
 							stroke-width="1.5"
 							class="h-4 w-4"
-							><rect x="1.5" y="2.5" width="13" height="11" rx="2"></rect><path
-								d="M6 2.5v11"></path></svg
 						>
+							<rect x="1.5" y="2.5" width="13" height="11" rx="2"></rect>
+							<path d="M6 2.5v11"></path>
+						</svg>
 					</button>
 				</div>
 				<!-- 标签页条（最多 4 个，JS 动态渲染） -->
 				<div
 					id="tab-bar"
 					class="hidden min-w-0 max-w-full items-center justify-center gap-1 overflow-x-auto px-1"
-				>
-				</div>
+				></div>
 				<div class="flex min-w-0 items-center justify-end gap-1.5 sm:gap-3">
 					<button
 						id="btn-save"
 						class="hidden shrink-0 rounded-lg border border-white/10 px-2.5 py-1 text-xs text-white/70 transition-colors hover:border-accent hover:text-white disabled:opacity-40"
 						disabled
-						>保存 <kbd class="opacity-60 max-sm:hidden">Ctrl+S</kbd></button
 					>
+						保存 <kbd class="opacity-60 max-sm:hidden">Ctrl+S</kbd>
+					</button>
 					<div
 						id="mode-toggle"
 						class="relative hidden shrink-0 rounded-lg border border-white/10 p-0.5 text-xs"
@@ -250,40 +253,48 @@ import '@/fonts/MapleMonoNormalNL-NF-CN-Bold.woff2';
 						<button
 							data-mode="edit"
 							class="mode-btn relative z-10 w-11 py-1 text-center text-white transition-colors"
-							title="仅编辑">编辑</button
-						><button
+							title="仅编辑"
+						>
+							编辑
+						</button>
+						<button
 							data-mode="split"
 							class="mode-btn relative z-10 w-11 py-1 text-center text-white/55 transition-colors hover:text-white/85"
-							title="左编辑右预览，滚动进度同步">分屏</button
-						><button
+							title="左编辑右预览，滚动进度同步"
+						>
+							分屏
+						</button>
+						<button
 							data-mode="preview"
 							class="mode-btn relative z-10 w-11 py-1 text-center text-white/55 transition-colors hover:text-white/85"
-							title="仅预览">预览</button
+							title="仅预览"
 						>
+							预览
+						</button>
 					</div>
 				</div>
 			</header>
 
 			<!-- 主区域 -->
-			<main
-				class="relative flex min-h-0 min-w-0 flex-1 flex-col gap-2 p-2 md:flex-row"
-			>
+			<main class="relative flex min-h-0 min-w-0 flex-1 flex-col gap-2 p-2 md:flex-row">
 				<!-- 欢迎 / 引导 -->
 				<div
 					id="welcome"
 					class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-[#060912]/60 p-6 text-center backdrop-blur-sm"
 				>
 					<p class="text-white/70">
-						打开本地 <code
-							class="rounded bg-white/10 px-1.5 py-0.5 font-mono text-xs"
-							>src/content</code
-						> 目录开始写作
+						打开本地{' '}
+						<code class="rounded bg-white/10 px-1.5 py-0.5 font-mono text-xs">
+							src/content
+						</code>{' '}
+						目录开始写作
 					</p>
 					<button
 						id="btn-open-welcome"
 						class="rounded-xl border border-accent/50 bg-accent/20 px-4 py-2 text-sm text-white transition-all hover:scale-105 hover:bg-accent/30 active:scale-95"
-						>选择目录</button
 					>
+						选择目录
+					</button>
 					<p id="restore-hint" class="hidden text-xs text-white/40">
 						已找到上次打开的目录，授权后将自动恢复
 					</p>
@@ -296,10 +307,11 @@ import '@/fonts/MapleMonoNormalNL-NF-CN-Bold.woff2';
 				>
 					<p class="text-lg font-semibold text-white">当前设备不支持</p>
 					<p class="max-w-md text-sm text-white/60">
-						本编辑器依赖 File System Access API（<code
-							class="rounded bg-white/10 px-1 font-mono text-xs"
-							>showDirectoryPicker</code
-						>）直接读写本地文件。请使用桌面版 Chrome / Edge 访问。
+						本编辑器依赖 File System Access API（
+						<code class="rounded bg-white/10 px-1 font-mono text-xs">
+							showDirectoryPicker
+						</code>
+						）直接读写本地文件。请使用桌面版 Chrome / Edge 访问。
 					</p>
 				</div>
 
@@ -307,23 +319,20 @@ import '@/fonts/MapleMonoNormalNL-NF-CN-Bold.woff2';
 				<div
 					id="cm-container"
 					class="min-h-0 min-w-0 flex-1 overflow-hidden rounded-2xl border border-white/10 bg-black/15 backdrop-blur-[2px]"
-				>
-				</div>
+				></div>
 
 				<!-- 预览 -->
 				<div
 					id="preview-container"
 					class="hidden min-h-0 min-w-0 flex-1 overflow-auto rounded-2xl border border-white/10"
-				>
-				</div>
+				></div>
 			</main>
 		</div>
 
 		<div
 			id="toast"
 			class="popup-bg pointer-events-none fixed bottom-5 left-1/2 z-50 -translate-x-1/2 px-4 py-2 text-sm text-white opacity-0 transition-opacity duration-200"
-		>
-		</div>
+		></div>
 
 		<script>
 			import { init } from '@/editor/main';

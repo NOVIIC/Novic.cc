@@ -15,9 +15,7 @@ const tags = tagsRaw.map(({ tag, count }) => ({
 ---
 
 <Layout title={`Notes · ${SITE_TITLE}`} description="学习笔记，按主题分类">
-	<div
-		class="mx-auto max-w-3xl lg:max-w-none lg:grid lg:grid-cols-[minmax(9rem,1fr)_minmax(32rem,3fr)_minmax(9rem,1fr)] lg:gap-6 xl:grid-cols-[1fr_minmax(0,48rem)_1fr]"
-	>
+	<div class="mx-auto max-w-3xl lg:max-w-none lg:grid lg:grid-cols-[minmax(9rem,1fr)_minmax(32rem,3fr)_minmax(9rem,1fr)] lg:gap-6 xl:grid-cols-[1fr_minmax(0,48rem)_1fr]">
 		<NotesNav topics={topics} />
 		<div class="min-w-0 lg:col-start-2">
 			<section class="not-prose mb-10 pad-x">
@@ -28,19 +26,17 @@ const tags = tagsRaw.map(({ tag, count }) => ({
 			<TagCloud tags={tags} />
 
 			<div class="not-prose grid gap-4 sm:grid-cols-2">
-				{
-					topics.map((t) => (
-						<TopicCard
-							topic={{
-								slug: t.slug,
-								title: t.title,
-								description: t.description,
-								tags: t.tags,
-								count: t.articles.length,
-							}}
-						/>
-					))
-				}
+				{topics.map((t) => (
+					<TopicCard
+						topic={{
+							slug: t.slug,
+							title: t.title,
+							description: t.description,
+							tags: t.tags,
+							count: t.articles.length,
+						}}
+					/>
+				))}
 			</div>
 		</div>
 	</div>

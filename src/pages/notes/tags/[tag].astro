@@ -39,9 +39,7 @@ const treeTopics = await getNotesTree();
 >
 	<BackButton fallbackHref="/notes/" slot="floating" />
 	<NotesNavMobile topics={treeTopics} slot="floating" />
-	<div
-		class="mx-auto max-w-3xl xl:max-w-none xl:grid xl:grid-cols-[1fr_minmax(0,48rem)_1fr] xl:gap-6"
-	>
+	<div class="mx-auto max-w-3xl xl:max-w-none xl:grid xl:grid-cols-[1fr_minmax(0,48rem)_1fr] xl:gap-6">
 		<NotesNav topics={treeTopics} />
 		<div class="min-w-0 xl:col-start-2">
 			<section class="not-prose mb-8 pad-x">
@@ -50,7 +48,9 @@ const treeTopics = await getNotesTree();
 			</section>
 
 			<div class="not-prose grid gap-4 sm:grid-cols-2">
-				{topics.map((t) => <TopicCard topic={t} showTags={false} />)}
+				{topics.map((t) => (
+					<TopicCard topic={t} showTags={false} />
+				))}
 			</div>
 		</div>
 	</div>

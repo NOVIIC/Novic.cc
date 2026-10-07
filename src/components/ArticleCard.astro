@@ -15,15 +15,11 @@ const wordCount = countWords(article);
 <CardLink href={`/articles/${article.id}/`}>
 	<div class="flex flex-wrap items-center gap-2 text-xs text-gray">
 		<FormattedDate date={article.data.pubDate} />
-		{
-			showTags && article.data.tags.length > 0 && (
-				<span>· {article.data.tags.join(' / ')}</span>
-			)
-		}
+		{showTags && article.data.tags.length > 0 && (
+			<span>· {article.data.tags.join(' / ')}</span>
+		)}
 		<span>· {formatWordCount(wordCount)}</span>
 	</div>
-	<h3 class="mt-1 text-lg font-semibold text-white">
-		{article.data.title}
-	</h3>
+	<h3 class="mt-1 text-lg font-semibold text-white">{article.data.title}</h3>
 	<p class="mt-1 text-sm text-white/60">{article.data.description}</p>
 </CardLink>
