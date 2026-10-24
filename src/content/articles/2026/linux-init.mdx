@@ -52,15 +52,15 @@ usermod -aG sudo 用户名
 
 **非常重要**，默认端口绝对会被扫
 
-```ssh-config
+```ssh-config title="sshd_config"
 Port 25565 # 修改成任意非常用端口
 ```
 
-改完别忘了调防火墙设置
+**改完别忘了去厂商网页控制台调防火墙设置！不然连不上**
 
 #### 禁用 root 登录
 
-```ssh-config
+```ssh-config title="sshd_config"
 PermitRootLogin no
 ```
 
@@ -68,7 +68,7 @@ PermitRootLogin no
 
 先启用密钥登录
 
-```ssh-config
+```ssh-config title="sshd_config"
 PubkeyAuthentication yes
 ```
 
@@ -102,13 +102,19 @@ Host myserver
     Port 2222
     IdentityFile ~/.ssh/id_ed25519
     IdentitiesOnly yes
+
+Host *
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
 ```
 
 这样只需 `ssh myserver` 即可连接
 
-然后关闭密码登录，防止被爆破
+后面 `Host *` 那一段是可选的优化，为所有 ssh 连接添加保活，以免会话挂一段时间就超时了
 
-```ssh-config
+确认密钥登陆后再回到服务器的 sshd_config 关闭密码登录，防止被爆破
+
+```ssh-config title="sshd_config"
 PasswordAuthentication no
 ```
 
@@ -242,7 +248,7 @@ chsh -s $(which zsh)
 
 # 加载需要的函数
 autoload -Uz compinit && compinit # Tab 补全
-autoload -U colors && colors # 提供颜色定义变量，下面会用到
+autoload -Uz colors && colors # 提供颜色定义变量，下面会用到
 
 # 设置提示符格式
 PROMPT='%F{green}%n@%m%f:%F{blue}%~%f %# '
@@ -260,8 +266,12 @@ zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS} # 候选项使用 ls 同�
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' # 大小写模糊
 
 # 上下箭头替换成前缀搜索而不只滚动显示历史
-bindkey '^[[A' history-search-backward
-bindkey '^[[B' history-search-forward
+zmodload zsh/terminfo
+autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
+zle -N up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+[[ -n ${terminfo[kcuu1]} ]] && bindkey "${terminfo[kcuu1]}" up-line-or-beginning-search
+[[ -n ${terminfo[kcud1]} ]] && bindkey "${terminfo[kcud1]}" down-line-or-beginning-search
 
 # 第三方插件
 # zsh-syntax-highlighting 命令语法高亮
