@@ -2,7 +2,7 @@
 title: '安装 EndeavourOS 桌面系统'
 description: '安装并配置 EndeavourOS + KDE 桌面系统'
 pubDate: 2026-08-23
-updatedDate: 2026-10-05
+updatedDate: 2026-10-24
 tags: ['Linux']
 ---
 
@@ -36,6 +36,34 @@ swap 我选择了 `no swap` ，之后再手动配置 zram
 ### Shell
 
 可以先根据 [之前的文章](./linux-init.mdx#Shell-配置) 配置好 Shell 。切换默认 Shell 之后需要重启才会生效
+
+但需要注意的是，在 Arch 上需要手动配置键盘模式的切换（ smkx ）
+
+因此，对照那篇文章的模板，需要把上下箭头替换前缀搜索的那一段改成：
+
+```zsh title="~/.zshrc"
+zmodload zsh/terminfo
+
+if (( ${+terminfo[smkx]} && ${+terminfo[rmkx]} )); then
+    autoload -Uz add-zle-hook-widget
+
+    _smkx() { echoti smkx }
+    _rmkx() { echoti rmkx }
+
+    add-zle-hook-widget -Uz zle-line-init _smkx
+    add-zle-hook-widget -Uz zle-line-finish _rmkx
+fi
+
+autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
+zle -N up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+
+bindkey -- "${terminfo[khome]}" beginning-of-line
+bindkey -- "${terminfo[kend]}"  end-of-line
+bindkey -- "${terminfo[kdch1]}" delete-char
+bindkey -- "${terminfo[kcuu1]}" up-line-or-beginning-search
+bindkey -- "${terminfo[kcud1]}" down-line-or-beginning-search
+```
 
 ### yay
 
@@ -140,7 +168,22 @@ sudo pacman -S fcitx5 fcitx5-gtk fcitx5-qt fcitx5-rime fcitx5-configtool
 
 <kbd>Ctrl</kbd> + <kbd>`</kbd> 可以切换拼音方案和简繁体什么的
 
-**注意到在 QQ 中依然使用不了输入法，暂时还没研究解决**
+据我测试，这样配置完后 QQ 依旧使用不了输入法
+
+自定义启动参数可以解决：
+
+```sh
+mkdir -p ~/.config
+
+cat > ~/.config/qq-flags.conf <<'EOF'
+--enable-features=UseOzonePlatform
+--ozone-platform=wayland
+--enable-wayland-ime
+--disable-features=GlobalShortcutsPortal
+EOF
+```
+
+注意上面把 `GlobalShortcutsPortal` 给 disable 了，因为我发现我这每次启动都会有快捷键弹窗。但是禁用后快捷键就无法使用了。这个就根据个人情况处理。
 
 ### Grub
 
