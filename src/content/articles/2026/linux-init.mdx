@@ -2,7 +2,7 @@
 title: 'Linux 初始配置'
 description: '为 Linux 系统进行必要的安全配置和一些体验优化'
 pubDate: 2026-07-25
-updatedDate: 2026-08-17
+updatedDate: 2026-10-24
 tags: ['Linux', '小技巧', '安全']
 ---
 
@@ -14,7 +14,29 @@ tags: ['Linux', '小技巧', '安全']
 
 ### 创建普通用户并配置 sudo
 
-具体过程就不写了，直接问 AI 就行
+假设一开始只创建了 root 用户。那么先以 root 登录
+
+#### 安装 sudo
+
+```sh
+apt update && apt install -y sudo
+```
+
+#### 创建普通用户
+
+```sh
+adduser 用户名
+```
+
+会提示创建密码
+
+#### 将用户加入 sudo 组
+
+```sh
+usermod -aG sudo 用户名
+```
+
+然后测试一下用户登录
 
 ### ssh 配置
 
@@ -34,6 +56,8 @@ tags: ['Linux', '小技巧', '安全']
 Port 25565 # 修改成任意非常用端口
 ```
 
+改完别忘了调防火墙设置
+
 #### 禁用 root 登录
 
 ```ssh-config
@@ -48,13 +72,71 @@ PermitRootLogin no
 PubkeyAuthentication yes
 ```
 
-在本地生成 SSH 密钥对并上传到服务器，测试确认密钥登录正常
+然后重启 sshd 让新配置生效
 
-然后关闭密码登录，**非常重要**，防止被爆破
+```sh
+sudo systemctl restart ssh
+```
+
+在本地生成 SSH 密钥对并将**公钥**上传到服务器
+注意下面这行指令在 **Git Bash** 执行（ win 没有 ssh-copy-id ），路径表示上有些区别
+
+```sh
+ssh-copy-id -p 端口 -i /c/Users/Alice/.ssh/公钥.pub 用户名@ip地址
+```
+
+_需要注意的是， ssh-copy-id 默认会检查你这个公钥有没有对应的私钥（按它的规则私钥路径应该就是公钥去掉 .pub 后缀），没有会报错。可以 -f 强制安装_
+
+测试确认密钥登录正常
+
+可以在 `.ssh\config` 中定义 Host 别名
+
+比如 `ssh -p 2222 -i ~/.ssh/id_ed25519 deploy@10.0.0.3`
+
+可以配置为：
+
+```config
+Host myserver
+    HostName 10.0.0.3
+    User deploy
+    Port 2222
+    IdentityFile ~/.ssh/id_ed25519
+    IdentitiesOnly yes
+```
+
+这样只需 `ssh myserver` 即可连接
+
+然后关闭密码登录，防止被爆破
 
 ```ssh-config
 PasswordAuthentication no
 ```
+
+然后重启 sshd 即可
+
+可以使用 `sudo sshd -T | grep -i passwordauthentication` 检查当前生效的配置情况
+
+#### 关于 fingerprint
+
+初次连接时会提示检查 fingerprint
+
+在服务器里运行
+
+```sh
+ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
+```
+
+可以输出主机的 ed25519 指纹
+
+如果本地（下面指令为 Windows）已经信任服务器了，可以通过
+
+```sh
+ssh-keygen -lf ~/.ssh/known_hosts
+```
+
+查看指纹
+
+`ssh-keygen -R <host>` 可以删除信任的指纹
 
 ### 配置防火墙
 
@@ -69,10 +151,66 @@ PasswordAuthentication no
 
 ### 其他
 
-可以设置系统自动更新  
-如 Debian 使用 `unattended-upgrades`
+#### 系统自动更新
+
+Debian 下使用 `unattended-upgrades`
+
+安装
+
+```sh
+sudo apt update && sudo apt install unattended-upgrades apt-listchanges
+```
+
+启用
+
+```sh
+sudo dpkg-reconfigure --priority=low unattended-upgrades
+```
+
+然后验证一下:
+
+```sh
+cat /etc/apt/apt.conf.d/20auto-upgrades
+```
+
+应该出现：
+
+```config
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Unattended-Upgrade "1";
+```
+
+然后进行一些配置微调
+
+```sh
+sudo tee /etc/apt/apt.conf.d/52unattended-upgrades-local >/dev/null <<'EOF'
+// 清理不再需要的依赖
+Unattended-Upgrade::Remove-Unused-Dependencies "true";
+
+// 需要重启时自动重启
+Unattended-Upgrade::Automatic-Reboot "true";
+Unattended-Upgrade::Automatic-Reboot-WithUsers "false";
+Unattended-Upgrade::Automatic-Reboot-Time "04:00";
+EOF
+```
+
+最后再验证一下配置
+
+```sh
+sudo unattended-upgrade --dry-run -d                         # 模拟运行
+systemctl list-timers 'apt-daily*'                           # 确认定时器在跑
+sudo apt-config dump | grep -E 'Unattended-Upgrade|Periodic' #检查当前生效的配置
+```
+
+#### 防爆破
 
 可以使用 **fail2ban** 防爆破
+
+```sh
+sudo apt update
+sudo apt install fail2ban
+sudo systemctl enable --now fail2ban
+```
 
 ## Shell 配置
 
@@ -82,9 +220,13 @@ PasswordAuthentication no
 
 ### 安装 zsh 和有用的 zsh 插件
 
-问AI
+对AI说：
 
-插件我用到了两个，下面配置文件中有提到
+告诉我 \<使用的发行版\> 如何安装 zsh zsh-syntax-highlighting zsh-autosuggestions  
+并且告诉我两个插件的完整激活命令（ source 路径.zsh ）  
+不需要其它内容
+
+两条激活命令放到下面配置文件对应的位置即可
 
 ### 切换默认 shell
 
@@ -94,7 +236,7 @@ chsh -s $(which zsh)
 
 ### 配置 zsh
 
-```zsh title=".zshrc"
+```zsh title="~/.zshrc"
 # 如果是非交互环境则不加载下面的配置
 [[ $- != *i* ]] && return
 
