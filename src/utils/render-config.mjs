@@ -54,6 +54,13 @@ export const rehypePlugins = [
  */
 export const ecOptions = {
 	themes: ['slack-dark'],
+	styleOverrides: {
+		frames: {
+			// slack-dark 未定义 tab.* 颜色，标题文字
+			// 会回退到 #ffffff；改为与正文一致
+			editorActiveTabForeground: '#e5e9f0',
+		},
+	},
 	plugins: [
 		pluginLineNumbers(),
 		pluginCollapsibleSections(),
